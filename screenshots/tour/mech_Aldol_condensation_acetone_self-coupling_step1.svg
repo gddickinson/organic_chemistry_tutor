@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg version='1.1' baseProfile='full'
+              xmlns='http://www.w3.org/2000/svg'
+                      xmlns:rdkit='http://www.rdkit.org/xml'
+                      xmlns:xlink='http://www.w3.org/1999/xlink'
+                  xml:space='preserve'
+width='700px' height='520px' viewBox='0 0 700 520'><defs><marker id="mech-curly" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0, 10 3.5, 0 7" fill="#c23030" /></marker><marker id="mech-fish" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><polyline points="0 0, 10 3.5" stroke="#c23030" stroke-width="1.6" fill="none" /></marker></defs>
+<!-- END OF HEADER -->
+<rect style='opacity:1.0;fill:#FFFFFF;stroke:none' width='700.0' height='520.0' x='0.0' y='0.0'> </rect>
+<path class='bond-0 atom-0 atom-1' d='M 516.4,356.4 L 350.3,259.8' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-1 atom-1 atom-2' d='M 364.7,268.2 L 365.0,178.5' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-1 atom-1 atom-2' d='M 365.0,178.5 L 365.4,88.8' style='fill:none;fill-rule:evenodd;stroke:#FF0000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-1 atom-1 atom-2' d='M 335.9,268.0 L 336.2,178.4' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-1 atom-1 atom-2' d='M 336.2,178.4 L 336.6,88.7' style='fill:none;fill-rule:evenodd;stroke:#FF0000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-2 atom-1 atom-3' d='M 350.3,259.8 L 183.6,355.2' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path d='M 358.6,264.6 L 350.3,259.8 L 342.0,264.6' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />
+<path class='atom-2' d='M 338.0 67.8
+Q 338.0 61.0, 341.4 57.2
+Q 344.8 53.4, 351.0 53.4
+Q 357.3 53.4, 360.7 57.2
+Q 364.0 61.0, 364.0 67.8
+Q 364.0 74.6, 360.6 78.6
+Q 357.2 82.4, 351.0 82.4
+Q 344.8 82.4, 341.4 78.6
+Q 338.0 74.7, 338.0 67.8
+M 351.0 79.2
+Q 355.4 79.2, 357.7 76.4
+Q 360.0 73.4, 360.0 67.8
+Q 360.0 62.2, 357.7 59.4
+Q 355.4 56.6, 351.0 56.6
+Q 346.7 56.6, 344.4 59.4
+Q 342.0 62.2, 342.0 67.8
+Q 342.0 73.5, 344.4 76.4
+Q 346.7 79.2, 351.0 79.2
+' fill='#FF0000'/>
+<path class='atom-4' d='M 309.7 437.9
+L 313.5 437.9
+L 313.5 449.9
+L 328.0 449.9
+L 328.0 437.9
+L 331.9 437.9
+L 331.9 466.2
+L 328.0 466.2
+L 328.0 453.1
+L 313.5 453.1
+L 313.5 466.2
+L 309.7 466.2
+L 309.7 437.9
+' fill='#FF0000'/>
+<path class='atom-4' d='M 337.3 452.0
+Q 337.3 445.2, 340.7 441.4
+Q 344.1 437.6, 350.3 437.6
+Q 356.6 437.6, 360.0 441.4
+Q 363.3 445.2, 363.3 452.0
+Q 363.3 458.8, 359.9 462.8
+Q 356.5 466.6, 350.3 466.6
+Q 344.1 466.6, 340.7 462.8
+Q 337.3 458.9, 337.3 452.0
+M 350.3 463.4
+Q 354.7 463.4, 357.0 460.6
+Q 359.3 457.6, 359.3 452.0
+Q 359.3 446.4, 357.0 443.6
+Q 354.7 440.8, 350.3 440.8
+Q 346.0 440.8, 343.7 443.6
+Q 341.3 446.4, 341.3 452.0
+Q 341.3 457.7, 343.7 460.6
+Q 346.0 463.4, 350.3 463.4
+' fill='#FF0000'/>
+<path class='atom-4' d='M 367.4 442.2
+L 377.1 442.2
+L 377.1 444.3
+L 367.4 444.3
+L 367.4 442.2
+' fill='#FF0000'/>
+<path d="M350.3,451.9 Q300.8,345.2 183.6,355.2" stroke="#c23030" stroke-width="2.4" fill="none" marker-end="url(#mech-curly)" stroke-linecap="round" opacity="0.9" /><text x="312.7" y="324.8" fill="#c23030" font-size="14" font-family="sans-serif" text-anchor="middle">base takes alpha-H</text>
+<path d="M183.6,355.2 Q300.4,365.9 350.3,259.8" stroke="#c23030" stroke-width="2.4" fill="none" marker-end="url(#mech-curly)" stroke-linecap="round" opacity="0.9" /><text x="312.1" y="386.3" fill="#c23030" font-size="14" font-family="sans-serif" text-anchor="middle">e- into C=O</text>
+<path d="M350.3,259.8 Q417.9,164.0 351.0,67.7" stroke="#c23030" stroke-width="2.4" fill="none" marker-end="url(#mech-curly)" stroke-linecap="round" opacity="0.9" /><text x="441.5" y="164.1" fill="#c23030" font-size="14" font-family="sans-serif" text-anchor="middle">C=O to O-</text></svg>

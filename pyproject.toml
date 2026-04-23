@@ -1,0 +1,105 @@
+# pyproject.toml — Phase 22a dev tooling.
+# Not used for packaging yet (Phase 22b: PyInstaller + proper wheel).
+# Used today for:
+#   - ruff (lint / format) config
+#   - mypy (static types) config
+#   - pytest runtime options
+# Install the dev deps with `pip install -r requirements-dev.txt`.
+
+[project]
+name = "orgchem-studio"
+version = "0.11.0"
+description = "An interactive desktop app for learning and teaching organic chemistry."
+requires-python = ">=3.11"
+readme = "README.md"
+
+# =====================================================================
+# Ruff — linter + formatter (replaces black + flake8 + isort)
+# =====================================================================
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [
+    "screenshots",
+    "refs",
+    "**/__pycache__",
+    ".pytest_cache",
+    # The extensive seed files have long SMILES literals that should not
+    # be wrapped; exempt them from line-length.
+    "orgchem/db/seed_molecules_extended.py",
+    "orgchem/db/seed_intermediates.py",
+    "orgchem/db/seed_pathways.py",
+    "orgchem/db/seed_reactions.py",
+    "orgchem/db/seed_mechanisms.py",
+    "orgchem/db/seed_glossary.py",
+    "orgchem/db/seed_energy_profiles.py",
+    "orgchem/core/wh_rules.py",
+    "orgchem/core/spectroscopy.py",
+    "orgchem/core/retrosynthesis.py",
+    "orgchem/naming/rules.py",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort (import order)
+    "B",    # flake8-bugbear — common gotchas
+    "UP",   # pyupgrade — modernise syntax
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "E501",  # line too long — use black-style wrapping or exempt per-file
+    "B008",  # "do not perform function call in default arg" — false positive on
+             # RDKit Mol defaults we rely on
+    "SIM108", # ternary "if-else" rule — readability trumps conciseness here
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["E501", "F401", "F811"]  # tests often have long asserts
+"scripts/**/*.py" = ["E501"]
+
+# =====================================================================
+# Mypy — incremental static typing. Start lax; ratchet up over time.
+# =====================================================================
+[tool.mypy]
+python_version = "3.11"
+strict = false
+warn_redundant_casts = true
+warn_unused_ignores = true
+# RDKit stubs are incomplete — silence per-module until the ecosystem
+# ships better ones.
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "rdkit.*",
+    "pubchempy.*",
+    "PySide6.*",
+    "matplotlib.*",
+    "numpy.*",
+]
+ignore_missing_imports = true
+
+# =====================================================================
+# Pytest — test runner config
+# =====================================================================
+[tool.pytest.ini_options]
+minversion = "7.4"
+# Run from the project root so imports resolve cleanly.
+testpaths = ["tests"]
+addopts = [
+    "-ra",              # show short summary for all non-pass tests
+    "--strict-markers",  # any unknown marker = error
+    "--tb=short",       # concise tracebacks
+]
+markers = [
+    "slow: marks tests that take > 1 s",
+    "gui: marks tests that require a live Qt window",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:pubchempy.*",
+    "ignore::DeprecationWarning:rdkit.*",
+]

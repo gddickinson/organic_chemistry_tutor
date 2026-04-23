@@ -1,0 +1,22 @@
+# Development / CI tooling — Phase 22a.
+# Install with: pip install -r requirements-dev.txt (on top of requirements.txt).
+# Runtime deps stay in requirements.txt so end users don't get dev bloat.
+
+# Test framework
+pytest>=7.4
+pytest-qt>=4.3
+pytest-cov>=4.1
+
+# Lint / format
+ruff>=0.4
+
+# Static types
+mypy>=1.9
+
+# Perceptual-hash image diffing (used by tests/test_golden_renders.py
+# once Phase 20b lands; safe to install now).
+imagehash>=4.3
+
+# Matplotlib is already a runtime dep, but pin a newer version for
+# deterministic rendering in golden-file tests.
+matplotlib>=3.9

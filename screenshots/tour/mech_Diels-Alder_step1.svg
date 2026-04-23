@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg version='1.1' baseProfile='full'
+              xmlns='http://www.w3.org/2000/svg'
+                      xmlns:rdkit='http://www.rdkit.org/xml'
+                      xmlns:xlink='http://www.w3.org/1999/xlink'
+                  xml:space='preserve'
+width='700px' height='520px' viewBox='0 0 700 520'><defs><marker id="mech-curly" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><polygon points="0 0, 10 3.5, 0 7" fill="#c23030" /></marker><marker id="mech-fish" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><polyline points="0 0, 10 3.5" stroke="#c23030" stroke-width="1.6" fill="none" /></marker></defs>
+<!-- END OF HEADER -->
+<rect style='opacity:1.0;fill:#FFFFFF;stroke:none' width='700.0' height='520.0' x='0.0' y='0.0'> </rect>
+<path class='bond-0 atom-0 atom-1' d='M 526.0,43.6 L 408.6,111.3' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-0 atom-0 atom-1' d='M 515.9,26.0 L 408.7,87.8' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-1 atom-1 atom-2' d='M 408.6,111.3 L 291.4,43.4' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-2 atom-2 atom-3' d='M 291.4,43.4 L 174.0,111.1' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-2 atom-2 atom-3' d='M 291.3,66.9 L 184.1,128.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-3 atom-4 atom-5' d='M 282.3,473.7 L 417.7,473.7' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path class='bond-3 atom-4 atom-5' d='M 282.3,494.0 L 417.7,494.0' style='fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1' />
+<path d='M 414.5,107.9 L 408.6,111.3 L 402.8,107.9' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />
+<path d='M 297.2,46.8 L 291.4,43.4 L 285.5,46.8' style='fill:none;stroke:#000000;stroke-width:2.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;' />
+<path d="M526.0,43.6 Q317.8,225.8 417.7,483.8" stroke="#c23030" stroke-width="2.4" fill="none" marker-end="url(#mech-curly)" stroke-linecap="round" opacity="0.9" /><text x="263.9" y="212.6" fill="#c23030" font-size="14" font-family="sans-serif" text-anchor="middle">new bond</text>
+<path d="M282.3,483.8 Q358.6,259.6 174.0,111.1" stroke="#c23030" stroke-width="2.4" fill="none" marker-end="url(#mech-curly)" stroke-linecap="round" opacity="0.9" /><text x="404.2" y="246.3" fill="#c23030" font-size="14" font-family="sans-serif" text-anchor="middle">new bond</text>
+<path d="M291.4,43.4 Q326.3,118.4 408.6,111.3" stroke="#c23030" stroke-width="2.4" fill="none" marker-end="url(#mech-curly)" stroke-linecap="round" opacity="0.9" /><text x="317.9" y="132.8" fill="#c23030" font-size="14" font-family="sans-serif" text-anchor="middle">pi shift</text></svg>

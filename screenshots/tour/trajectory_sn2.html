@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<title>SN2: methyl bromide + hydroxide</title>
+<script src="https://3dmol.org/build/3Dmol-min.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; width: 100%; background: white; font-family: sans-serif; }
+  #viewer { width: 100%; height: calc(100vh - 44px); position: relative; }
+  #controls { height: 40px; padding: 4px 8px; background: #f4f4f4; border-top: 1px solid #ccc;
+               display: flex; align-items: center; gap: 8px; font-size: 13px; color: #333; }
+  button { padding: 3px 10px; font-size: 13px; cursor: pointer; }
+</style>
+</head><body>
+<div id="viewer"></div>
+<div id="controls">
+  <button id="play">▶ Play</button>
+  <button id="pause">⏸ Pause</button>
+  <button id="reset">↻ Reset</button>
+  <span style="margin-left:12px;">Speed:</span>
+  <input id="speed" type="range" min="40" max="400" value="120">
+  <span style="margin-left:auto; color:#666;">SN2: methyl bromide + hydroxide</span>
+</div>
+<script>
+  const viewer = $3Dmol.createViewer("viewer", { backgroundColor: "white" });
+  viewer.addModelsAsFrames(`3
+frame 1/24
+C 0.9745 0.0000 0.0000
+Br -0.9745 0.0000 0.0000
+O 0.0000 0.0000 0.0000
+3
+frame 2/24
+C 0.9675 -0.0059 0.0000
+Br -0.9438 -0.0059 0.0000
+O -0.0237 0.0118 0.0000
+3
+frame 3/24
+C 0.9605 -0.0118 0.0000
+Br -0.9132 -0.0118 0.0000
+O -0.0474 0.0236 0.0000
+3
+frame 4/24
+C 0.9535 -0.0177 0.0000
+Br -0.8825 -0.0177 0.0000
+O -0.0710 0.0354 0.0000
+3
+frame 5/24
+C 0.9465 -0.0236 0.0000
+Br -0.8518 -0.0236 0.0000
+O -0.0947 0.0472 0.0000
+3
+frame 6/24
+C 0.9396 -0.0295 0.0000
+Br -0.8212 -0.0295 0.0000
+O -0.1184 0.0590 0.0000
+3
+frame 7/24
+C 0.9326 -0.0354 0.0000
+Br -0.7905 -0.0354 0.0000
+O -0.1421 0.0707 0.0000
+3
+frame 8/24
+C 0.9256 -0.0413 0.0000
+Br -0.7598 -0.0413 0.0000
+O -0.1658 0.0825 0.0000
+3
+frame 9/24
+C 0.9186 -0.0472 0.0000
+Br -0.7292 -0.0472 0.0000
+O -0.1894 0.0943 0.0000
+3
+frame 10/24
+C 0.9116 -0.0531 0.0000
+Br -0.6985 -0.0531 0.0000
+O -0.2131 0.1061 0.0000
+3
+frame 11/24
+C 0.9046 -0.0590 0.0000
+Br -0.6678 -0.0590 0.0000
+O -0.2368 0.1179 0.0000
+3
+frame 12/24
+C 0.8976 -0.0649 0.0000
+Br -0.6371 -0.0649 0.0000
+O -0.2605 0.1297 0.0000
+3
+frame 13/24
+C 0.8906 -0.0707 0.0000
+Br -0.6065 -0.0707 0.0000
+O -0.2842 0.1415 0.0000
+3
+frame 14/24
+C 0.8836 -0.0766 0.0000
+Br -0.5758 -0.0766 0.0000
+O -0.3078 0.1533 0.0000
+3
+frame 15/24
+C 0.8767 -0.0825 0.0000
+Br -0.5451 -0.0825 0.0000
+O -0.3315 0.1651 0.0000
+3
+frame 16/24
+C 0.8697 -0.0884 0.0000
+Br -0.5145 -0.0884 0.0000
+O -0.3552 0.1769 0.0000
+3
+frame 17/24
+C 0.8627 -0.0943 0.0000
+Br -0.4838 -0.0943 0.0000
+O -0.3789 0.1887 0.0000
+3
+frame 18/24
+C 0.8557 -0.1002 0.0000
+Br -0.4531 -0.1002 0.0000
+O -0.4026 0.2004 0.0000
+3
+frame 19/24
+C 0.8487 -0.1061 0.0000
+Br -0.4225 -0.1061 0.0000
+O -0.4262 0.2122 0.0000
+3
+frame 20/24
+C 0.8417 -0.1120 0.0000
+Br -0.3918 -0.1120 0.0000
+O -0.4499 0.2240 0.0000
+3
+frame 21/24
+C 0.8347 -0.1179 0.0000
+Br -0.3611 -0.1179 0.0000
+O -0.4736 0.2358 0.0000
+3
+frame 22/24
+C 0.8277 -0.1238 0.0000
+Br -0.3305 -0.1238 0.0000
+O -0.4973 0.2476 0.0000
+3
+frame 23/24
+C 0.8208 -0.1297 0.0000
+Br -0.2998 -0.1297 0.0000
+O -0.5210 0.2594 0.0000
+3
+frame 24/24
+C 0.8138 -0.1356 0.0000
+Br -0.2691 -0.1356 0.0000
+O -0.5446 0.2712 0.0000
+`, "xyz");
+  viewer.setStyle({}, { stick: { radius: 0.15 }, sphere: { scale: 0.28 } });
+  viewer.zoomTo();
+  viewer.render();
+
+  let interval = 120;
+  let anim = null;
+  function startAnim() {
+    if (anim) viewer.stopAnimate();
+    anim = viewer.animate({ loop: "forward", reps: 0, interval: interval });
+  }
+  document.getElementById("play").onclick = startAnim;
+  document.getElementById("pause").onclick = () => viewer.stopAnimate();
+  document.getElementById("reset").onclick = () => {
+    viewer.stopAnimate(); viewer.setFrame(0); viewer.render();
+  };
+  document.getElementById("speed").oninput = (e) => {
+    interval = parseInt(e.target.value); if (anim) startAnim();
+  };
+  startAnim();
+</script>
+</body></html>
