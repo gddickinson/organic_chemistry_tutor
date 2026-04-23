@@ -78,6 +78,8 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
         "Tools → Green metrics… → Pathway AE tab",
     "reaction_atom_economy":
         "Tools → Green metrics… → Reaction AE tab",
+    "compare_pathways_green":
+        "Tools → Green metrics… → Compare pathways tab",
 
     # ---- Dynamics ------------------------------------------------
     "run_dihedral_scan_demo": "Dynamics dialog (Run dynamics… button)",
@@ -95,6 +97,11 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
         "Tools → Orbitals (Hückel / W-H)… → Woodward-Hoffmann tab (selection)",
     "check_wh_allowed":
         "Tools → Orbitals (Hückel / W-H)… → Is it allowed? tab",
+    "show_molecular_orbital":
+        "Tools → Orbitals (Hückel / W-H)… → Hückel MOs tab → row selection",
+    "explain_wh":
+        "Tools → Orbitals (Hückel / W-H)… → Woodward-Hoffmann tab → "
+        "'For a reaction:' Explain",
 
     # ---- Stereo --------------------------------------------------
     "assign_stereodescriptors": "Molecule 2D viewer (show-stereo toggle)",
@@ -126,6 +133,8 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
         "Tools → Medicinal chemistry… → Bioisosteres tab → Suggest",
 
     # ---- Lab ----------------------------------------------------
+    "export_tlc_plate":
+        "Tools → Lab techniques → TLC / Rf tab → Save plate…",
     "predict_tlc":
         "Tools → Lab techniques… → TLC / Rf tab",
     "predict_rf":
@@ -174,6 +183,40 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
     # ---- Protein ------------------------------------------------
     "list_seeded_proteins": "Window → Macromolecules… → Proteins → seeded-target combo",
     "fetch_pdb": "Window → Macromolecules… → Proteins → Fetch PDB",
+    "show_ligand_binding":
+        "Window → Macromolecules… → Proteins → (tutor workflow — "
+        "single-call fetch + contacts + interaction map + show)",
+    # ---- Content authoring (round 55) --------------------------
+    "add_molecule":
+        "Tutor chat console dock — tutor-driven content authoring; "
+        "new molecule shows up in the Molecule browser on refresh",
+    "add_reaction":
+        "Tutor chat console dock — tutor-driven content authoring; "
+        "new reaction shows up in the Reactions tab on refresh",
+    "add_glossary_term":
+        "Tutor chat console dock — tutor-driven content authoring; "
+        "new term shows up in the Glossary tab on refresh",
+    "add_tutorial_lesson":
+        "Tutor chat console dock — tutor-driven content authoring; "
+        "writes a new .md file and appends to the Tutorials tree",
+    "add_molecule_synonym":
+        "Tutor chat console dock — attach a common-name alias to an "
+        "existing molecule row so search / show_molecule resolve both",
+
+    # ---- Physical organic (Phase 17e) --------------------------
+    "hammett_fit":
+        "Tutor chat console dock — physical-organic action (callable "
+        "via the tutor panel; no dedicated dialog yet)",
+    "predict_kie":
+        "Tutor chat console dock — physical-organic action (callable "
+        "via the tutor panel; no dedicated dialog yet)",
+    "list_hammett_substituents":
+        "Tutor chat console dock — physical-organic helper listing "
+        "the σ catalogue from the tutor panel",
+
+    "list_capabilities":
+        "Tutor chat console dock — self-introspection action "
+        "callable from the tutor panel when asked 'what can you do?'",
     "get_protein_info": "Window → Macromolecules… → Proteins → Summary sub-tab",
     "get_protein_chain_sequence":
         "Window → Macromolecules… → Proteins → Summary sub-tab → Copy sequence",

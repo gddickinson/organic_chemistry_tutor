@@ -637,6 +637,362 @@ def _hiv_protease() -> Mechanism:
     ])
 
 
+def _fischer_esterification() -> Mechanism:
+    """Round-59 addition: the canonical acid-catalysed ester
+    synthesis. Six teaching-grade steps walking through
+    carbonyl protonation, nucleophilic addition, proton
+    shuffling, water departure, and deprotonation.
+
+    Reaction shown in the seeded DB: acetic acid + ethanol →
+    ethyl acetate + water (H⁺ catalysed).
+    """
+    return Mechanism(steps=[
+        MechanismStep(
+            title="Step 1: Protonation of the carbonyl oxygen",
+            description=(
+                "A proton from the acid catalyst (H₃O⁺ in the "
+                "reaction flask) adds to the acetic-acid carbonyl "
+                "oxygen. This makes the carbonyl carbon much more "
+                "electrophilic (positive charge on the oxygen "
+                "pulls electron density away from the adjacent C)."
+            ),
+            # Atoms: 0=CH3, 1=C(=O)OH, 2=O(=), 3=O-H, 4=H (from H+)
+            smiles="CC(=O)O.[H+]",
+            arrows=[
+                Arrow(from_atom=2, to_atom=4, kind="curly",
+                      label="C=O lone pair → H⁺"),
+            ],
+            lone_pairs=[2],
+        ),
+        MechanismStep(
+            title="Step 2: Ethanol attacks the activated carbonyl",
+            description=(
+                "Ethanol's oxygen lone pair attacks the now-"
+                "electrophilic carbonyl carbon. The C=O+ π bond "
+                "collapses onto the oxygen, giving a tetrahedral "
+                "intermediate with the C now sp³."
+            ),
+            # Atoms: 0=CH3(acid), 1=C(of acid), 2=O+, 3=O-H,
+            # 4=O(of ethanol), 5=CH2, 6=CH3
+            smiles="CC(=[OH+])O.OCC",
+            arrows=[
+                Arrow(from_atom=4, to_atom=1, kind="curly",
+                      label="EtOH lone pair → C"),
+                Arrow(from_atom=1, to_atom=2, kind="curly",
+                      label="C=O⁺ → O"),
+            ],
+            lone_pairs=[4],
+        ),
+        MechanismStep(
+            title="Step 3: Proton transfer (EtOH⁺ → OH)",
+            description=(
+                "A proton from the attacking ethanol (now a "
+                "positively-charged oxonium on the tetrahedral "
+                "carbon) is transferred to one of the acetic-"
+                "acid OHs. In practice the solvent shuttles the "
+                "proton; the net effect is to give the tetrahedral "
+                "intermediate with a good leaving group — H₂O."
+            ),
+            # Atoms: 0=CH3, 1=C(sp3 tetrahedral), 2=OH, 3=OH,
+            # 4=OH+(Et still attached), 5=Et. Simplified shorthand.
+            smiles="CC(O)(O)[OH+]CC",
+            arrows=[
+                Arrow(from_atom=4, to_atom=2, kind="curly",
+                      label="proton hops via solvent"),
+            ],
+            lone_pairs=[2, 3],
+        ),
+        MechanismStep(
+            title="Step 4: Water leaves as a good leaving group",
+            description=(
+                "With the oxonium now on one of the original-"
+                "carboxylate oxygens, the C–OH₂⁺ bond breaks. "
+                "The two electrons leave with the water; the "
+                "adjacent oxygen's lone pair collapses into a "
+                "new π bond to restore the sp² carbonyl."
+            ),
+            # 0=CH3, 1=C, 2=O(becoming C=O), 3=O-Et, 4=O-H+(leaving)
+            smiles="CC(O)(OCC)[OH2+]",
+            arrows=[
+                Arrow(from_atom=2, to_atom=1, kind="curly",
+                      label="O lone pair → C"),
+                Arrow(from_atom=1, to_atom=4, kind="curly",
+                      label="C–OH₂⁺ → O+ leaves as H₂O"),
+            ],
+            lone_pairs=[2],
+        ),
+        MechanismStep(
+            title="Step 5: Deprotonation → neutral ester",
+            description=(
+                "A final base (another ethanol or water) removes "
+                "the proton from the remaining oxonium, giving "
+                "the neutral ethyl acetate product and regenerating "
+                "the acid catalyst. The reaction is reversible — "
+                "driven forward by excess ethanol or by removing "
+                "water (Dean-Stark, molecular sieves)."
+            ),
+            smiles="CC(=O)OCC.O",
+        ),
+    ])
+
+
+def _nabh4_reduction() -> Mechanism:
+    """Single-step hydride transfer from NaBH₄ to acetone.
+
+    The canonical "metal hydride reduces carbonyl" demonstration —
+    short, clean, high-value for teaching. Works the same way for
+    aldehydes, ketones, and (slowly) esters.
+    """
+    return Mechanism(steps=[
+        MechanismStep(
+            title="Hydride delivery to the carbonyl carbon",
+            description=(
+                "The B–H bond of BH₄⁻ carries two bonding electrons. "
+                "Those electrons attack the electrophilic carbonyl "
+                "carbon of acetone — with B becoming trivalent BH₃ "
+                "as the hydride hops across. Simultaneously the C=O "
+                "π bond collapses onto the oxygen, giving an "
+                "alkoxide. Water or alcohol workup protonates the "
+                "alkoxide to the final 2-propanol."
+            ),
+            # Atoms: 0,3=CH3, 1=C(sp2 carbonyl), 2=O, 4=B, 5-8=H on B
+            smiles="CC(=O)C.[BH4-]",
+            arrows=[
+                Arrow(from_atom=4, to_atom=1, kind="curly",
+                      label="B–H bond → C"),
+                Arrow(from_atom=1, to_atom=2, kind="curly",
+                      label="C=O → O⁻"),
+            ],
+        ),
+        MechanismStep(
+            title="Aqueous workup → 2-propanol",
+            description=(
+                "The alkoxide is protonated by water / methanol on "
+                "workup. Net transformation: acetone + H⁻ + H⁺ → "
+                "isopropanol. NaBH₄ delivers one hydride per B; the "
+                "other three are less reactive but eventually "
+                "consumed as BH₃ → B(OH)₃ in water."
+            ),
+            smiles="CC(O)C.[BH3]",
+        ),
+    ])
+
+
+def _nitration_benzene() -> Mechanism:
+    """Canonical EAS mechanism — HNO₃ / H₂SO₄ nitrating benzene to
+    nitrobenzene. Three teaching-grade steps through the Wheland
+    (arenium) intermediate.
+    """
+    return Mechanism(steps=[
+        MechanismStep(
+            title="Step 1: Generation of the nitronium electrophile",
+            description=(
+                "H₂SO₄ protonates HNO₃, and the protonated species "
+                "loses water to give the nitronium ion NO₂⁺ — the "
+                "true electrophile in aromatic nitration. Net "
+                "stoichiometry: HNO₃ + H₂SO₄ → NO₂⁺ + HSO₄⁻ + H₂O."
+            ),
+            # Atoms (cartoon): 0=O, 1=N+, 2=O of NO2+ (linear)
+            smiles="O=[N+]=O.O",
+            arrows=[
+                Arrow(from_atom=0, to_atom=1, kind="curly",
+                      label="N=O (electrophile)"),
+            ],
+        ),
+        MechanismStep(
+            title="Step 2: Benzene attacks NO₂⁺ → arenium ion",
+            description=(
+                "A π bond of benzene attacks the electrophilic "
+                "nitrogen of NO₂⁺. One ring carbon becomes sp³ "
+                "(tetrahedral — now carries the incoming NO₂ + an "
+                "H); the remaining four π electrons are delocalised "
+                "across the other five carbons — the classic "
+                "cyclohexadienyl-cation / Wheland intermediate. "
+                "Aromaticity is temporarily lost."
+            ),
+            # Atoms: 0..5 = benzene ring, 6 = N+ of NO2+, 7,8 = O's
+            smiles="c1ccccc1.O=[N+]=O",
+            arrows=[
+                Arrow(from_atom=0, to_atom=7, kind="curly",
+                      label="ring π → N⁺"),
+            ],
+        ),
+        MechanismStep(
+            title="Step 3: Rearomatisation by loss of H⁺",
+            description=(
+                "HSO₄⁻ (or any available base) removes the proton "
+                "from the sp³ carbon of the Wheland intermediate. "
+                "The two electrons from the C–H bond restore the "
+                "ring π system — aromaticity comes back and the "
+                "product is nitrobenzene. Fast and irreversible "
+                "because aromatic stabilisation (~150 kJ/mol) is "
+                "the driving force."
+            ),
+            # Simpler cartoon: show the product (nitrobenzene) plus
+            # the base byproduct (H2SO4 regenerated).
+            smiles="c1ccc(cc1)[N+](=O)[O-].OS(=O)(=O)O",
+        ),
+    ])
+
+
+def _claisen_condensation() -> Mechanism:
+    """Ester self-condensation: 2× ethyl acetate + NaOEt → ethyl
+    acetoacetate + EtOH. Sibling of the aldol but driven by the
+    ester's ability to kick out an alkoxide leaving group.
+    """
+    return Mechanism(steps=[
+        MechanismStep(
+            title="Step 1: Ester enolate formation",
+            description=(
+                "Ethoxide (a base) removes an α-H from ethyl acetate. "
+                "The α-pKa is ~25 — higher than ketone α-H (~20) — "
+                "so the equilibrium lies against enolate, but the "
+                "overall reaction is pulled forward by the very "
+                "acidic (pKa ~11) β-keto-ester product in step 4. "
+                "The enolate is resonance-stabilised by the ester "
+                "carbonyl."
+            ),
+            # Atoms: 0=CH3 α, 1=C=O, 2=O(=), 3=O(–Et), 4,5=Et,
+            # 6=O of EtO⁻, 7,8=Et
+            smiles="CC(=O)OCC.[O-]CC",
+            arrows=[
+                Arrow(from_atom=6, to_atom=0, kind="curly",
+                      label="EtO⁻ takes α-H"),
+                Arrow(from_atom=0, to_atom=1, kind="curly",
+                      label="e⁻ into C=O"),
+                Arrow(from_atom=1, to_atom=2, kind="curly",
+                      label="C=O → O⁻"),
+            ],
+        ),
+        MechanismStep(
+            title="Step 2: Enolate attacks the second ester",
+            description=(
+                "The nucleophilic α-carbon of the enolate attacks "
+                "the carbonyl C of a second ester molecule. The C=O "
+                "π bond collapses onto the oxygen, giving a "
+                "tetrahedral alkoxide intermediate. This is exactly "
+                "the aldol step — except with an ester, not a ketone."
+            ),
+            # 0=α-C of enolate, 1=C=O of enolate-side, 2=O(−),
+            # 3..5=OEt, 6=C-carbonyl of second ester, 7=O(=), 8=O-Et,
+            # 9,10=Et
+            smiles="[CH2-]C(=O)OCC.CC(=O)OCC",
+            arrows=[
+                Arrow(from_atom=0, to_atom=6, kind="curly",
+                      label="α-C → C=O"),
+                Arrow(from_atom=6, to_atom=7, kind="curly",
+                      label="C=O → O⁻"),
+            ],
+        ),
+        MechanismStep(
+            title="Step 3: Ethoxide leaves — restoring C=O",
+            description=(
+                "The alkoxide on the tetrahedral intermediate "
+                "reforms the C=O π bond while kicking out ethoxide "
+                "(OEt⁻) as the leaving group. This is the "
+                "addition-elimination pattern unique to carboxylic "
+                "acid derivatives (ketones can't do this — no good "
+                "leaving group)."
+            ),
+            # Simplified: show the β-keto ester product with EtO⁻
+            # already separated off.
+            smiles="CC(=O)CC(=O)OCC.[O-]CC",
+            arrows=[
+                Arrow(from_atom=3, to_atom=1, kind="curly",
+                      label="alkoxide collapses to C=O"),
+            ],
+        ),
+        MechanismStep(
+            title="Step 4: Deprotonation of the β-keto ester (drives equilibrium)",
+            description=(
+                "The β-keto ester's α-H sits between two carbonyls "
+                "and has pKa ≈ 11 — far more acidic than any "
+                "starting material. Ethoxide deprotonates it, and "
+                "the doubly-stabilised enolate is trapped. This is "
+                "the thermodynamic sink that makes Claisen "
+                "condensations viable despite the unfavourable "
+                "enolate equilibrium in step 1."
+            ),
+            smiles="CC(=O)[CH-]C(=O)OCC.CCO",
+        ),
+    ])
+
+
+def _pinacol_rearrangement() -> Mechanism:
+    """Canonical 1,2-methyl shift: pinacol (2,3-dimethyl-2,3-
+    butanediol) rearranges under acid to pinacolone
+    (3,3-dimethyl-2-butanone). Textbook example of a carbocation
+    driving force — a less-stable secondary cation migrates an
+    alkyl group to become a more-stable oxocarbenium.
+    """
+    return Mechanism(steps=[
+        MechanismStep(
+            title="Step 1: Protonation of one hydroxyl",
+            description=(
+                "Acid catalyst (H₃O⁺) protonates one of the two "
+                "hydroxyls. The product — a hydroxyl-oxonium — is "
+                "now primed to lose water as a neutral leaving "
+                "group."
+            ),
+            # 0=CH3, 1=C(OH)(CH3), 2=O(H), 3=CH3, 4=C(OH)(CH3),
+            # 5=O(H), 6=CH3, 7=H+ (external); H2O etc. implicit.
+            smiles="CC(C)(O)C(C)(C)O.[H+]",
+            arrows=[
+                Arrow(from_atom=3, to_atom=7, kind="curly",
+                      label="OH lone pair → H⁺"),
+            ],
+            lone_pairs=[3, 8],
+        ),
+        MechanismStep(
+            title="Step 2: Loss of water → tertiary carbocation",
+            description=(
+                "The C–OH₂⁺ bond heterolyses — both bonding "
+                "electrons leave with water. The resulting carbon "
+                "is a tertiary carbocation (three alkyl substituents), "
+                "relatively stable but not the most stable option "
+                "available to the molecule."
+            ),
+            smiles="CC(C)(O)C(C)(C)[OH2+]",
+            arrows=[
+                Arrow(from_atom=4, to_atom=7, kind="curly",
+                      label="C–O bond → OH₂⁺ leaves"),
+            ],
+        ),
+        MechanismStep(
+            title="Step 3: 1,2-methyl migration",
+            description=(
+                "A methyl group from the adjacent sp³ carbon (which "
+                "still carries the OH) migrates to the cation with "
+                "its bonding electrons. The migration target is "
+                "better stabilised — the new carbocation is "
+                "resonance-stabilised by the adjacent OH "
+                "(oxocarbenium character), which is much better "
+                "than a plain tertiary cation."
+            ),
+            # 0=CH3, 1=C(OH) becoming C+, 2=O, 3=CH3, 4=[C+],
+            # 5,6=CH3 (one will migrate)
+            smiles="CC(O)(C)[C+](C)C",
+            arrows=[
+                Arrow(from_atom=3, to_atom=4, kind="curly",
+                      label="C–Me bond → migrates"),
+            ],
+            lone_pairs=[2],
+        ),
+        MechanismStep(
+            title="Step 4: Deprotonation → ketone (pinacolone)",
+            description=(
+                "The oxocarbenium loses the O–H proton to water "
+                "(or any base in solution), giving the neutral "
+                "C=O ketone — pinacolone. Aromatic-stabilisation-"
+                "like driving force: the C=O bond is ~80 kJ/mol "
+                "stronger than the equivalent C⁺–O single + "
+                "O–H bonds combined."
+            ),
+            smiles="CC(=O)C(C)(C)C.O",
+        ),
+    ])
+
+
 _MECH_MAP = {
     "SN2: methyl bromide":  _sn2,
     "SN1: tert-butyl":      _sn1,
@@ -651,13 +1007,18 @@ _MECH_MAP = {
     "Aldolase class I":     _aldolase_class_I,
     "HIV protease":         _hiv_protease,
     "RNase A":              _rnase_a,
+    "Fischer esterification": _fischer_esterification,
+    "NaBH4 reduction":        _nabh4_reduction,
+    "Nitration of benzene":   _nitration_benzene,
+    "Claisen condensation":   _claisen_condensation,
+    "Pinacol rearrangement":  _pinacol_rearrangement,
 }
 
 
 #: Current mechanism-seed format version. Bump whenever the seed data
 #: changes meaningfully (labels, arrow indices, added/removed steps) so
 #: stale JSON on existing databases is overwritten on next startup.
-SEED_VERSION = 7
+SEED_VERSION = 10
 
 
 def seed_mechanisms_if_empty(force: bool = False) -> int:

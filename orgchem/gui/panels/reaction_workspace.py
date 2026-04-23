@@ -8,11 +8,11 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
+from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex, QUrl
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QListView, QLineEdit, QLabel,
-    QPushButton, QPlainTextEdit, QFileDialog, QMessageBox,
+    QPushButton, QTextBrowser, QFileDialog, QMessageBox,
 )
 
 from orgchem.messaging.bus import bus
@@ -140,9 +140,14 @@ class ReactionWorkspacePanel(QWidget):
         meta_row.addWidget(export_btn)
         rv.addLayout(meta_row)
 
-        self.description = QPlainTextEdit()
+        # Phase 11c — description pane auto-hyperlinks known glossary
+        # terms. Clicking an anchor jumps to the Glossary tab.
+        self.description = QTextBrowser()
         self.description.setReadOnly(True)
+        self.description.setOpenLinks(False)
+        self.description.setOpenExternalLinks(False)
         self.description.setMaximumHeight(140)
+        self.description.anchorClicked.connect(self._on_description_link)
         rv.addWidget(self.description)
 
         self.smiles_label = QLabel("")
@@ -187,7 +192,8 @@ class ReactionWorkspacePanel(QWidget):
         self._current_energy_json = energy_json
         self.title.setText(name)
         self.category.setText(category)
-        self.description.setPlainText(description)
+        from orgchem.gui.widgets.glossary_linker import autolink
+        self.description.setHtml(autolink(description))
         self.smiles_label.setText(smiles)
         self.play_btn.setEnabled(bool(mechanism_json))
         self.render_3d_btn.setEnabled(bool(mapped_smarts))
@@ -261,6 +267,27 @@ class ReactionWorkspacePanel(QWidget):
         )
         dlg = EnergyProfileViewerDialog(prof, self._current_name, self)
         dlg.exec()
+
+    def _on_description_link(self, url: QUrl) -> None:
+        """Phase 11c — anchor in the description pane clicked. Route
+        `orgchem-glossary:<term>` links to the Glossary tab."""
+        if url.scheme() != "orgchem-glossary":
+            return
+        # Shared decoder handles both single-colon and legacy
+        # double-slash URL shapes.
+        from orgchem.gui.panels.tutorial_panel import _decode_glossary_term
+        term = _decode_glossary_term(url)
+        from orgchem.agent.controller import main_window
+        win = main_window()
+        if win is None or not hasattr(win, "glossary"):
+            return
+        tabs = getattr(win, "tabs", None)
+        if tabs is not None:
+            for i in range(tabs.count()):
+                if tabs.tabText(i) == "Glossary":
+                    tabs.setCurrentIndex(i)
+                    break
+        win.glossary.focus_term(term)
 
     def _on_export(self) -> None:
         if not self._current_smiles:

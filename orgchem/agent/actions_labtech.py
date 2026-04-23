@@ -30,6 +30,27 @@ def predict_rf(smiles: str,
 
 
 @action(category="lab")
+def export_tlc_plate(smiles_list: List[str], path: str,
+                     solvent: str = "hexane:ethyl_acetate:1:1",
+                     ) -> Dict[str, Any]:
+    """Render a schematic TLC plate (silica panel + baseline + solvent
+    front + one coloured spot per compound at its predicted Rf) and
+    write it to ``path``. Format is picked from the file extension —
+    PNG or SVG. Returns the written path plus the computed Rf / logP
+    table that drove the figure."""
+    from orgchem.core.chromatography import simulate_tlc
+    from orgchem.render.draw_tlc import export_tlc_plate as _export
+    data = simulate_tlc(list(smiles_list), solvent=solvent)
+    out = _export(data, path)
+    return {
+        "path": str(out),
+        "solvent": data.get("solvent"),
+        "compound_count": len(data.get("compounds") or []),
+        "rf_table": data.get("compounds"),
+    }
+
+
+@action(category="lab")
 def recrystallisation_yield(s_hot: float, s_cold: float,
                             m_crude_g: float,
                             solvent_volume_ml: float,

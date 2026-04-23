@@ -343,6 +343,88 @@ _STARTER: List[Tuple[str, str, str, str, str, str, List[Dict[str, Any]]]] = [
         ],
     ),
 
+    # ---- Phase 31d content expansion (2026-04-23) --------------------
+    (
+        "Benzocaine — 3-step nitrotoluene route",
+        "Benzocaine",
+        "CCOC(=O)c1ccc(N)cc1",
+        "Classic teaching synthesis of the topical local anaesthetic: "
+        "p-nitrotoluene → p-nitrobenzoic acid via KMnO₄ oxidation of "
+        "the methyl → reduction of the nitro group to the amine with "
+        "Fe/HCl → Fischer esterification with ethanol. Illustrates "
+        "chemoselective oxidation (no touching of the aromatic ring), "
+        "a classical nitro reduction, and the equilibrium-driven "
+        "esterification reinforcing Le Chatelier thinking.",
+        "Pedagogical (3-step)",
+        "Clayden *Organic Chemistry* 2e §23 (undergrad lab synthesis).",
+        [
+            {"reaction_smiles": "Cc1ccc([N+](=O)[O-])cc1"
+                                ">>O=C(O)c1ccc([N+](=O)[O-])cc1",
+             "reagents": "KMnO₄, H₂O",
+             "conditions": "reflux, 4 h, then H₃O⁺ workup",
+             "yield_pct": 70.0,
+             "notes": "Strong oxidation burns the methyl all the way "
+                      "to the carboxylic acid. NO₂ is inert under "
+                      "these conditions; ring oxidation (Baeyer-"
+                      "Villiger-style) is not competitive."},
+            {"reaction_smiles": "O=C(O)c1ccc([N+](=O)[O-])cc1"
+                                ">>O=C(O)c1ccc(N)cc1",
+             "reagents": "Fe, HCl",
+             "conditions": "reflux, 2 h; then base workup",
+             "yield_pct": 85.0,
+             "notes": "Classical Béchamp reduction — the Fe(0) donates "
+                      "6e⁻ total to reduce NO₂ through ArNO / ArNHOH "
+                      "→ ArNH₂. Modern labs often substitute H₂/Pd-C."},
+            {"reaction_smiles": "O=C(O)c1ccc(N)cc1.CCO"
+                                ">>CCOC(=O)c1ccc(N)cc1.O",
+             "reagents": "EtOH (excess), cat. H₂SO₄",
+             "conditions": "reflux, 6 h",
+             "yield_pct": 75.0,
+             "notes": "Fischer esterification. Excess ethanol drives "
+                      "the equilibrium right; the aromatic amine is "
+                      "not acylated because NH₂ is a worse nucleophile "
+                      "than EtOH under the H₃O⁺ / protonation regime."},
+        ],
+    ),
+
+    (
+        "Lidocaine — 2-step amide + amine-alkylation route",
+        "Lidocaine",
+        "CCN(CC)CC(=O)Nc1c(C)cccc1C",
+        "Industrial 2-step synthesis of the amide-class local "
+        "anaesthetic / class-Ib antiarrhythmic. 2,6-dimethylaniline "
+        "reacts with chloroacetyl chloride to give an α-chloroamide, "
+        "then SN2 displacement of the α-Cl by diethylamine delivers "
+        "lidocaine. The 2,6-methyl substitution on the aniline is "
+        "what blocks N-acylation-to-amide hydrolysis and gives "
+        "lidocaine its long in-vivo half-life.",
+        "Pharmaceutical (2-step)",
+        "Löfgren & Lundqvist, *Svensk Kem. Tidskr.* 58:206 (1946).",
+        [
+            {"reaction_smiles": "Nc1c(C)cccc1C.ClCC(=O)Cl"
+                                ">>ClCC(=O)Nc1c(C)cccc1C.[H]Cl",
+             "reagents": "ClCH₂COCl, Et₃N (base / HCl scavenger)",
+             "conditions": "CH₂Cl₂, 0 °C → rt, 1 h",
+             "yield_pct": 90.0,
+             "notes": "Schotten-Baumann-style acylation. The 2,6-"
+                      "methyls on the aniline create steric shielding "
+                      "around the amide C=O — this is the whole point, "
+                      "because it's what blocks esterase hydrolysis "
+                      "(unlike procaine, an ester)."},
+            {"reaction_smiles": "ClCC(=O)Nc1c(C)cccc1C.CCNCC"
+                                ">>CCN(CC)CC(=O)Nc1c(C)cccc1C.[H]Cl",
+             "reagents": "Et₂NH (excess, 2 eq.)",
+             "conditions": "toluene or benzene reflux, 3 h",
+             "yield_pct": 80.0,
+             "notes": "SN2 on the α-chloroamide. Diethylamine is the "
+                      "nucleophile; the α-carbonyl activates the C–Cl. "
+                      "Second eq. of Et₂NH scavenges HCl. Product is "
+                      "a tertiary amine that is readily protonated at "
+                      "physiological pH — hence the clinical "
+                      "lidocaine hydrochloride salt."},
+        ],
+    ),
+
     (
         "Phenacetin → Acetaminophen (O-dealkylation)",
         "Acetaminophen",

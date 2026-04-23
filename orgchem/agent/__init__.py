@@ -39,5 +39,8 @@ from orgchem.agent import actions_periodic      # noqa: F401 — Phase 27a perio
 from orgchem.agent import actions_carbohydrates # noqa: F401 — Phase 29a carbohydrates
 from orgchem.agent import actions_lipids_na      # noqa: F401 — Phase 29 lipids + nucleic acids
 from orgchem.agent import actions_windows        # noqa: F401 — Phase 30 secondary windows
+from orgchem.agent import actions_meta           # noqa: F401 — round 55 tutor-introspection
+from orgchem.agent import actions_phys_org       # noqa: F401 — Phase 17e Hammett / KIE
+from orgchem.agent import actions_authoring      # noqa: F401 — round 55 content-authoring
 
 __all__ = ["action", "registry", "invoke", "ActionSpec"]

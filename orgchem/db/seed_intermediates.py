@@ -253,6 +253,28 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
         "CCOC(=O)/C=C/c1ccccc1",                                       "intermediate"),
     ("Diethyl phosphate",
         "CCOP(=O)(O)OCC",                                              "intermediate"),
+
+    # ---- Phase 31d pathway-fragment backfill (2026-04-23) ----------
+    # Benzocaine route
+    ("p-Nitrotoluene",
+        "Cc1ccc([N+](=O)[O-])cc1",                                     "intermediate"),
+    ("p-Nitrobenzoic acid",
+        "O=C(O)c1ccc([N+](=O)[O-])cc1",                                "intermediate"),
+    ("p-Aminobenzoic acid (PABA)",
+        "Nc1ccc(C(=O)O)cc1",                                           "intermediate"),
+    ("Benzocaine",
+        "CCOC(=O)c1ccc(N)cc1",                                         "drug"),
+    # Lidocaine route
+    ("2,6-Dimethylaniline (2,6-xylidine)",
+        "Cc1cccc(C)c1N",                                               "intermediate"),
+    ("Chloroacetyl chloride",
+        "O=C(Cl)CCl",                                                  "intermediate"),
+    ("α-Chloro-N-(2,6-xylyl)acetamide",
+        "Cc1cccc(C)c1NC(=O)CCl",                                       "intermediate"),
+    ("Diethylamine",
+        "CCNCC",                                                       "intermediate"),
+    ("Lidocaine",
+        "CCN(CC)CC(=O)Nc1c(C)cccc1C",                                  "drug"),
 ]
 
 

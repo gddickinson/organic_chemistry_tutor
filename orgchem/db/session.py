@@ -78,6 +78,9 @@ def _apply_additive_migrations(engine) -> None:
                 ("formal_charge", "INTEGER"),
                 ("n_rings", "INTEGER"),
                 ("has_stereo", "BOOLEAN"),
+                # Round 58 — common-name synonyms for DB-name
+                # reconciliation (Retinol ↔ Vitamin A, etc.).
+                ("synonyms_json", "TEXT"),
             ]
             for col_name, col_type in additions:
                 if col_name not in mol_cols:

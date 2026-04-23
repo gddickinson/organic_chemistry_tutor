@@ -21,10 +21,14 @@ def app():
 def test_green_metrics_dialog_instantiates(app):
     from orgchem.gui.dialogs.green_metrics import GreenMetricsDialog
     d = GreenMetricsDialog(app.window)
-    assert d.tabs.count() == 2
-    # Both combo-lists populated from the seeded DB.
+    # Round 50 added a third "Compare pathways" tab (Phase 18a orphan).
+    assert d.tabs.count() == 3
+    labels = {d.tabs.tabText(i) for i in range(d.tabs.count())}
+    assert labels == {"Reaction AE", "Pathway AE", "Compare pathways"}
+    # Both original combo-lists still populated from the seeded DB.
     assert d.rxn_combo.count() > 0
     assert d.path_combo.count() > 0
+    assert d.cmp_list.count() > 0
 
 
 def test_green_metrics_reaction_computes(app):

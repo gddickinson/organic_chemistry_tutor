@@ -72,11 +72,16 @@ def show_term(term: str) -> Dict[str, Any]:
         return r
     win = main_window()
     if win is not None and hasattr(win, "glossary"):
-        win.glossary.focus_term(r["term"])
-        for i in range(win.tabs.count()):
-            if win.tabs.tabText(i) == "Glossary":
-                win.tabs.setCurrentIndex(i)
-                break
+        from orgchem.agent._gui_dispatch import run_on_main_thread
+        term_to_focus = r["term"]
+
+        def _show():
+            win.glossary.focus_term(term_to_focus)
+            for i in range(win.tabs.count()):
+                if win.tabs.tabText(i) == "Glossary":
+                    win.tabs.setCurrentIndex(i)
+                    break
+        run_on_main_thread(_show)
     return {"id": r["id"], "term": r["term"]}
 
 

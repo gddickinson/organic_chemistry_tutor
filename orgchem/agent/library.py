@@ -109,10 +109,26 @@ def show_molecule(name_or_id: str) -> Dict[str, Any]:
 
 @action(category="molecule")
 def import_smiles(name: str, smiles: str) -> Dict[str, Any]:
-    """Add a new molecule (by SMILES + name) to the database and select it."""
+    """Add a new molecule (by SMILES + name) to the database and select it.
+
+    Round 58 — if the same molecule (by InChIKey) already exists,
+    add ``name`` as a synonym on the existing row instead of
+    creating a duplicate entry.
+    """
+    from orgchem.db.queries import find_molecule_by_smiles
     m = ChemMol.from_smiles(smiles, name=name)
     m.ensure_properties()
     with session_scope() as s:
+        existing = find_molecule_by_smiles(m.smiles)
+        if existing is not None:
+            existing = s.get(DBMol, existing.id)
+            _merge_synonyms(existing, [name])
+            bus().database_changed.emit()
+            bus().molecule_selected.emit(int(existing.id))
+            return {"id": existing.id, "name": existing.name,
+                    "formula": existing.formula,
+                    "note": "Existing DB entry reused (same InChIKey); "
+                            "your name was added as a synonym."}
         row = DBMol(
             name=m.name, smiles=m.smiles, inchi=m.inchi, inchikey=m.inchikey,
             formula=m.formula, molblock_3d=m.molblock_3d,
@@ -163,16 +179,40 @@ def search_pubchem(query: str, limit: int = 10) -> List[Dict[str, Any]]:
 
 @action(category="online")
 def download_from_pubchem(cid: str) -> Dict[str, Any]:
-    """Fetch a PubChem CID, store it in the local database, and select it in the viewers."""
+    """Fetch a PubChem CID, store it in the local database, and select it in the viewers.
+
+    Round 58 — if the same molecule (by InChIKey) is already seeded
+    we don't add a duplicate; instead we fold PubChem's synonyms
+    onto the existing row and select it. Prevents the reported
+    two-entries-for-one-compound pattern (Retinol vs the IUPAC
+    name that PubChem returned as the primary field).
+    """
     from orgchem.sources.pubchem import PubChemSource
+    from orgchem.db.queries import find_molecule_by_smiles
     m = PubChemSource().fetch(cid)
     m.ensure_properties()
+    pubchem_synonyms = list(m.properties.get("synonyms") or [])
     with session_scope() as s:
+        # Identity-based dedup: if any existing row has the same
+        # InChIKey, merge synonyms into it rather than creating a
+        # duplicate entry.
+        existing = find_molecule_by_smiles(m.smiles)
+        if existing is not None:
+            # Bring the row under this session so mutation commits.
+            existing = s.get(DBMol, existing.id)
+            merged = _merge_synonyms(existing, [m.name] + pubchem_synonyms)
+            bus().database_changed.emit()
+            bus().molecule_selected.emit(int(existing.id))
+            return {"id": existing.id, "name": existing.name,
+                    "formula": existing.formula,
+                    "merged_synonyms": merged,
+                    "note": "Existing DB entry reused (same InChIKey)"}
         row = DBMol(
             name=m.name, smiles=m.smiles, inchi=m.inchi, inchikey=m.inchikey,
             formula=m.formula, molblock_3d=m.molblock_3d,
             properties_json=json.dumps(m.properties, default=str),
             source=m.source or "PubChem",
+            synonyms_json=json.dumps(pubchem_synonyms[:10]),
         )
         s.add(row)
         s.flush()
@@ -180,6 +220,33 @@ def download_from_pubchem(cid: str) -> Dict[str, Any]:
     bus().database_changed.emit()
     bus().molecule_selected.emit(int(new_id))
     return {"id": new_id, "name": m.name, "formula": m.formula}
+
+
+def _merge_synonyms(row: "DBMol", new_names) -> int:
+    """Merge ``new_names`` into ``row.synonyms_json`` (case-
+    insensitive, preserves existing order). Returns the number of
+    synonyms added. Shared helper used by the PubChem path and by
+    the round-58 synonym seeder."""
+    from orgchem.core.identity import normalise_name
+    try:
+        existing = (json.loads(row.synonyms_json)
+                    if row.synonyms_json else [])
+    except Exception:  # noqa: BLE001
+        existing = []
+    existing_norm = {normalise_name(s) for s in existing}
+    existing_norm.add(normalise_name(row.name))
+    added = 0
+    for s in new_names:
+        if not s:
+            continue
+        if normalise_name(s) in existing_norm:
+            continue
+        existing.append(s)
+        existing_norm.add(normalise_name(s))
+        added += 1
+    if added:
+        row.synonyms_json = json.dumps(existing)
+    return added
 
 
 # ---- Tutorials --------------------------------------------------------
@@ -292,10 +359,16 @@ def screenshot_window(path: str, settle_ms: int = 500) -> Dict[str, Any]:
     to 1000–2000 ms after switching molecules.
     """
     from orgchem.agent.controller import require_main_window
+    from orgchem.agent._gui_dispatch import run_on_main_thread_sync
     from orgchem.render.screenshot import grab_widget
     win = require_main_window()
-    _settle(settle_ms)
-    out = grab_widget(win, path)
+
+    def _grab():
+        _settle(settle_ms)
+        return grab_widget(win, path)
+
+    out = run_on_main_thread_sync(_grab, timeout=max(10.0,
+                                                     settle_ms / 1000 + 5))
     return {"path": str(out), "size_bytes": out.stat().st_size}
 
 
@@ -318,8 +391,14 @@ def screenshot_panel(panel_name: str, path: str, settle_ms: int = 300) -> Dict[s
     panel = getattr(win, attr, None)
     if panel is None:
         return {"error": f"MainWindow has no attribute {attr!r}"}
-    _settle(settle_ms)
-    out = grab_widget(panel, path)
+    from orgchem.agent._gui_dispatch import run_on_main_thread_sync
+
+    def _grab():
+        _settle(settle_ms)
+        return grab_widget(panel, path)
+
+    out = run_on_main_thread_sync(_grab, timeout=max(10.0,
+                                                     settle_ms / 1000 + 5))
     return {"path": str(out), "panel": panel_name, "resolved": attr,
             "size_bytes": out.stat().st_size}
 

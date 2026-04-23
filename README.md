@@ -5,9 +5,11 @@ organic chemistry**. Built on RDKit + 3Dmol.js + SQLAlchemy/SQLite, with
 **371 seeded molecules** in the main database (plus 89 curated
 macromolecule entries across carbohydrates / lipids / nucleic acids),
 **35 named reactions**, **13 multi-step mechanisms** (including enzyme
-active sites like HIV protease + RNase A), **12 classical synthesis
+active sites like HIV protease + RNase A), **14 classical synthesis
 pathways**, **12 reaction-coordinate energy profiles**, **61 glossary
-terms**, and an integrated **protein / small-molecule interaction stack**
+terms**, **21 tutorial lessons** across beginner / intermediate /
+advanced / graduate tiers, **4 SAR series** for medicinal-chemistry
+teaching, and an integrated **protein / small-molecule interaction stack**
 that fetches from RCSB and AlphaFold DB.
 
 The full catalogue of features is reachable from the GUI — the current
@@ -213,10 +215,20 @@ exposed as both a library call (`orgchem/core/formula.py`) and a
 Tools menu dialog.
 
 ## Status
-- **676 tests + 1 skipped** across the full suite (2026-04-23).
-- **100 % GUI coverage** of the agent-action registry (109/109
+- **816 tests + 0 skipped** across the full suite (2026-04-23).
+- **100 % GUI coverage** of the agent-action registry (124/124
   actions reachable from a menu, panel, or dialog — guard-rail
   pinned in `tests/test_gui_audit.py`).
+- **Tutor capability boost** (round 55): richer system prompt
+  listing every major workflow; `list_capabilities(category)`
+  for mid-conversation introspection; `show_ligand_binding(
+  pdb_id, ligand_name, interaction_map_path)` bundled "show X
+  bound to Y" workflow; quality-gated content-authoring actions
+  (`add_molecule` / `add_reaction` / `add_glossary_term` /
+  `add_tutorial_lesson`) so the tutor can extend the DB when
+  asked about missing content.
+- **Ctrl+K command palette** jumps to any glossary term, reaction,
+  or molecule from anywhere in the app (Phase 11b follow-up).
 - All autonomous-loop rounds documented in
   [`SESSION_LOG.md`](SESSION_LOG.md) (46+ rounds).
 - User-flagged roadmap items complete through **Phase 30** (unified

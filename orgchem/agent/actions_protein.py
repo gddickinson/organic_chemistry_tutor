@@ -16,6 +16,89 @@ def list_seeded_proteins() -> List[Dict[str, str]]:
 
 
 @action(category="protein")
+def show_ligand_binding(pdb_id: str, ligand_name: str = "",
+                        interaction_map_path: str = "",
+                        ) -> Dict[str, Any]:
+    """Bundled "show me <ligand> bound to <receptor>" workflow.
+
+    One call does the three-step thing a tutor almost always wants:
+
+    1. ``fetch_pdb(pdb_id)`` — download + cache the structure.
+    2. ``analyse_binding(pdb_id, ligand_name)`` — geometric H-bond /
+       salt-bridge / π-stacking / hydrophobic contacts between the
+       ligand and every protein residue.
+    3. *(optional)* ``export_interaction_map(...)`` — PoseView-style
+       2D interaction diagram saved to ``interaction_map_path``.
+    4. ``open_macromolecules_window(tab="Proteins")`` — focus the
+       Proteins inner tab so the user sees the 3D viewer.
+
+    Good starter queries:
+
+    - ``pdb_id="2YDO", ligand_name="ADN"`` — adenosine A2A receptor
+      with adenosine bound (canonical caffeine-receptor case study).
+    - ``pdb_id="1EQG", ligand_name="IBP"`` — COX-1 with ibuprofen.
+    - ``pdb_id="1HWK", ligand_name="115"`` — HMG-CoA reductase +
+      atorvastatin.
+
+    If ``ligand_name`` is empty, the action still fetches and shows
+    the structure but skips the contact analysis.
+    """
+    from orgchem.sources.pdb import fetch_pdb as _fetch
+    out: Dict[str, Any] = {"pdb_id": pdb_id.upper()}
+
+    try:
+        protein = _fetch(pdb_id)
+    except Exception as e:  # noqa: BLE001
+        return {"error": f"fetch_pdb failed: {e}"}
+    out["summary"] = protein.summary()
+
+    if ligand_name:
+        try:
+            from orgchem.core.binding_contacts import analyse_binding
+            report = analyse_binding(protein, ligand_name)
+            out["contacts"] = report.to_dict()
+        except Exception as e:  # noqa: BLE001
+            out["contacts_error"] = str(e)
+        if interaction_map_path:
+            try:
+                from orgchem.render.draw_interaction_map import (
+                    export_interaction_map as _render,
+                )
+                # `report` may not exist if the analyse_binding call
+                # raised above — guard the export step accordingly.
+                if out.get("contacts") is not None:
+                    written = _render(report, interaction_map_path)
+                    out["interaction_map_path"] = str(written)
+            except Exception as e:  # noqa: BLE001
+                out["interaction_map_error"] = str(e)
+
+    # Best-effort GUI surfacing: bring up the Macromolecules
+    # window's Proteins tab and populate the ID input. Deferred
+    # onto the main Qt thread because the tutor panel runs agent
+    # actions in a QThread worker, and macOS aborts if any
+    # NSWindow is created off the main thread (reported 2026-04-23).
+    try:
+        from orgchem.agent.controller import main_window
+        from orgchem.agent._gui_dispatch import run_on_main_thread
+        win = main_window()
+        if win is not None and hasattr(win, "open_macromolecules_window"):
+            def _show():
+                try:
+                    win.open_macromolecules_window(tab_label="Proteins")
+                    if hasattr(win, "proteins"):
+                        win.proteins.id_input.setText(pdb_id.upper())
+                except Exception:  # noqa: BLE001
+                    log.exception(
+                        "show_ligand_binding GUI dispatch failed")
+            out["gui_shown"] = run_on_main_thread(_show)
+        else:
+            out["gui_shown"] = False
+    except Exception:  # noqa: BLE001
+        out["gui_shown"] = False
+    return out
+
+
+@action(category="protein")
 def fetch_pdb(pdb_id: str) -> Dict[str, Any]:
     """Fetch a PDB structure from RCSB (cached locally).
 

@@ -50,6 +50,10 @@ class Molecule(Base):
     formal_charge: Mapped[Optional[int]] = mapped_column(Integer)
     n_rings: Mapped[Optional[int]] = mapped_column(Integer)
     has_stereo: Mapped[Optional[bool]] = mapped_column(Boolean)
+    # Round 58 — JSON list of common synonyms (``["Retinol",
+    # "Vitamin A"]``). Lets name-based search resolve either the
+    # IUPAC name or any trivial alias to the same row.
+    synonyms_json: Mapped[Optional[str]] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     tags: Mapped[List["Tag"]] = relationship(secondary=molecule_tags)

@@ -25,6 +25,25 @@ PIL = pytest.importorskip("PIL")
 from PIL import Image  # noqa: E402
 
 
+# Pin RDKit's 2D-coord generator before any golden-producing code
+# runs. The goldens were baked with the default (non-CoordGen)
+# depictor; if another test in the same process has flipped the
+# global preference to CoordGen (e.g. via
+# `orgchem.db.seed_coords`), pHashes drift beyond the tolerance.
+# Applying this as an autouse fixture keeps the tests deterministic
+# regardless of test-ordering.
+from rdkit.Chem import rdDepictor as _rd  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _pin_coord_gen_off():
+    try:
+        _rd.SetPreferCoordGen(False)
+    except Exception:  # noqa: BLE001
+        pass
+    yield
+
+
 GOLDEN_DIR = Path(__file__).resolve().parent / "golden"
 #: Max Hamming distance between two pHash values that's still "identical".
 #: 0   — bit-for-bit identical hashes.

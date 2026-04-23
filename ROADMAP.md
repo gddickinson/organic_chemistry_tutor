@@ -653,14 +653,35 @@ lessons in our database.
 - [x] `show_term(term)` agent action switches to the tab and focuses
       the entry.
 - [x] 3 panel / action tests in `tests/test_glossary.py`.
-- [ ] **Follow-up**: `Ctrl+K` command-palette shortcut for glossary
-      search from anywhere in the app.
+- [x] **Follow-up**: `Ctrl+K` command-palette shortcut for glossary
+      search from anywhere in the app. Shipped in round 54 as
+      `orgchem/gui/dialogs/command_palette.py` + *View → Command
+      palette…* wiring. Actually covers **three** kinds — glossary
+      terms, reactions, and molecules — all filtered by one
+      substring query (case-insensitive; caps at 200 rows). Enter
+      dispatches into the matching tab via the existing panel APIs
+      (glossary.focus_term / reactions._display /
+      bus.molecule_selected). 10 tests in
+      `tests/test_command_palette.py`.
 
-### 11c. Cross-linking from existing content
-- [ ] Tutorial markdown gets a `{term:SN2}` macro that renders as
-      a highlighted link to the glossary entry.
-- [ ] Reaction / mechanism descriptions auto-hyperlink recognised
-      terms (regex match).
+### 11c. Cross-linking from existing content *(complete — round 52)*
+- [x] Tutorial markdown gets a `{term:SN2}` macro that renders as
+      a highlighted link to the glossary entry. Shipped in round 52:
+      new helper `orgchem/tutorial/macros.py` with
+      `expand_term_macros(md)` (supports `{term:X}`,
+      `{term:X|display}`, `\{term:...}` escape). Tutorial panel
+      runs it before the markdown renderer and catches
+      `orgchem-glossary:` anchors via `anchorClicked` → Glossary
+      tab `focus_term(term)`. Same scheme + decoder used by the
+      Phase 11c autolinker in the Reaction workspace.
+- [x] Reaction / mechanism descriptions auto-hyperlink recognised
+      terms. Shipped in round 50: new helper
+      `gui/widgets/glossary_linker.autolink(text)` + swap of the
+      reaction-workspace description pane from `QPlainTextEdit` to
+      `QTextBrowser`. Clicking an anchor jumps to the Glossary tab
+      (scheme `orgchem-glossary://`). Longest-surface-first regex
+      ordering prevents sub-term shadowing (e.g. "Hammond
+      postulate" wraps as one span, not two).
 
 ### 11d. Agent actions *(partial — 2026-04-22)*
 - [x] `define(term)` — exact, case-insensitive, or alias match; returns
@@ -832,8 +853,10 @@ visualisation tied to orbital overlap, and the
 - [x] Agent actions `list_wh_rules`, `get_wh_rule`, `check_wh_allowed`
       + 20 tests.
 - [ ] **Follow-up**: "WH rule of the day" quiz generator (Phase 5).
-- [ ] **Follow-up**: cross-link each pericyclic reaction to its WH entry
-      (a `wh_rule_id` column or lookup map).
+- [x] **Follow-up**: cross-link each pericyclic reaction to its WH entry
+      — delivered as the `_REACTION_WH_MAP` lookup in
+      `core/wh_rules.py`, with `find_wh_rule_for_reaction(name)` as
+      the public API. Feeds the `explain_wh` action (round 49).
 
 ### 14c. FMO-based arrow pushing
 - [ ] Extend the mechanism renderer so curved arrows can be annotated
@@ -841,10 +864,17 @@ visualisation tied to orbital overlap, and the
 - [ ] Animation: morph between reactant FMOs and product FMOs over the
       existing Phase 2c.2 trajectory player.
 
-### 14d. Agent actions
-- [ ] `show_molecular_orbital(molecule_id, index)` — renders MO #i.
-- [ ] `explain_wh(reaction_id)` — returns the relevant WH-rule
-      summary.
+### 14d. Agent actions *(shipped — 2026-04-23 round 49)*
+- [x] `show_molecular_orbital(smiles, index)` — picks one MO from
+      the Hückel calculation by index (or default = HOMO). Returns
+      role (HOMO / LUMO / HOMO-n / LUMO+n), energy in β, occupation.
+      Wired on the Orbitals dialog as a row-click detail label on
+      the Hückel MOs tab.
+- [x] `explain_wh(reaction_name_or_id)` — accepts a DB reaction id
+      or a name substring, maps it onto `_REACTION_WH_MAP`, returns
+      the matching W-H rule entry (or `matched=False` + note for
+      non-pericyclic reactions). Wired as a "For a reaction:"
+      Explain button on the Woodward-Hoffmann tab.
 
 ---
 
@@ -873,7 +903,7 @@ modules, each a tutorial + interactive demo where possible.
       driven by logP descriptors of our DB molecules.
 - [ ] "Pick the mobile-phase polarity" quiz using real-world silica-
       column heuristics.
-- [ ] `orgchem/render/draw_tlc.py` — deterministic TLC-plate image
+- [x] `orgchem/render/draw_tlc.py` — deterministic TLC-plate image
       given a mixture of molecule ids + a solvent polarity.
 
 ### 15c. Extraction *(partial — 2026-04-22)*
@@ -1007,8 +1037,17 @@ isotopes. Builds on Phase 13 energy profiles.
 
 ### 17e. Agent actions
 - [ ] `compute_rate_law(reaction_id)` → string.
-- [ ] `hammett_fit(substituents_dict)` → (ρ, r²).
-- [ ] `predict_kie(molecule_id, atom_index, isotope_pair)`.
+- [x] `hammett_fit(data, sigma_type)` → ρ, r², fit line + teaching
+      interpretation. Shipped round 55 as
+      `core/physical_organic.hammett_fit` + agent action. Ships
+      with a curated σₘ / σₚ / σₚ⁻ / σₚ⁺ catalogue for 15 common
+      substituents via `list_hammett_substituents`.
+- [x] `predict_kie(isotope_pair, partner_element, nu_H_cm1,
+      temperature_K)` → primary KIE via Bigeleisen simplification.
+      Shipped round 55 in the same module. Signature diverged from
+      the original roadmap (`molecule_id, atom_index` was never
+      ergonomic — the isotope-pair / ν_H / T form matches how
+      textbook problems are phrased).
 
 ---
 
@@ -1054,10 +1093,16 @@ this a first-class dimension across all pathways.
       2-step ✓). Classroom asks "which is greener — and why?".
 - [ ] Worked-example tutorial `graduate/03_green_chemistry.md`.
 
-### 18e. Agent actions
-- [ ] `atom_economy(reaction_id)` → %.
-- [ ] `compare_pathways_green(pathway_ids)` → table of AE / E-factor /
-      solvent class per route.
+### 18e. Agent actions *(partial — 2026-04-23 round 50)*
+- [x] `atom_economy(reaction_id)` → %. Shipped earlier as
+      `reaction_atom_economy(reaction_id)`; the per-pathway variant
+      is `pathway_green_metrics(pathway_id)`.
+- [x] `compare_pathways_green(pathway_ids)` → ranked side-by-side
+      table of overall atom-economy per route + worst-step AE.
+      GUI: new "Compare pathways" tab on the Green metrics dialog.
+      (Round 50.) Future work: add E-factor + solvent-class
+      columns once `seed_pathways.py` grows reagent/solvent mass
+      annotations.
 
 ---
 
@@ -1947,14 +1992,22 @@ reactions, 20 mechanisms, 25 synthesis pathways, 20 energy profiles,
       dihydroxylation, Jacobsen epoxidation, CBS reduction, Shapiro
       reaction, Ramberg-Bäcklund. Atom-mapped SMARTS where
       possible to feed the 3D side-by-side viewer.
-- [ ] **31c. Mechanisms → 20.** Pair 11 new reactions from 31b with
-      full curly-arrow `Mechanism` JSON. Prioritise the ones that
-      most benefit from step-by-step visualisation: Buchwald-Hartwig
-      catalytic cycle, Swern oxidation (5 steps), HWE mechanism,
-      Mitsunobu, Birch reduction, Mukaiyama aldol, Sharpless
-      epoxidation catalytic cycle, CBS catalytic cycle, Jacobsen,
-      Stille, Sonogashira.
-- [ ] **31d. Synthesis pathways → 25.** 13 more industrial /
+- [~] **31c. Mechanisms → 20.** First 5 shipped (Fischer
+      esterification 5-step, round 59; NaBH₄ reduction 2-step
+      hydride transfer, round 60; nitration of benzene 3-step
+      EAS via nitronium + Wheland intermediate, round 60;
+      Claisen condensation 4-step sibling-of-aldol, round 61;
+      Pinacol rearrangement 4-step with 1,2-methyl shift,
+      round 61). Catalogue now **18**; 2 still to come to hit
+      the 20-target. Priority: Swern oxidation, HWE, Mitsunobu,
+      Buchwald-Hartwig catalytic cycle, Sonogashira, Sharpless
+      epoxidation, CBS, Jacobsen, Stille, Birch reduction,
+      Mukaiyama aldol.
+- [~] **31d. Synthesis pathways → 25.** First 2 shipped
+      (Benzocaine 3-step nitrotoluene route — KMnO₄ oxidation →
+      Béchamp reduction → Fischer esterification; Lidocaine
+      2-step — Schotten-Baumann α-chloroamide → SN2 with
+      diethylamine). Catalogue now **14**; 11 more industrial /
       classical multi-step routes. Priority: taxol (abbreviated —
       Baran-style endgame), morphine (Rice or Trost endgame),
       lysergic acid, reserpine (Woodward), cortisone fragment,
@@ -1990,7 +2043,10 @@ reactions, 20 mechanisms, 25 synthesis pathways, 20 energy profiles,
       tautomerism vs resonance, conformational analysis terminology
       (gauche / anti / eclipsed / staggered), etc. Each gets an
       example_smiles → figure via the Phase 26a pipeline.
-- [ ] **31g. Tutorials → 30.** 12 more lessons spread across tiers:
+- [~] **31g. Tutorials → 30.** First 2 shipped (beginner/06 Acid-
+      base chemistry & pKa; intermediate/07 Sugars and
+      carbohydrates) — curriculum now **21**; 9 more to come
+      across tiers:
       beginner (stereochemistry 101, acid-base practice,
       retrosynthesis primer), intermediate (pericyclic warm-up,
       organometallic coupling survey, total-synthesis walkthrough:
@@ -2034,7 +2090,11 @@ reactions, 20 mechanisms, 25 synthesis pathways, 20 energy profiles,
       locked NA (LNA) monomer, phosphorothioate linkage example,
       Z-DNA motif, cruciform / hairpin small examples, pre-miRNA
       example sequence.
-- [ ] **31k. SAR series → 15.** 13 more medicinal-chem families:
+- [~] **31k. SAR series → 15.** First 2 shipped (β-blockers — 5
+      variants: propranolol / atenolol / metoprolol / bisoprolol /
+      carvedilol; ACE inhibitors — 5 variants: captopril /
+      enalaprilat / lisinopril / ramipril / benazepril) — catalogue
+      now **4**; 11 more medicinal-chem families to come:
       β-lactam antibiotics, β-blockers, ACE inhibitors,
       benzodiazepines, phenothiazines, PDE5 inhibitors (sildenafil
       analogs), kinase inhibitors (imatinib / dasatinib analogs),

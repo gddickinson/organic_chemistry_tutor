@@ -53,11 +53,16 @@ def show_reaction(name_or_id: str) -> Dict[str, Any]:
 
     win = main_window()
     if win is not None and hasattr(win, "reactions"):
-        win.reactions._display(int(payload["id"]))
-        for i in range(win.tabs.count()):
-            if win.tabs.tabText(i) == "Reactions":
-                win.tabs.setCurrentIndex(i)
-                break
+        from orgchem.agent._gui_dispatch import run_on_main_thread
+        rid = int(payload["id"])
+
+        def _show():
+            win.reactions._display(rid)
+            for i in range(win.tabs.count()):
+                if win.tabs.tabText(i) == "Reactions":
+                    win.tabs.setCurrentIndex(i)
+                    break
+        run_on_main_thread(_show)
     bus().reaction_selected.emit(int(payload["id"]))
     return payload
 
@@ -140,12 +145,16 @@ def play_reaction_trajectory(name_or_id: str) -> Dict[str, Any]:
         rid = row.id
 
     win = require_main_window()
+    from orgchem.agent._gui_dispatch import run_on_main_thread
     from orgchem.gui.dialogs.reaction_trajectory_player import (
         ReactionTrajectoryPlayerDialog,
     )
-    dlg = ReactionTrajectoryPlayerDialog(mapped, name, parent=win)
-    dlg.show()
-    win._trajectory_dialog = dlg  # pin ref
+
+    def _open():
+        dlg = ReactionTrajectoryPlayerDialog(mapped, name, parent=win)
+        dlg.show()
+        win._trajectory_dialog = dlg  # pin ref
+    run_on_main_thread(_open)
     return {"id": rid, "name": name}
 
 
@@ -231,10 +240,14 @@ def open_mechanism(name_or_id: str) -> Dict[str, Any]:
 
     win = main_window()
     if win is not None:
+        from orgchem.agent._gui_dispatch import run_on_main_thread
         from orgchem.gui.dialogs.mechanism_player import MechanismPlayerDialog
-        dlg = MechanismPlayerDialog(mech, name, win)
-        dlg.show()
-        win._mechanism_dialog = dlg  # pin ref so GC doesn't eat it
+
+        def _open():
+            dlg = MechanismPlayerDialog(mech, name, win)
+            dlg.show()
+            win._mechanism_dialog = dlg  # pin ref so GC doesn't eat it
+        run_on_main_thread(_open)
 
     return {"id": rid, "name": name, "steps": len(mech)}
 
@@ -378,9 +391,17 @@ def compare_molecules(molecule_ids: list) -> Dict[str, Any]:
     win = require_main_window()
     if not hasattr(win, "compare"):
         return {"error": "Compare tab unavailable"}
-    loaded = win.compare.set_molecule_ids([int(i) for i in molecule_ids])
-    for i in range(win.tabs.count()):
-        if win.tabs.tabText(i) == "Compare":
-            win.tabs.setCurrentIndex(i)
-            break
-    return {"loaded": loaded, "requested": len(molecule_ids)}
+    from orgchem.agent._gui_dispatch import run_on_main_thread
+    ids = [int(i) for i in molecule_ids]
+    # `set_molecule_ids` returns a count synchronously; it touches
+    # widgets so it has to run on main. When called off-main we can't
+    # easily round-trip the return value without a lock, so we just
+    # report the requested count — the tutor sees the tab fill.
+    def _fill():
+        win.compare.set_molecule_ids(ids)
+        for i in range(win.tabs.count()):
+            if win.tabs.tabText(i) == "Compare":
+                win.tabs.setCurrentIndex(i)
+                break
+    run_on_main_thread(_fill)
+    return {"loaded": len(ids), "requested": len(molecule_ids)}

@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLabel,
     QLineEdit, QPushButton, QDoubleSpinBox, QComboBox, QCheckBox,
     QTableWidget, QTableWidgetItem, QDialogButtonBox, QMessageBox,
-    QHeaderView, QTabWidget, QWidget, QPlainTextEdit,
+    QHeaderView, QTabWidget, QWidget, QPlainTextEdit, QFileDialog,
 )
 
 from orgchem.core.chromatography import simulate_tlc, predict_rf
@@ -65,6 +65,13 @@ class LabTechniquesDialog(QDialog):
         go.setDefault(True)
         go.clicked.connect(self._on_tlc_run)
         row.addWidget(go)
+        save = QPushButton("Save plate…")
+        save.clicked.connect(self._on_tlc_save_plate)
+        save.setToolTip(
+            "Render a schematic TLC plate (silica panel + baseline "
+            "+ solvent front + coloured spots) and save as PNG or SVG."
+        )
+        row.addWidget(save)
         lay.addLayout(row)
 
         self.tlc_table = QTableWidget(0, 3)
@@ -114,6 +121,36 @@ class LabTechniquesDialog(QDialog):
             )
         else:
             self.tlc_status.setText(f"{len(rows)} compound(s) analysed")
+
+    def _on_tlc_save_plate(self) -> None:
+        """Phase 15b follow-up — render a schematic TLC plate PNG/SVG
+        for the currently entered SMILES + solvent."""
+        smi = [s.strip() for s in
+               self.tlc_smiles.toPlainText().splitlines() if s.strip()]
+        if not smi:
+            QMessageBox.information(
+                self, "TLC plate",
+                "Enter one SMILES per line first, then click "
+                "Simulate TLC followed by Save plate.")
+            return
+        solvent = self.tlc_solvent.text().strip() or \
+            "hexane:ethyl_acetate:1:1"
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Save TLC plate", "tlc_plate.png",
+            "PNG image (*.png);;SVG image (*.svg)")
+        if not path:
+            return
+        try:
+            from orgchem.agent.actions_labtech import export_tlc_plate
+            res = export_tlc_plate(smiles_list=smi, path=path,
+                                   solvent=solvent)
+        except Exception as e:  # noqa: BLE001
+            QMessageBox.critical(self, "TLC plate", f"Save failed: {e}")
+            return
+        QMessageBox.information(
+            self, "TLC plate",
+            f"Saved → {res.get('path')} "
+            f"({res.get('compound_count', 0)} compound(s))")
 
     # -----------------------------------------------------------------
     # Recrystallisation tab

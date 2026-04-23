@@ -22,6 +22,7 @@ CURRICULUM: Dict[str, List[Dict[str, Any]]] = {
         _lesson("Lewis & skeletal structures",            "beginner/03_structures.md"),
         _lesson("Functional groups overview",             "beginner/04_functional_groups.md"),
         _lesson("IUPAC nomenclature (introduction)",      "beginner/05_nomenclature.md"),
+        _lesson("Acid–base chemistry & pKa",              "beginner/06_acid_base.md"),
     ],
     "intermediate": [
         _lesson("Stereochemistry (R/S, E/Z, chirality)",  "intermediate/01_stereochemistry.md"),
@@ -30,6 +31,7 @@ CURRICULUM: Dict[str, List[Dict[str, Any]]] = {
         _lesson("Aromaticity and electrophilic aromatic substitution", "intermediate/04_aromaticity.md"),
         _lesson("Carbonyl chemistry",                     "intermediate/05_carbonyl.md"),
         _lesson("Reaction energetics (profiles + kinetics)", "intermediate/06_energetics.md"),
+        _lesson("Sugars and carbohydrates",               "intermediate/07_sugars.md"),
     ],
     "advanced": [
         _lesson("Pericyclic reactions",                   "advanced/01_pericyclic.md"),

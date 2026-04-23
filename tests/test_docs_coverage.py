@@ -42,6 +42,11 @@ _EXEMPT = {
     "actions_carbohydrates.py",
     "actions_lipids_na.py",
     "actions_windows.py",
+    "actions_meta.py",
+    "actions_phys_org.py",
+    "actions_authoring.py",
+    # Private helper, documented inside its own module docstring.
+    "_gui_dispatch.py",
 }
 
 

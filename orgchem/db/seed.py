@@ -112,6 +112,12 @@ def seed_if_empty(cfg: AppConfig) -> int:
     from orgchem.db.seed_source_tags import backfill_source_tags
     backfill_source_tags()
 
+    # Round 58 — common-name synonyms (Retinol ↔ Vitamin A, Aspirin
+    # ↔ Acetylsalicylic acid, etc.) + cross-catalogue reconciliation
+    # with the Lipids / Carbs / NA Python dataclasses via InChIKey.
+    from orgchem.db.seed_synonyms import seed_synonyms_if_needed
+    seed_synonyms_if_needed()
+
     return mol_added + rxn_added + mech_added + path_added + ep_added + g_added
 
 

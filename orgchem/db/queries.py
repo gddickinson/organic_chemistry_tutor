@@ -13,10 +13,16 @@ def list_molecules(limit: int = 500, query: Optional[str] = None) -> List[DBMol]
         stmt = select(DBMol)
         if query:
             q = f"%{query}%"
+            # Round 58 — search also hits the synonyms column so e.g.
+            # "retinol" resolves the row stored under its IUPAC name.
+            # SQLite's ilike on TEXT works even when the value is a
+            # JSON-encoded list: ``"Retinol"`` appears as a substring
+            # of ``'["Retinol", "Vitamin A"]'``.
             stmt = stmt.where(or_(
                 DBMol.name.ilike(q),
                 DBMol.smiles.ilike(q),
                 DBMol.formula.ilike(q),
+                DBMol.synonyms_json.ilike(q),
             ))
         stmt = stmt.order_by(DBMol.name).limit(limit)
         rows = list(s.scalars(stmt))
@@ -29,9 +35,68 @@ def get_molecule(mol_id: int) -> Optional[DBMol]:
 
 
 def find_molecule_by_name(name: str) -> Optional[DBMol]:
+    """Return the first ``Molecule`` whose ``name`` or any entry in
+    its ``synonyms_json`` list matches ``name`` (case-insensitive,
+    whitespace + trailing-parenthetical tolerant)."""
+    from orgchem.core.identity import normalise_name
+    needle_raw = (name or "").strip()
+    if not needle_raw:
+        return None
+    needle = normalise_name(needle_raw)
+    import json
     with session_scope() as s:
-        stmt = select(DBMol).where(DBMol.name.ilike(name)).limit(1)
-        return s.scalars(stmt).first()
+        # Fast path: exact-ish name match.
+        stmt = select(DBMol).where(DBMol.name.ilike(needle_raw)).limit(1)
+        row = s.scalars(stmt).first()
+        if row is not None:
+            return row
+        # Synonym path: JSON substring match, then Python-side filter.
+        q = f'%"{needle_raw}"%'
+        stmt = (select(DBMol)
+                .where(DBMol.synonyms_json.ilike(q))
+                .limit(20))
+        for cand in s.scalars(stmt):
+            if not cand.synonyms_json:
+                continue
+            try:
+                alts = json.loads(cand.synonyms_json) or []
+            except Exception:  # noqa: BLE001
+                alts = []
+            for alt in alts:
+                if normalise_name(str(alt)) == needle:
+                    return cand
+        # Last resort: normalised-name match over the whole table
+        # (small; only ~400 rows).
+        for cand in s.scalars(select(DBMol).limit(2000)):
+            if normalise_name(cand.name) == needle:
+                return cand
+    return None
+
+
+def find_molecule_by_smiles(smiles: str) -> Optional[DBMol]:
+    """Return the first ``Molecule`` whose canonical identity matches
+    ``smiles``. Uses InChIKey for order-invariant comparison — two
+    SMILES strings that encode the same compound (one Kekulé, one
+    aromatic; different atom order) resolve to the same row."""
+    from orgchem.core.identity import inchikey, canonical_smiles
+    key = inchikey(smiles)
+    if key is None:
+        return None
+    with session_scope() as s:
+        # Fast path: indexed InChIKey match.
+        row = s.scalars(
+            select(DBMol).where(DBMol.inchikey == key).limit(1)
+        ).first()
+        if row is not None:
+            return row
+        # Fallback: some rows lack an InChIKey — derive on the fly.
+        for cand in s.scalars(select(DBMol).limit(2000)):
+            if cand.inchikey == key:
+                return cand
+            cand_key = inchikey(cand.smiles)
+            if cand_key == key:
+                return cand
+    return None
 
 
 def add_molecule(m: DBMol) -> int:

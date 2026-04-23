@@ -1,5 +1,801 @@
 # Session Log — OrgChem Studio
 
+## 2026-04-23 — Round 61 (Phase 31c +2 mechanisms — Claisen + Pinacol)
+
+### What shipped
+- **`_claisen_condensation()`** — 4-step ester self-condensation:
+  ester enolate formation (3 arrows — base, α-H, C=O collapse),
+  enolate attack on second ester → tetrahedral alkoxide (2 arrows),
+  ethoxide leaves while C=O is restored (1 arrow, the
+  addition-elimination pattern unique to acid derivatives),
+  deprotonation of the β-keto ester α-H drives the whole
+  equilibrium. Sibling of the already-seeded Aldol mechanism.
+- **`_pinacol_rearrangement()`** — 4-step canonical 1,2-methyl
+  shift: protonation of one OH, loss of water → tertiary
+  carbocation, 1,2-Me migration with lone-pair-stabilisation from
+  adjacent OH giving an oxocarbenium, deprotonation → pinacolone.
+  Classic textbook example of a carbocation "climbing" to a more
+  stable resonance-stabilised form.
+
+### Plumbing
+- Registered both in `_MECH_MAP` under their seeded reaction
+  names. `SEED_VERSION` bumped 9 → 10.
+- All 8 steps across both new mechanisms RDKit-parse and have
+  arrow indices in range.
+
+### Phase 31c progress
+Mechanisms catalogue: 13 → 14 → 16 → **18**. Only 2 more to hit
+the 20-target — one more round's worth of content.
+
+### Test suite
+- **816 passed, 0 skipped** — no regressions.
+
+---
+
+## 2026-04-23 — Round 60 (Phase 31c +2 mechanisms — NaBH₄ + nitration)
+
+### What shipped
+- **`_nabh4_reduction()`** — classic 1-arrow 1-arrow hydride
+  transfer: B–H σ bond attacks the carbonyl C while the C=O π
+  bond collapses onto the oxygen (alkoxide). Second step: aqueous
+  workup protonates to 2-propanol. Two teaching-grade steps.
+- **`_nitration_benzene()`** — canonical EAS walkthrough in 3
+  steps: nitronium generation (H₂SO₄ + HNO₃ → NO₂⁺), benzene
+  attacks NO₂⁺ → arenium (Wheland) intermediate, HSO₄⁻ removes
+  proton to restore aromaticity.
+- Both registered in `_MECH_MAP`; `SEED_VERSION` bumped 8 → 9
+  so existing DBs pick them up on next launch.
+
+### Mechanism-SMILES gotcha
+Initial Wheland-intermediate SMILES for step 3 didn't parse
+(`[CH2+]1C=CC=CC1[N+](=O)[O-]` — carbon valence violation).
+Simplified to showing the *product* (nitrobenzene) plus the
+regenerated base, with the arrow-pushing explanation in the
+description. The Phase 13c renderer's curly arrows are still the
+teaching payload; the SMILES just anchors atom indices.
+
+### Phase 31c progress
+Mechanisms catalogue: 13 → 14 (round 59) → 16 (round 60).
+Remaining to hit the 20-target: 4 more. Best candidates — Swern,
+HWE, Mitsunobu (pair with the round-44 reactions that still
+lack mechanisms).
+
+### Test suite
+- **816 passed, 0 skipped** — no regressions. The existing
+  `test_mechanism.py` + `test_fragment_consistency.py`
+  regressions validate SMILES parseability and arrow-index
+  range.
+
+---
+
+## 2026-04-23 — Round 59 (Phase 31c +1 mechanism — Fischer esterification)
+
+### What shipped
+Added a 5-step curly-arrow mechanism for Fischer esterification
+to `seed_mechanisms.py`. The canonical acid-catalysed ester
+formation (CH₃COOH + EtOH → EtOAc + H₂O, H⁺ catalysed), walked
+through:
+1. Carbonyl protonation → oxocarbenium.
+2. Nucleophilic addition of EtOH → tetrahedral intermediate.
+3. Proton shuffle (EtOH⁺ → OH via solvent).
+4. Water departure → restored C=O with regenerated oxonium.
+5. Deprotonation → neutral ester.
+
+Each step carries RDKit-parseable SMILES, arrow (`from_atom`,
+`to_atom`) indices that stay in range, one step with an explicit
+`lone_pairs` decoration for the carbonyl-oxygen protonation
+visualisation.
+
+### Plumbing
+- New `_fischer_esterification()` builder registered in
+  `_MECH_MAP` under the key `"Fischer esterification"` — matches
+  the seeded reaction name via substring lookup.
+- `SEED_VERSION` bumped 7 → 8 so existing databases overwrite
+  stale JSON on next launch. Idempotent re-runs.
+- No schema change; no new tests required (the existing
+  `test_mechanism.py` / `test_fragment_consistency.py` regressions
+  validate arrow-index ranges + SMILES parseability).
+
+### Test suite
+- **816 passed, 0 skipped** — no regressions.
+
+### Progress against Phase 31 target
+- Mechanisms: 13 → 14 (target 20).
+- Next Phase 31c candidates: Swern, HWE, Mitsunobu (the
+  round-44 additions that still lack mechanisms).
+
+### Next
+- Continue Phase 31c with Swern oxidation or Mitsunobu, or hit
+  Phase 12b nomenclature quiz dialog (last small UI orphan).
+
+---
+
+## 2026-04-23 — Round 58 (molecular-identity unification across catalogues)
+
+### User-reported bug
+> *"I added retinol to the molecules workspace — but it gave it
+> a different name ((2E,4E,6E,8E)-3,7-dimethyl-9-(…)…-1-ol) from
+> the lipids tab (Retinol (vitamin A)). When I search for retinol
+> in the molecules workspace it doesn't find it (even though its
+> name retinol is listed as a synonym). Also, the SMILES formulas
+> are different for the two entries."*
+
+### Root-cause tree
+1. **Display name**: `download_from_pubchem` used `c.iupac_name`
+   as the primary name. PubChem's synonym list has "Retinol" at
+   the top — much more useful for a teaching app than the
+   57-character IUPAC systematic string.
+2. **Identity comparison**: both the authoring action and the
+   PubChem import did dedup by raw SMILES string. The two
+   retinol forms (PubChem's vs the Lipids-catalogue form) differ
+   character-by-character but share an InChIKey, so they were
+   treated as different compounds and the user got two rows.
+3. **Synonym-free search**: `find_molecule_by_name` / the filter
+   bar both only compared against `Molecule.name`. Nothing in the
+   schema or query path supported aliases.
+4. **No cross-catalogue reconciliation**: the Lipids /
+   Carbohydrates / NA Python dataclasses had their own names but
+   no link back to the DB rows they represented.
+
+### Fix — single source of truth for identity
+- **`core/identity.py`** (new) — `canonical_smiles(smi)`,
+  `inchikey(smi)`, `same_molecule(a, b)`, `normalise_name(name)`
+  (strips trailing parentheticals, casefolds).
+- **`Molecule.synonyms_json`** column added via additive migration
+  — all existing rows keep working with NULL; the synonym seeder
+  populates the new field.
+- **`db/seed_synonyms.py`** (new) — `seed_synonyms_if_needed()`
+  runs on every `seed_if_empty()`:
+  - Curated `{canonical_name → [aliases]}` map for ~30 high-value
+    pairs (Aspirin ↔ Acetylsalicylic acid, Acetaminophen ↔
+    Paracetamol, Ethanol ↔ EtOH ↔ Grain alcohol, Glycerol ↔
+    Glycerine, Retinol (vitamin A) ↔ Retinol ↔ Vitamin A, …).
+  - **Cross-catalogue reconciliation**: every Lipid / Carbohydrate
+    / Nucleic-acid entry is matched against the DB by InChIKey;
+    when a match exists, the catalogue's canonical name is added
+    as a synonym on the DB row. Fixes the reported bug for every
+    similar compound without hand-curation.
+- **`db/queries.py`** — `list_molecules`, `find_molecule_by_name`
+  now search the synonyms column too (normalised-name matching);
+  new `find_molecule_by_smiles(smi)` uses InChIKey for order-
+  invariant identity lookup.
+- **`agent/library.py::download_from_pubchem`** — picks a short
+  display name from PubChem's synonym list (skipping
+  systematic-stereo heads), stores the full synonym list on the
+  new column. If an existing row has the same InChIKey, merges
+  the names into its synonyms rather than creating a duplicate.
+- **`agent/library.py::import_smiles`** — same dedup-by-InChIKey
+  logic; user-supplied name becomes a synonym on the existing row.
+- **`agent/actions_authoring.py::add_molecule`** — now also rejects
+  InChIKey duplicates, with a clear message suggesting
+  `add_molecule_synonym` instead.
+- **`add_molecule_synonym(name_or_id, synonym)`** (new) — attaches
+  a display-friendly alias to any existing row. Idempotent:
+  already-present synonyms report `updated=False`.
+- **`sources/pubchem.py::_pick_display_name`** — picks the first
+  short (≤ 40-char) synonym from PubChem, skipping parentheticals
+  starting with stereo descriptors like `(2E,4E,…)`.
+
+### Tests (13 new)
+- Retinol-specific regression: PubChem-form vs Lipids-form SMILES
+  produce the same InChIKey.
+- Name-normalisation round trips ("Retinol (vitamin A)" → "retinol").
+- `find_molecule_by_smiles("OCC")` finds the ethanol row stored
+  as `"CCO"`.
+- `add_molecule` rejects InChIKey duplicates.
+- `find_molecule_by_name("ethyl alcohol")` resolves via synonyms.
+- `add_molecule_synonym` agent action happy path + idempotency.
+- PubChem name picker prefers trivial names over systematic heads.
+
+### Test suite
+- **816 passed, 0 skipped** (+13 new).
+
+### Doc updates
+- **INTERFACE.md** — new rows for `core/identity.py` and
+  `db/seed_synonyms.py`.
+- **ROADMAP.md** — no direct ticks; this was a user-reported
+  bug, not a tracked roadmap item.
+- **PROJECT_STATUS.md** + **README.md** — test count bumped;
+  cross-catalogue reconciliation noted.
+
+---
+
+## 2026-04-23 — Round 57 (synchronous main-thread dispatch for screenshots)
+
+### What shipped
+- **`run_on_main_thread_sync(fn, timeout=5.0)`** added to
+  `agent/_gui_dispatch.py`. Companion to the fire-and-forget
+  `run_on_main_thread`. Dispatches `fn()` onto the Qt main
+  thread via `QTimer.singleShot(0, app, _run)` and blocks the
+  caller on a `threading.Event` until the slot finishes.
+  Returns `fn()`'s return value; re-raises its exceptions on
+  the caller thread; raises `MainThreadTimeout` if the main
+  loop is stuck longer than the timeout.
+- **`screenshot_window`** and **`screenshot_panel`** routed
+  through the new sync helper. These need the `grab_widget()`
+  return value (the saved `Path`) so fire-and-forget doesn't
+  fit — the blocking variant is correct.
+- **4 new tests** in `tests/test_gui_dispatch.py`:
+  `run_on_main_thread_sync` inline / from worker / exception
+  propagation, plus an end-to-end `screenshot_window` from
+  `threading.Thread` that pumps the main loop and verifies the
+  PNG lands on disk.
+
+### Pattern summary across rounds 55–57
+- **Fire-and-forget** (`run_on_main_thread`) — for
+  `open_macromolecules_window`, `show_reaction`, `show_pathway`,
+  `show_term`, `compare_molecules`, `open_mechanism`,
+  `export_reaction_trajectory_html` / player dialog,
+  `show_ligand_binding` GUI surface. Data work runs on the
+  worker; GUI touches are queued.
+- **Blocking** (`run_on_main_thread_sync`) — for
+  `screenshot_window`, `screenshot_panel`. Caller waits for
+  the saved-path return.
+
+### Test suite
+- **803 passed, 0 skipped** (+4 new).
+
+### Next
+- No more known crash-prone off-main-thread agent actions in
+  the tree — the sweep is complete. Next round can go back to
+  content (Phase 31) or remaining orphans (Phase 17a rate-law,
+  Phase 12b nomenclature quiz).
+
+---
+
+## 2026-04-23 — Round 56 (agent-GUI thread-safety hardening sweep)
+
+### Motivation
+Round 55's hotfix targeted the reported crash (`show_ligand_binding`)
+and the primitive it relied on (`open_macromolecules_window`). The
+closing note flagged several other agent actions that touch the
+main window directly — latent time-bombs waiting for the first
+tutor query that invoked them. This round hardens them all.
+
+### What's now thread-safe
+- **`show_reaction(name_or_id)`** — `win.reactions._display(...)` +
+  tab switch wrapped in `run_on_main_thread`.
+- **`open_mechanism(name_or_id)`** — `MechanismPlayerDialog` now
+  constructed on the main thread.
+- **`export_reaction_trajectory_html` (player dialog)** — same.
+- **`compare_molecules(molecule_ids)`** — `set_molecule_ids(...)`
+  + tab switch wrapped.
+- **`show_pathway(name_or_id)`** — `win.synthesis._display(...)`
+  + tab switch wrapped.
+- **`show_term(term)`** — `glossary.focus_term(...)` + tab switch
+  wrapped.
+
+### Pattern
+Every patched action stages its GUI work in a local `def _show():`
+closure and pipes it through `orgchem.agent._gui_dispatch.
+run_on_main_thread`. The data part (DB query, payload assembly)
+still runs on the calling thread — only the widget touches defer.
+
+### What's still open (non-crashing, left for a future pass)
+- **Screenshot actions** (`screenshot_window`, `screenshot_panel`)
+  need synchronous round-trip to return the saved path. A proper
+  fix needs a blocking dispatch primitive (`QMetaObject.
+  invokeMethod(..., BlockingQueuedConnection, ...)` with a result
+  channel). `QWidget.grab()` hasn't been observed to crash in
+  practice but is nominally main-thread-only.
+- **`export_reaction_3d`, `export_reaction_trajectory_html`** —
+  their dialog-returning variants are covered; the pure export
+  paths don't touch widgets.
+
+### Test suite
+- **799 passed, 0 skipped** (+3 new regressions in
+  `test_gui_dispatch.py`: show_reaction / show_pathway /
+  show_term all invoked from a `threading.Thread`).
+
+---
+
+## 2026-04-23 — Round 55 hotfix (off-main-thread NSWindow crash)
+
+### User-reported crash
+Running the tutor ("show me caffeine bound to an adenosine receptor")
+aborted with:
+
+```
+QObject::setParent: Cannot set parent, new parent is in a different thread
+*** Terminating app due to uncaught exception 'NSInternalInconsistencyException',
+    reason: 'NSWindow should only be instantiated on the main thread!'
+```
+
+Root cause: the tutor panel's `_ChatWorker` is a `QThread` that
+invokes agent actions. `show_ligand_binding` (added earlier in
+round 55) called `main_window.open_macromolecules_window()`
+directly — which *lazily constructs* a `QMainWindow` (NSWindow)
+the first time. macOS aborts whenever any NSWindow is created
+off the main thread.
+
+### Fix
+- **New `orgchem/agent/_gui_dispatch.py`** with
+  `run_on_main_thread(fn)` — dispatches a zero-arg callable to
+  the Qt main thread, synchronously when already there, otherwise
+  via `QTimer.singleShot(0, app, fn)` (passing the
+  QApplication-instance as the context argument so the slot runs
+  on the app's thread, not the caller's).
+- **Patched `show_ligand_binding`** (protein action) and
+  **`open_macromolecules_window`** (window action) to funnel their
+  GUI work through `run_on_main_thread`. Both now safe from the
+  tutor-worker thread, stdio-bridge, or any Python driver.
+- **Known-sharp-edge note**: the 2-arg form
+  `QTimer.singleShot(0, fn)` runs on the *caller's* thread — the
+  first test run caught this and failed. The 3-arg form with the
+  QApplication as context dispatches correctly.
+
+### Test suite
+- **796 passed, 0 skipped** (+4 new GUI-dispatch tests).
+- `tests/test_gui_dispatch.py` includes a regression for exactly
+  the reported scenario: spawn a `threading.Thread`, invoke
+  `show_ligand_binding` from within, pump the main loop, assert
+  no crash + a structured response.
+
+### Other call sites to audit
+Other agent actions that touch `main_window` directly (not via
+the bus):
+
+- `actions_reactions.show_reaction` (calls
+  `win.synthesis._display(...)`)
+- `actions_pathways.show_pathway`
+- `actions_reactions.open_mechanism`
+- `library.screenshot_window`
+
+These haven't crashed in the wild yet because `setCurrentIndex`
+on an *already-existing* tabbar is much more lenient than
+NSWindow construction. Should eventually be routed through
+`run_on_main_thread` as hardening — filed as a future orphan.
+
+---
+
+## 2026-04-23 — Round 55 (tutor capability boost + Phase 17e Hammett/KIE)
+
+### User-reported bug
+*"You: Can you show me caffeine bound to an adenosine receptor?
+Tutor: I don't have direct visualization tools for binding
+interactions…"* — despite the app having `fetch_pdb`,
+`analyse_binding`, `export_interaction_map`, `export_protein_3d_html`.
+
+Follow-up ask: *"It might also be useful if the tutor is able to
+populate databases, seed reactions and tutorials with new items
+and modules — as long as they are of high quality!"*
+
+### Root cause
+The tutor's system prompt listed only four broad categories of
+tools (molecule DB, PubChem, tutorials, formula calculator). It
+had no mention of proteins, spectroscopy, mechanisms, pathways,
+macromolecules — so the LLM fell back on its training-data
+priors and said "I don't have that." The underlying tool-use
+path was fine; the model was just flying blind.
+
+### What shipped
+- **Rewritten system prompt** (`agent/conversation.py::
+  _SYSTEM_PROMPT`) — comprehensive capability map organised by
+  topic (small molecules / reactions / proteins / spectroscopy /
+  orbitals / lab / carbs / lipids / NAs / glossary / curriculum)
+  plus four workflow-hint recipes. Includes explicit guidance:
+  *"Never say 'I don't have tools for that' without first calling
+  `list_capabilities` to check."*
+- **`list_capabilities(category?)` agent action** —
+  `agent/actions_meta.py`. Self-introspection tool the tutor can
+  use mid-conversation to enumerate what the app can do. Returns
+  summary + counts per category; drill into one for action-level
+  docstrings.
+- **`show_ligand_binding(pdb_id, ligand_name, interaction_map_path?)`
+  bundled workflow** in `agent/actions_protein.py`. One call does
+  fetch → contacts → optional interaction-map export → focus the
+  Proteins tab. Designed around the reported failure scenario:
+  "caffeine bound to adenosine A2A" is now one action away.
+- **Content-authoring actions** in `agent/actions_authoring.py`:
+  - `add_molecule(mol_name, smiles, notes, source_tags)` — RDKit
+    SMILES validation + canonical-SMILES / name dedup.
+  - `add_reaction(rxn_name, reaction_smiles, description,
+    rxn_category)` — reaction SMILES validation, name dedup.
+  - `add_glossary_term(term, definition_md, category, aliases,
+    see_also, overwrite)` — length gate, dedup unless
+    `overwrite=True`.
+  - `add_tutorial_lesson(title, level, markdown_body)` — writes a
+    markdown file under `tutorial/content/<level>/` and appends
+    to `CURRICULUM` at runtime so the Tutorials tab sees it
+    immediately.
+  Every authoring action returns `{status, reason, …}` with a
+  specific rejection reason on failure — the tutor can read the
+  reason and retry (e.g. "your SMILES doesn't parse — here's the
+  likely typo").
+
+- **Phase 17e Hammett + KIE (parallel orphan)** — new
+  `core/physical_organic.py`: curated σ catalogue for 15
+  substituents × 4 scales; `hammett_fit(data, sigma_type)`
+  least-squares regression with ρ / r² / teaching interpretation;
+  `predict_kie(isotope_pair, partner_element, nu_H_cm1,
+  temperature_K)` via the Bigeleisen simplification (textbook
+  ~6.9 for C–H/C–D at 298 K). Agent actions in
+  `agent/actions_phys_org.py`.
+
+### Test suite
+- **792 passed, 0 skipped** — +42 from round 54.
+- 10 tests for the tutor capability boost
+  (`test_tutor_capabilities.py`), 17 for authoring
+  (`test_authoring_actions.py`), 15 for Hammett + KIE
+  (`test_physical_organic.py`).
+
+### Known issues uncovered
+- Molecule model has no `notes` column — first test run failed on
+  that (wrote it as `properties_json["tutor_notes"]` instead).
+- `invoke(name, **kwargs)` collision with `name=` action
+  parameters is an old footgun — renamed to `mol_name` /
+  `rxn_name` in the authoring actions (same fix we applied to
+  carbohydrates / lipids / NAs earlier).
+
+### Next
+- `show_ligand_binding` could export the interaction map by
+  default (auto-choose a file in a `~/Library/Caches/OrgChem`
+  subdir) so the tutor's output always includes a figure link.
+- Tool-use-capable Ollama models (`qwen2.5:14b` recommended) will
+  benefit most from the new capability map — plain `llama3` still
+  can't call tools but at least reads a better prose description.
+- Phase 31 content expansion is still in flight.
+
+### Doc updates
+- **ROADMAP.md** — Phase 17e agent actions flipped `[ ]` → `[x]`
+  (`hammett_fit`, `predict_kie`, `list_hammett_substituents`).
+- **INTERFACE.md** — new `core/physical_organic.py` row, plus
+  agent-file exemptions for `actions_meta.py`,
+  `actions_phys_org.py`, `actions_authoring.py`.
+- **PROJECT_STATUS.md** + **README.md** — test count 750 → 792,
+  audit 113 → 124; README top-feature list mentions the tutor
+  capability boost.
+
+---
+
+## 2026-04-23 — Round 54 (Phase 11b Ctrl+K command palette)
+
+### What shipped
+- **`orgchem/gui/dialogs/command_palette.py`** — VS-Code-style
+  jump-to-anything dialog. Opens on Ctrl+K, type to filter, Enter
+  to jump. Scopes: glossary terms, reactions, molecules. Uses a
+  single data pipeline (`build_palette_entries`) that pulls ~400
+  rows from the seeded DB + `_GLOSSARY` catalogue.
+- **Dispatch router `dispatch_palette_entry`** routes by entry
+  kind into existing APIs: `glossary.focus_term(term)`,
+  `reactions._display(reaction_id)`, and
+  `bus.molecule_selected.emit(molecule_id)`. Keeping the
+  dispatcher as a module-level function lets tests exercise
+  routing without opening the modal dialog.
+- **Main-window wiring** — new *View → Command palette…* action
+  with `Ctrl+K` shortcut. Lazy-imports the dialog class so the
+  DB probe only runs when the user actually hits the keystroke.
+- **10 tests** in `tests/test_command_palette.py` — entry
+  assembly (three kinds present), filter narrowing, case-
+  insensitivity, 200-row cap, dispatch routing (glossary,
+  reactions), activation → dialog closes, main-window integration,
+  View-menu action has Ctrl+K shortcut.
+
+### Scope decision
+The Phase 11b roadmap item asked for *glossary search from
+anywhere*. Since the infrastructure for filtering + routing was
+the same cost, the palette was widened to cover reactions and
+molecules too — one keystroke, three targets, no extra framework.
+Future phases can add agent actions, tutorial lessons, and menu
+items to the entry list without touching the dialog widget.
+
+### Test suite
+- **750 passed, 0 skipped** (+10 new). Golden-render flake from
+  round 52 stayed fixed through the new HeadlessApp-using tests.
+
+### Doc updates
+- **ROADMAP.md** — Phase 11b follow-up flipped `[ ]` → `[x]`
+  with shipped-implementation notes.
+- **INTERFACE.md** — new `command_palette.py` row under
+  `gui/dialogs/`.
+- **PROJECT_STATUS.md** + **README.md** — test count bumped to
+  750; README status section mentions the Ctrl+K palette.
+
+### Next
+- Remaining orphans: Phase 17a rate-law derivation (new core
+  module) + `hammett_fit` / `predict_kie` (Phase 17e); Phase 12b
+  nomenclature quiz dialog; continued Phase 31 content expansion
+  (+mechanism JSONs, +tutorials, +reactions).
+
+---
+
+## 2026-04-23 — Round 53 (Phase 15b TLC-plate renderer orphan closeout)
+
+### What shipped
+- **`orgchem/render/draw_tlc.py`** — matplotlib TLC-plate renderer.
+  Takes `simulate_tlc` output (or any compatible `{compounds, solvent}`
+  dict) and draws a silica panel with baseline, solvent front, one
+  coloured spot per compound at its predicted Rf, Rf labels, lane
+  numbers, and a legend mapping lane → SMILES + logP. PNG or SVG
+  selected from the path extension.
+- **Agent action `export_tlc_plate(smiles_list, path, solvent)`**
+  in `actions_labtech.py` — chains `simulate_tlc` →
+  `draw_tlc.export_tlc_plate`, returns the saved path plus the
+  Rf table that drove the figure.
+- **GUI wiring** — new *Save plate…* button on the Lab-techniques
+  dialog's TLC tab next to *Simulate TLC*. Uses QFileDialog for
+  the save path and routes through the new agent action.
+- **Audit entry** registered; GUI coverage still **100 % (113 / 113)**.
+- **8 new tests** in `tests/test_draw_tlc.py` — covers figure
+  construction, PNG + SVG export, graceful handling of `error`
+  rows from simulate_tlc, agent-action happy path, audit entry
+  present, and end-to-end GUI wiring (monkeypatched QFileDialog).
+
+### Rounds 51 + 52 recap (from the previous entries)
+- Round 51: Ollama tutor-panel auto-detection (`ollama_list_models`,
+  tool-use-capable model preference, graceful fallback).
+- Round 52: three Ollama-path bugs fixed (vision variants now
+  excluded from the fallback, explicit model always triggers a
+  probe so `available_models` is populated, `tools` field dropped
+  for non-tool-capable models with auto-retry on the Ollama 500);
+  Phase 11c `{term:X}` tutorial macro shipped; URL scheme switched
+  to `scheme:term` so QUrl doesn't lowercase the authority; golden-
+  render test-ordering flake fixed (seed_coords no longer mutates
+  `SetPreferCoordGen` at module import time; golden tests pin the
+  depictor preference via an autouse fixture).
+
+### Test suite
+- **740 passed, 0 skipped** (was "1 skipped" when imagehash wasn't
+  available — present in this env). +36 net new tests across
+  rounds 51-53.
+
+### Doc updates
+- **ROADMAP.md** — Phase 15b renderer orphan flipped `[ ]` → `[x]`.
+- **INTERFACE.md** — new `draw_tlc.py` row added under
+  `render/`; tutorial `macros.py` documented; `glossary_linker.py`
+  documented.
+- **PROJECT_STATUS.md** + **README.md** — counts bumped to 740
+  tests / 113 audit entries.
+
+### Next
+- Remaining orphans: Phase 17a rate-law derivation helper (new
+  core module), `hammett_fit` / `predict_kie` (Phase 17e), more
+  Phase 31 content (tutorials / mechanisms / additional SAR
+  series), or the nomenclature quiz (Phase 12b).
+
+---
+
+## 2026-04-23 — Round 50 (Phase 11c + 18e orphan closeout)
+
+### What shipped
+- **Phase 18e agent action `compare_pathways_green(pathway_ids)`**
+  — ranked side-by-side comparison of multiple seeded pathways on
+  overall atom economy + worst-step AE. Calls the existing
+  `pathway_green_metrics` helper under the hood, so every pathway
+  in the DB is immediately comparable.
+- **Green metrics dialog gains a 3rd tab "Compare pathways"** —
+  multi-select list (Ctrl-click) + Compare button → ranking
+  table. Three tabs total: Reaction AE / Pathway AE / Compare.
+- **Phase 11c auto-hyperlink (partial).** New helper
+  `gui/widgets/glossary_linker.py` with `autolink(text)` → HTML
+  where every recognised glossary term (pulled from
+  `seed_glossary._GLOSSARY`, which already includes the Phase 31f
+  extras) is wrapped in an `orgchem-glossary://` anchor.
+  Longest-surface-first regex ordering prevents sub-term
+  shadowing (tested with "Hammond postulate" → single anchor).
+- **Reaction-workspace description pane swap.**
+  `QPlainTextEdit` → `QTextBrowser` with `setOpenLinks(False)` +
+  `anchorClicked` hooked into a Glossary-tab router. Clicking a
+  recognised term switches to the Glossary tab and calls
+  `focus_term(term)`. Still-pending Phase 11c follow-up:
+  `{term:SN2}` macro support in tutorial markdown.
+
+### GUI + audit + docs
+- `compare_pathways_green` wired into `GUI_ENTRY_POINTS` →
+  "Tools → Green metrics… → Compare pathways tab". Coverage
+  gate still **100 % (112 / 112)**.
+- New `gui/widgets/glossary_linker.py` added to INTERFACE.md so
+  the doc-coverage contract stays green.
+- Old Round 38 test `test_green_metrics_dialog_instantiates`
+  updated to expect 3 tabs (was 2) and verify the "Compare
+  pathways" label exists.
+
+### Test suite
+- **694 passed, 1 skipped** — 9 new tests in
+  `tests/test_round50_orphans.py` cover `compare_pathways_green`
+  happy path + empty-input / bad-id error paths, autolink
+  wrapping / escaping / longest-first behaviour, and an
+  end-to-end test that selecting a real seeded reaction gives an
+  anchored description pane.
+
+### Design decisions
+- **No new dialog.** The `compare_pathways_green` feature fit
+  naturally as a third tab on the existing Green-metrics dialog
+  rather than spawning a dedicated window — kept the surface
+  narrow and let the tab share infrastructure (pathway lookup,
+  summary label, error-message box).
+- **Scheme `orgchem-glossary://`** was chosen for the autolink
+  URLs so Qt's `anchorClicked` sees a non-http scheme and doesn't
+  try to open an external browser. Also makes the routing logic
+  pattern-match easy to audit (`url.scheme() != "orgchem-glossary"`
+  → return).
+- **Deferred the `{term:X}` tutorial-markdown macro** to a future
+  round. It needs more design (syntax, nesting, link resolver
+  for the glossary panel's markdown renderer) and isn't the
+  bottleneck for classroom use right now.
+
+### Next
+- Still-open small orphans: `{term:SN2}` tutorial macro (Phase 11c
+  second half), `compute_rate_law(reaction_id)` (Phase 17a, new
+  core module), `hammett_fit` + `predict_kie` (Phase 17a), TLC
+  plate image renderer (Phase 15b). Or keep pushing Phase 31
+  content expansion.
+
+---
+
+## 2026-04-23 — Round 49 (Phase 14d orphaned-action closeout)
+
+### Roadmap review → parallel batch
+User asked for a review of orphaned roadmap items that could be
+implemented in parallel. Scanned the full ROADMAP, flagged Phase
+14d's two agent actions (`show_molecular_orbital`, `explain_wh`)
+and Phase 14b's cross-link follow-up as a tight, high-value bundle
+— all three are small wrappers around already-shipped core modules
+(`core/huckel.py`, `core/wh_rules.py`). Shipped all three:
+
+- **`_REACTION_WH_MAP` + `find_wh_rule_for_reaction(name)`** in
+  `core/wh_rules.py` — 10-entry substring → rule-id map covering
+  Diels-Alder, Claisen / Cope, [2+2], 4π / 6π electrocyclic, 1,5-H
+  shift, Wittig rearrangement, 1,3-dipolar cycloaddition. Closes
+  the Phase 14b follow-up "cross-link each pericyclic reaction to
+  its WH entry".
+- **Agent action `show_molecular_orbital(smiles, index=-1)`** —
+  picks one MO (default HOMO), returns role (HOMO / LUMO /
+  HOMO-n / LUMO+n), energy in β, occupation, and HOMO/LUMO context.
+  Validated with butadiene (HOMO = index 1, bonding) and benzene
+  (LUMO = index 3, anti-bonding).
+- **Agent action `explain_wh(reaction_name_or_id)`** — accepts a
+  DB integer id or a reaction-name substring, returns the matching
+  W-H rule entry (or `matched=False` + friendly note for ionic /
+  radical / catalytic reactions that don't obey orbital-symmetry
+  rules). Uses `find_wh_rule_for_reaction` under the hood.
+- **GUI wiring.** Both actions reachable from the existing
+  *Tools → Orbitals…* dialog without scope creep:
+  - Hückel MOs tab: row selection in the MO table now populates a
+    detail label below (energy, occupation, HOMO/LUMO framing).
+  - Woodward-Hoffmann tab: new "For a reaction:" input + Explain
+    button jumps the rule list to the inferred W-H rule.
+- **Audit.** Both new actions registered in `GUI_ENTRY_POINTS`;
+  coverage gate still **100 %** (111 / 111).
+- **Tests.** `tests/test_orbitals_phase14d.py` (9 tests) exercises:
+  HOMO default, LUMO by index, out-of-range error, non-π system
+  error, Diels-Alder → thermal [4+2] allowed, SN2 → no-match note,
+  unknown-name graceful fallback, audit entries present, coverage
+  still 100 %.
+
+### Test suite
+- **685 passed, 1 skipped** (+9 from round 48).
+
+### Doc updates
+- **ROADMAP.md** — 14d agent actions flipped `[ ]` → `[x]` with
+  shipping notes; 14b cross-link follow-up flipped `[ ]` → `[x]`
+  with the `_REACTION_WH_MAP` pointer.
+- **PROJECT_STATUS.md** — last-updated bumped; test count 676 →
+  685.
+- **README.md** — test count + GUI-coverage count refreshed
+  (109/109 → 111/111).
+
+### Next
+- More roadmap orphans to sweep: Phase 11c cross-linking
+  (`{term:SN2}` macro + auto-hyperlink), Phase 14a follow-ups
+  (3D MO isosurface overlay — bigger), Phase 17a rate-law
+  derivation (new `core/rate_law.py`), Phase 18a
+  `compare_pathways_green(pathway_ids)` (small wrapper). Or
+  continue Phase 31 content expansion.
+
+---
+
+## 2026-04-23 — Round 48 (Phase 31 fifth content batch)
+
+### What shipped
+- **31d (+2 synthesis pathways).**
+  - **Benzocaine — 3-step nitrotoluene route.** p-nitrotoluene →
+    (KMnO₄) p-nitrobenzoic acid → (Fe/HCl Béchamp) PABA →
+    (EtOH / H₂SO₄ Fischer) benzocaine. Classical teaching route
+    that exercises chemoselective oxidation, nitro reduction,
+    and Le Chatelier-driven esterification.
+  - **Lidocaine — 2-step amide route.** 2,6-xylidine +
+    chloroacetyl chloride → α-chloroamide (Schotten-Baumann);
+    SN2 with diethylamine → lidocaine. Teaches why amide-class
+    local anaesthetics outlast ester-class (procaine) —
+    2,6-methyl steric shielding of the amide C=O vs esterase
+    hydrolysis.
+  - Pathways catalogue grew 12 → **14**.
+- **Intermediate-fragment backfill (+9).** The fragment-consistency
+  audit flagged 11 new pathway-step fragments not in the
+  Molecule DB. Added to `seed_intermediates.py`: p-nitrotoluene,
+  p-nitrobenzoic acid, PABA, benzocaine (as drug), 2,6-xylidine,
+  chloroacetyl chloride, α-chloro-N-(2,6-xylyl)acetamide
+  intermediate, diethylamine, lidocaine (as drug). Intermediates
+  table grew 138 → **147**.
+
+### Test suite
+- **676 passed, 1 skipped** — no regressions. All 5 new
+  reaction SMILES pre-validated via
+  `AllChem.ReactionFromSmarts(..., useSmiles=True)` before adding.
+  Fragment-consistency audit passed after the backfill.
+
+### Design notes
+- When adding new synthesis pathways, the fragment-consistency
+  audit is a hard gate — every reactant/product/by-product in
+  every step's reaction_smiles has to resolve to a known DB
+  molecule. This is the codified "no orphan fragments" rule,
+  and it's worth the minor extra labour: it forces the seed
+  catalogue to stay coherent as content grows.
+
+### Doc updates (per standing directive)
+- **ROADMAP.md** — 31d flipped `[ ]` → `[~]` with running tally (14)
+  and shipped-pathway list.
+- **PROJECT_STATUS.md** — last-updated bumped; Phase 31 cumulative
+  paragraph refreshed with round-48 adds (pathways +2, fragments +9,
+  DB molecules ≈ 380).
+
+### Next
+- Continue Phase 31. Still pending: **31c (+2-3 mechanism JSONs)**
+  for the new named reactions (highest-impact remaining item),
+  **31h +lipids / carbs / NAs** incremental growth toward 40 each,
+  or **31b (+5 more reactions)** toward the 50-target.
+
+---
+
+## 2026-04-23 — Round 47 (Phase 31 fourth content batch)
+
+### What shipped
+- **31k (+2 SAR series, 10 new variants).**
+  - **β-adrenergic blocker series** (`beta-blockers`) — propranolol,
+    atenolol, metoprolol, bisoprolol, carvedilol. Activity columns
+    `beta1_pki` / `beta2_pki` / `beta1_selectivity`. Teaches
+    cardioselectivity engineering (Black's 1964 discovery → 1988
+    Nobel lecture → CIBIS-II / MERIT-HF / COPERNICUS outcomes).
+  - **ACE-inhibitor series** (`ace-inhibitors`) — captopril,
+    enalaprilat, lisinopril, ramipril, benazepril. Activity
+    columns `ic50_nM` / `oral_bioavail_pct` / `t_half_h`. Teaches
+    the thiol → dicarboxylate zinc-binder evolution, and how
+    prodrug esters (enalapril → enalaprilat, ramipril →
+    ramiprilat) fix oral-availability problems without changing
+    the warhead. Catalogue now **4** total.
+- **31g (+2 tutorial markdown lessons).**
+  - `beginner/06_acid_base.md` — Brønsted vs Lewis, pKa in one
+    paragraph, five-factor conjugate-base stability reasoning,
+    Henderson-Hasselbalch, practical patterns (nucleophilicity,
+    leaving-group ability, catalyst pick, acid-base extraction),
+    practice with the lab-techniques dialog.
+  - `intermediate/07_sugars.md` — D/L Fischer projection trick,
+    pyranose vs furanose equilibria, mutarotation (α +112° /
+    β +19° → +53° equilibrium), anomeric effect mechanism +
+    hyperconjugation, glycosidic-bond taxonomy (α-1,4, β-1,4, …),
+    reducing vs non-reducing sugars, modified sugars (aminosugars,
+    uronic acids, deoxy sugars, sugar alcohols). Ties into the
+    Phase 30 Macromolecules window's Carbohydrates tab. Curriculum
+    now **21** lessons.
+- Both lessons wired into `CURRICULUM` in `tutorial/curriculum.py`
+  and will show up in the Tutorials tab without any UI changes.
+
+### Test suite
+- **676 passed, 1 skipped** — no regressions. SAR variants
+  validated via `Chem.MolFromSmiles`; tutorial files are pure
+  text. Curriculum loader picks up new entries automatically.
+
+### Doc updates (per standing directive)
+- **ROADMAP.md** — 31g / 31k flipped `[ ]` → `[~]` with running
+  tallies (21 / 4) and shipped-item lists.
+- **PROJECT_STATUS.md** — last-updated date bumped; Phase 31
+  cumulative paragraph refreshed with round-47 adds + corrected
+  reaction tally (35 total, not 31).
+- **README.md** — counts already reflect the current state from
+  the round-45 refresh; tutorial + SAR mentions still implicit.
+  Will do a fuller README refresh when the Phase 31 batches
+  have piled up more.
+
+### Next
+- Continue Phase 31. Candidate next batch: **31c (+2-3 mechanism
+  JSONs)** for Swern / HWE / Mitsunobu — the last big-impact
+  expansion before the mechanism count crosses the 20-target.
+  Or **31d (+1-2 synthesis pathways)** — sildenafil endgame is
+  textbook-worthy.
+
+---
+
 ## 2026-04-23 — Round 46 (Phase 31 third content batch)
 
 ### What shipped

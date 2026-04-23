@@ -18,7 +18,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
     QPushButton, QTableWidget, QTableWidgetItem, QDialogButtonBox,
-    QMessageBox, QHeaderView, QTabWidget, QWidget,
+    QMessageBox, QHeaderView, QTabWidget, QWidget, QListWidget,
+    QListWidgetItem, QAbstractItemView,
 )
 
 log = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ class GreenMetricsDialog(QDialog):
         self.tabs = QTabWidget()
         self.tabs.addTab(self._make_reaction_tab(), "Reaction AE")
         self.tabs.addTab(self._make_pathway_tab(), "Pathway AE")
+        self.tabs.addTab(self._make_compare_tab(), "Compare pathways")
         root.addWidget(self.tabs, 1)
 
         bb = QDialogButtonBox(QDialogButtonBox.Close)
@@ -196,3 +198,84 @@ class GreenMetricsDialog(QDialog):
         for i, (k, v) in enumerate(rows):
             table.setItem(i, 0, QTableWidgetItem(k))
             table.setItem(i, 1, QTableWidgetItem(v))
+
+    # -----------------------------------------------------------------
+    # Compare pathways tab (Phase 18a orphan — round 50)
+
+    def _make_compare_tab(self) -> QWidget:
+        w = QWidget()
+        lay = QHBoxLayout(w)
+
+        left = QVBoxLayout()
+        left.addWidget(QLabel("Select 2+ pathways (Ctrl-click):"))
+        self.cmp_list = QListWidget()
+        self.cmp_list.setSelectionMode(
+            QAbstractItemView.ExtendedSelection)
+        try:
+            from orgchem.db.session import session_scope
+            from orgchem.db.models import SynthesisPathway
+            with session_scope() as s:
+                for p in s.query(SynthesisPathway).order_by(
+                        SynthesisPathway.id).all():
+                    it = QListWidgetItem(f"{p.id}: {p.name}")
+                    it.setData(Qt.UserRole, p.id)
+                    self.cmp_list.addItem(it)
+        except Exception as e:  # noqa: BLE001
+            log.warning("Could not list pathways for compare tab: %s", e)
+        left.addWidget(self.cmp_list, 1)
+        go = QPushButton("Compare")
+        go.clicked.connect(self._on_compare_run)
+        left.addWidget(go)
+        lay.addLayout(left, 2)
+
+        right = QVBoxLayout()
+        self.cmp_summary = QLabel(
+            "Pick two or more pathways, then press Compare.")
+        self.cmp_summary.setStyleSheet(
+            "padding:8px; background:#f4f6fb; border-radius:4px;")
+        self.cmp_summary.setWordWrap(True)
+        right.addWidget(self.cmp_summary)
+        self.cmp_table = QTableWidget(0, 5)
+        self.cmp_table.setHorizontalHeaderLabels(
+            ["Rank", "Pathway", "Steps", "Overall AE (%)",
+             "Worst step AE (%)"])
+        self.cmp_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.Stretch)
+        self.cmp_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        right.addWidget(self.cmp_table, 1)
+        lay.addLayout(right, 3)
+
+        return w
+
+    def _on_compare_run(self) -> None:
+        selected = self.cmp_list.selectedItems()
+        ids = [it.data(Qt.UserRole) for it in selected]
+        if len(ids) < 2:
+            QMessageBox.information(
+                self, "Compare pathways",
+                "Select at least two pathways before comparing.")
+            return
+        from orgchem.agent.actions_pathways import compare_pathways_green
+        res = compare_pathways_green(pathway_ids=[int(i) for i in ids])
+        if res.get("error"):
+            QMessageBox.warning(self, "Compare pathways", res["error"])
+            return
+        ranked = res.get("ranking", [])
+        best = res.get("best_overall_ae")
+        self.cmp_summary.setText(
+            f"<b>Compared {res.get('pathway_count', 0)} pathways.</b><br>"
+            f"Best overall atom economy: "
+            f"<b>{'—' if best is None else f'{best:.1f} %'}</b>"
+        )
+        self.cmp_table.setRowCount(len(ranked))
+        for i, row in enumerate(ranked):
+            items = [
+                QTableWidgetItem(str(row["rank"])),
+                QTableWidgetItem(row.get("name", "?")),
+                QTableWidgetItem(str(row.get("n_steps", ""))),
+                QTableWidgetItem(f"{row['overall_atom_economy']:.1f}"),
+                QTableWidgetItem(
+                    f"{row.get('min_step_atom_economy', 0):.1f}"),
+            ]
+            for c, it in enumerate(items):
+                self.cmp_table.setItem(i, c, it)

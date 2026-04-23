@@ -66,9 +66,11 @@ for the project. Update it whenever the module layout changes.
 | `druglike.py` | `lipinski(mol)`, `veber(mol)`, `ghose(mol)`, `pains(mol)`, `qed_score(mol)`, `drug_likeness_report(mol)` — medicinal-chem descriptor panel (Phase 19b). |
 | `chromatography.py` | `predict_rf(smiles, solvent)`, `simulate_tlc(smiles_list, solvent)`, `solvent_polarity(name_or_mixture)` — TLC/Rf teaching predictor (Phase 15b). |
 | `lab_techniques.py` | `solubility_curve`, `recrystallisation_yield`, `distillation_plan`, `extraction_plan`, `fraction_ionised` — practical-lab teaching helpers (Phase 15a-lite). |
+| `physical_organic.py` | **Phase 17e** — `hammett_fit(data, sigma_type)` least-squares regresses log(k/k₀) against a curated Hammett σ table (σₘ, σₚ, σₚ⁻, σₚ⁺ for ~15 common substituents) and returns ρ, r², the fit line, and a teaching-grade interpretation (sign / magnitude of ρ); `predict_kie(isotope_pair, partner_element, nu_H_cm1, temperature_K)` computes the primary KIE from the Bigeleisen simplification (ZPE difference driven by reduced-mass ratio). Numpy-free; agent-action wrappers in `agent/actions_phys_org.py`. |
 | `glossary_figures.py` | `render_term(term, smiles, out_dir)` + `regenerate_all(out_dir)` — incremental PNG/SVG generator for the Phase 26a `example_smiles` field. Delegates to `draw2d` (single molecules) or `draw_reaction` (SMILES with `>>`). `term_slug()` normalises term names into filename stems; `default_figure_dir()` points at `data/glossary/`. Companion script `scripts/regen_glossary_figures.py`, agent action `get_glossary_figure(term, path)`. (Phase 26b) |
 | `molecule_tags.py` | `auto_tag(mol_or_smiles)` → `TagResult` with functional-group / composition / charge / size-band / ring-band / stereo tags. 27 SMARTS-based functional groups (carboxylic acid → phosphate), 7 composition flags (halogen / P / S / pure-organic / metal / …), 4 charge categories (neutral / cation / anion / zwitterion), 3 size bands (≤ 12 / 13-30 / ≥ 31 heavy atoms), 3 ring-count bands. `FILTER_AXES` + `list_filter_axes()` surface the taxonomy for the filter-bar UI — includes the **source** axis (drug-class / NSAID / statin / alkaloid / hormone / steroid / fatty-acid / …) curated by `seed_source_tags.py`. (Phase 28c + 28b) |
 | `carbohydrates.py` | `Carbohydrate` dataclass + 25-row `CARBOHYDRATES` catalogue covering monosaccharides (glucose α/β/open-chain, fructose, ribose / 2-deoxyribose, galactose, mannose, tagatose), aminosugars (glucosamine, GlcNAc), uronic acids (glucuronic), deoxy sugars (fucose, rhamnose), sugar alcohols (sorbitol, mannitol, xylitol), disaccharides (sucrose, lactose, maltose, cellobiose, trehalose), polysaccharide fragments (amylose α-1,4, cellulose β-1,4). `list_carbohydrates(family)`, `get_carbohydrate(name)`, `families()` helpers. (Phase 29a + 31h) |
+| `identity.py` | **Round 58** — molecular-identity utilities shared across every catalogue. `canonical_smiles(smi)` via RDKit; `inchikey(smi)` as the gold-standard identity hash; `same_molecule(a, b)` safe wrapper; `normalise_name(name)` for case-/parenthetical-tolerant name matching ("Retinol (vitamin A)" → "retinol"). Used by the DB query helpers, the PubChem importer, and `add_molecule` / `add_molecule_synonym` so the same compound can't be stored twice under different-looking SMILES or names. |
 | `lipids.py` | `Lipid` dataclass + 31-row `LIPIDS` catalogue across families `fatty-acid` (C8 caprylic → C22 DHA, ω-3 / ω-6 / ω-9 tags, plus eicosanoids PGE2 / TXA2), `triglyceride` (tripalmitin, triolein), `phospholipid` (POPC, POPE, phosphatidic acid), `sphingolipid` (ceramide, sphingomyelin), `sterol` (cholesterol, ergosterol; bile acids cholic / taurocholic; hormones testosterone / estradiol / progesterone / cortisol), and fat-soluble `vitamin` / hormone (vitamin D₃, retinol A, α-tocopherol E). Chain-length / unsaturation-count / ω-designation / melting-point metadata. `list_lipids(family)`, `get_lipid(name)`, `lipid_families()` helpers. (Phase 29b + 31i) |
 | `nucleic_acids.py` | `NucleicAcidEntry` dataclass + 33-row `NUCLEIC_ACIDS` catalogue across families `nucleobase` (A/G/C/T/U + m6A / m5C; hypoxanthine, xanthine), `nucleoside` (adenosine / guanosine / cytidine / uridine / thymidine / 2'-deoxyadenosine; inosine, pseudouridine Ψ), `nucleotide` (ATP, cAMP, GTP, NAD⁺ / NADH / NADPH, FAD, CoA, SAM), `oligonucleotide` (ApG dinucleotide, GCGCUUUUGCGC RNA hairpin), and `pdb-motif` (1BNA B-DNA dodecamer, 1RNA, 143D G-quadruplex, 1EHZ tRNA-Phe, 1HMH hammerhead ribozyme). Strand = DNA / RNA tag. `list_nucleic_acids(family)`, `get_nucleic_acid(name)`, `nucleic_acid_families()` helpers. (Phase 29c + 31j) |
 | `periodic_table.py` | `ELEMENTS` (full 1-118 list) + `Element` dataclass (symbol/name/Z/group/period/block/category/mass/electronegativity/oxidation-states/electron-configuration). `CATEGORY_COLOURS` palette keyed by category (alkali-metal / halogen / noble-gas / transition-metal / lanthanide / actinide / …). Masses pulled from RDKit's `GetPeriodicTable`. Lookup helpers `list_elements()`, `get_element(symbol_or_z)`, `elements_by_category(cat)`, `categories()`. Agent actions on a new **periodic** category. (Phase 27a) |
@@ -91,6 +93,7 @@ for the project. Update it whenever the module layout changes.
 | `seed_coords.py` | Phase 6f.2 — one-shot backfill of `Molecule.molblock_2d` for every DB row, via `rdDepictor.SetPreferCoordGen(True) + Compute2DCoords`. Called automatically from `seed_if_empty`. |
 | `seed_tags.py` | Phase 28a — backfill of functional-group / composition / charge / size / ring columns on every seeded molecule, driven by `core/molecule_tags.auto_tag`. Idempotent; called automatically from `seed_if_empty`. |
 | `seed_source_tags.py` | Phase 28b — hand-curated `{name → [source-tag, …]}` map covering NSAIDs / statins / antibiotics / SSRIs / β-blockers / hormones / steroids / neurotransmitters / alkaloids / nucleosides / sugars / fatty acids / dyes / reagent subclasses. Idempotent backfill into `Molecule.source_tags_json` with a version sentinel. `list_source_tag_values()` enumerates the full taxonomy for the filter bar. |
+| `seed_synonyms.py` | **Round 58** — `seed_synonyms_if_needed()` fills `Molecule.synonyms_json` from (a) a curated `{canonical_name → [alias, …]}` map (Retinol ↔ Vitamin A, Aspirin ↔ Acetylsalicylic acid, Acetaminophen ↔ Paracetamol, …) and (b) cross-catalogue reconciliation — any row whose InChIKey matches a Lipid / Carbohydrate / Nucleic-acid catalogue entry inherits that entry's canonical name as a synonym. Idempotent; runs once on every `seed_if_empty()` call. |
 
 ### `sources/` — online data plugins
 | File | Key symbols |
@@ -115,6 +118,7 @@ New sources (ChEMBL, ORD, ChEBI) just subclass `DataSource` and are registered i
 | `draw_energy_profile.py` | `export_profile(profile, path)` + `render_figure(profile)` — matplotlib reaction-coordinate diagrams with Bezier-smoothed curves through stationary points, TS‡ peaks, auto-annotated Ea and ΔH arrows (Phase 13). |
 | `draw_mo.py` | `export_mo_diagram(HuckelResult, path)` — matplotlib MO level diagram: horizontal bars per MO, occupied electrons as arrows, HOMO/LUMO highlighted, degenerate levels side-by-side, α reference (Phase 14a). |
 | `draw_ir.py` | `export_ir_spectrum(smiles, path)` — schematic IR sketch (transmittance dips + labels) from the Phase 4 band predictor. PNG/SVG. |
+| `draw_tlc.py` | `export_tlc_plate(tlc_result, path)` + `render_figure(tlc_result)` — schematic TLC-plate figure from `core/chromatography.simulate_tlc` output: silica panel, baseline, solvent front, one coloured spot per compound at its predicted Rf, and a legend mapping lane number to SMILES + logP. PNG/SVG. Wired into *Tools → Lab techniques → TLC / Rf tab → Save plate…* and agent action `export_tlc_plate`. (Phase 15b follow-up, round 53) |
 | `draw_nmr.py` | `export_nmr_spectrum(smiles, path, nucleus)` — stick NMR spectrum (peaks at predicted ppm with environment labels). PNG/SVG. |
 | `draw_ms.py` | `export_ms_spectrum(smiles, path)` — molecular-ion-region stick MS spectrum with M / M+1 / M+2 labels. PNG/SVG. |
 | `draw_interaction_map.py` | `export_interaction_map(ContactReport, path)` — PoseView-style 2D ligand-centred radial diagram with colour-coded dashed lines per interaction type (H-bond / salt-bridge / π-stacking / hydrophobic). PNG/SVG. Phase 24c. |
@@ -229,6 +233,13 @@ New sources (ChEMBL, ORD, ChEBI) just subclass `DataSource` and are registered i
   `agent/actions_windows.py` exposes the same behaviour to the
   tutor panel and stdio bridge.
 - `widgets/smiles_input.py` — validated SMILES `QLineEdit` that emits canonical form.
+- `widgets/glossary_linker.py` — **Phase 11c** autolink helper:
+  `autolink(text)` returns HTML where every recognised glossary
+  term (pulled from `seed_glossary._GLOSSARY`) is wrapped in an
+  `orgchem-glossary://{term}` anchor. Used by the Reaction
+  workspace description pane (`reaction_workspace.py`) and safe
+  to reuse for any free-text pane that wants clickable glossary
+  cross-refs. Longest-first ordering prevents sub-term shadowing.
 - `dialogs/`
   - `import_smiles.py` — add a molecule by SMILES.
   - `formula_calculator.py` — GUI wrapper for `core/formula.py` (Verma Section A).
@@ -293,6 +304,15 @@ New sources (ChEMBL, ORD, ChEBI) just subclass `DataSource` and are registered i
     top-K spinners, two result tabs: *Single-step* (flat
     disconnection table) and *Multi-step* (tree view of the
     recursive precursor search). Tools menu entry *Retrosynthesis…*.
+  - `command_palette.py` — **Ctrl+K command palette** (Phase 11b
+    follow-up, round 54). Single-keystroke jump-to-anything dialog:
+    type a glossary term, reaction name, or molecule name and Enter
+    to route into the matching tab. Entry assembler
+    `build_palette_entries()` pulls ~400 rows from the seeded DB +
+    `_GLOSSARY`; `dispatch_palette_entry(entry, main_win)` owns
+    the routing (Glossary → `focus_term`, Reactions →
+    `reactions._display`, Molecule Workspace via
+    `bus.molecule_selected`). Wired into *View → Command palette…*.
   - `preferences.py` — global settings: default 3D backend, 3D style, log
     level, theme, autogen-3D-on-import, online sources. Saves to YAML and
     emits `bus.config_changed`.
@@ -332,6 +352,7 @@ The tutor panel and the stdio bridge pick it up automatically.
 |------|-------------|
 | `curriculum.py` | `CURRICULUM` dict: level → list of lessons with markdown paths. |
 | `loader.py` | `load_tutorial_markdown(path)`. |
+| `macros.py` | **Phase 11c follow-up** — `expand_term_macros(md)` preprocesses `{term:SN2}` / `{term:SN2\|display}` forms into proper Markdown links to the `orgchem-glossary:` scheme. The tutorial panel runs this before handing markdown to the renderer and catches the anchor clicks to switch the Glossary tab. Supports a `\{term:…}` escape for literal display. |
 | `content/` | Markdown lessons organised by level (`beginner/`, `intermediate/`, `advanced/`, `graduate/`). **Intermediate tier is complete** as of 2026-04-22 (stereochemistry, SN1/SN2, E1/E2, aromaticity, carbonyl, energetics). |
 
 ### `naming/` (Phase 12)

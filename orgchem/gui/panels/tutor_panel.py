@@ -16,7 +16,7 @@ from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTextBrowser, QPlainTextEdit, QPushButton,
-    QComboBox, QLabel, QLineEdit, QMessageBox,
+    QComboBox, QLabel, QMessageBox,
 )
 
 from orgchem.config import AppConfig
@@ -67,15 +67,22 @@ class TutorPanel(QWidget):
         cfg_row.addWidget(QLabel("Backend:"))
         self.backend_cb = QComboBox()
         self.backend_cb.addItems(list(available_backends().keys()))
+        self.backend_cb.currentTextChanged.connect(self._on_backend_changed)
         cfg_row.addWidget(self.backend_cb)
         cfg_row.addWidget(QLabel("Model:"))
-        self.model_edit = QLineEdit()
-        self.model_edit.setPlaceholderText("(use backend default)")
+        # Editable combo: free-text for OpenAI / Anthropic custom models,
+        # auto-populated dropdown for Ollama (probed from /api/tags).
+        self.model_edit = QComboBox()
+        self.model_edit.setEditable(True)
+        self.model_edit.lineEdit().setPlaceholderText(
+            "(use backend default)")
         cfg_row.addWidget(self.model_edit, 1)
         self.connect_btn = QPushButton("Connect")
         self.connect_btn.clicked.connect(self._connect)
         cfg_row.addWidget(self.connect_btn)
         lay.addLayout(cfg_row)
+        # Initial populate once the widget is built.
+        self._on_backend_changed(self.backend_cb.currentText())
 
         self.transcript = QTextBrowser()
         self.transcript.setOpenExternalLinks(True)
@@ -98,25 +105,112 @@ class TutorPanel(QWidget):
             "Choose a backend and click <b>Connect</b> to begin.<br>"
             "• <b>anthropic</b> — needs ANTHROPIC_API_KEY in the environment<br>"
             "• <b>openai</b> — needs OPENAI_API_KEY (or a compatible base URL)<br>"
-            "• <b>ollama</b> — connects to http://localhost:11434 by default (local models)"
+            "• <b>ollama</b> — probes <code>localhost:11434</code> and "
+            "auto-populates the Model dropdown with your installed "
+            "tags; pre-selects a tool-use-capable model if one is "
+            "installed (llama3.1 / llama3.2 / qwen2.5 / …)."
         )
 
     # ------------------------------------------------------------------
+    def _on_backend_changed(self, name: str) -> None:
+        """Repopulate the Model dropdown when the backend selection
+        changes. For Ollama we probe ``/api/tags`` on a best-effort
+        basis; other backends get a blank editable combo."""
+        self.model_edit.blockSignals(True)
+        self.model_edit.clear()
+        if name == "ollama":
+            try:
+                from orgchem.agent.llm.ollama_backend import (
+                    ollama_list_models,
+                )
+                models = ollama_list_models()
+            except NetworkError:
+                models = []
+            except Exception:  # noqa: BLE001
+                models = []
+            if models:
+                self.model_edit.addItems(models)
+                # Pre-select the best tool-use candidate so the user
+                # can just click Connect.
+                from orgchem.agent.llm.ollama_backend import (
+                    _pick_best_model,
+                )
+                best = _pick_best_model(models)
+                if best:
+                    idx = self.model_edit.findText(best)
+                    if idx >= 0:
+                        self.model_edit.setCurrentIndex(idx)
+                self.model_edit.lineEdit().setPlaceholderText(
+                    f"(installed: {len(models)})")
+            else:
+                self.model_edit.lineEdit().setPlaceholderText(
+                    "(Ollama not reachable at localhost:11434)")
+        else:
+            self.model_edit.lineEdit().setPlaceholderText(
+                "(use backend default)")
+        self.model_edit.blockSignals(False)
+
     def _connect(self) -> None:
         name = self.backend_cb.currentText()
         cls = available_backends().get(name)
         if cls is None:
             QMessageBox.warning(self, "Unknown backend", name)
             return
+        # For Ollama, probe first so we give a clear error at Connect
+        # time rather than 30 seconds into the first /api/chat request.
+        if name == "ollama":
+            try:
+                from orgchem.agent.llm.ollama_backend import (
+                    ollama_list_models,
+                )
+                installed = ollama_list_models()
+            except NetworkError as e:
+                QMessageBox.critical(
+                    self, "Ollama not reachable",
+                    f"{e}\n\nStart Ollama with `ollama serve` or open "
+                    f"the Ollama desktop app, then try Connect again.",
+                )
+                return
+            if not installed:
+                QMessageBox.warning(
+                    self, "No Ollama models installed",
+                    "Ollama is running but no models are pulled yet. "
+                    "Run e.g. `ollama pull llama3.1` in a terminal, "
+                    "then click Connect.",
+                )
+                return
+            requested = self.model_edit.currentText().strip()
+            if requested and requested not in installed:
+                QMessageBox.warning(
+                    self, "Ollama model not installed",
+                    f"Model {requested!r} is not on this Ollama "
+                    f"server.\nInstalled: {', '.join(installed)}",
+                )
+                return
         try:
-            backend = cls(model=self.model_edit.text().strip() or "")
+            backend = cls(model=self.model_edit.currentText().strip() or "")
         except Exception as e:  # noqa: BLE001
             QMessageBox.critical(self, "Backend init failed", str(e))
             return
         self._convo = Conversation(backend=backend)
+        extra = ""
+        tool_note = ""
+        if name == "ollama":
+            n_models = len(getattr(backend, 'available_models', []))
+            extra = f" · {n_models} local model(s) available"
+            from orgchem.agent.llm.ollama_backend import model_supports_tools
+            if not model_supports_tools(backend.model):
+                tool_note = (
+                    "<br><span style='color:#c07a00'>⚠ This model "
+                    "doesn't advertise tool-use support — the tutor "
+                    "can chat but won't invoke agent actions. For "
+                    "full tool use, try <code>ollama pull "
+                    "llama3.1</code> or <code>qwen2.5</code>.</span>"
+                )
         self._append_system(
             f"Connected to <b>{name}</b> "
-            f"(model: <code>{backend.model or '(default)'}</code>). Ask away."
+            f"(model: <code>{backend.model or '(default)'}</code>){extra}. "
+            f"Ask away.{tool_note}"
         )
 
     # ------------------------------------------------------------------

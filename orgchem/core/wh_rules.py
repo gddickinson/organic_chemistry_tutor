@@ -426,3 +426,36 @@ def check_allowed(kind: str, electron_count: int,
 
     return {"error": f"Unknown pericyclic kind {kind!r} "
                      "(use cycloaddition / electrocyclic / sigmatropic)"}
+
+
+# ---------------------------------------------------------------------
+# Phase 14b follow-up — map seeded pericyclic reactions onto the
+# relevant WH rule. Keyed by a substring that matches the reaction's
+# name in the DB (same style as the `_MAPPED` lookup in
+# ``seed_reactions.py``).
+
+_REACTION_WH_MAP: Dict[str, str] = {
+    "Diels-Alder":         "cyclo-4plus2-thermal",
+    "Claisen rearrangement": "sigma-3-3-cope-claisen",
+    "Cope rearrangement":  "sigma-3-3-cope-claisen",
+    "[2+2]":               "cyclo-2plus2-photochemical",
+    "Electrocyclic (4π)":  "electro-4pi-thermal",
+    "Electrocyclic (6π)":  "electro-6pi-thermal",
+    "1,5-H shift":         "sigma-1-5-h-thermal",
+    "[3,3] sigmatropic":   "sigma-3-3-cope-claisen",
+    "[2,3]-Wittig":        "sigma-2-3-wittig",
+    "1,3-Dipolar":         "cyclo-1plus3-dipolar-thermal",
+}
+
+
+def find_wh_rule_for_reaction(name: str) -> Optional[str]:
+    """Return the WH rule id whose substring matches ``name``, if any.
+
+    Used by the ``explain_wh`` agent action to infer which rule
+    applies to a seeded named reaction without maintaining a second
+    DB column.
+    """
+    for substr, rule_id in _REACTION_WH_MAP.items():
+        if substr.lower() in name.lower():
+            return rule_id
+    return None

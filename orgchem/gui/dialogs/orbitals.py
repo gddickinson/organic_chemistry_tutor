@@ -79,8 +79,21 @@ class OrbitalsDialog(QDialog):
         self.huckel_table.horizontalHeader().setSectionResizeMode(
             QHeaderView.Stretch)
         self.huckel_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.huckel_table.currentCellChanged.connect(
+            self._on_huckel_row_changed)
         lay.addWidget(self.huckel_table, 1)
+        # Phase 14d — row selection reveals the `show_molecular_orbital`
+        # detail: role (HOMO / LUMO / HOMO-n / LUMO+n), energy in β,
+        # occupancy. Populated from the selected row.
+        self.huckel_mo_detail = QLabel(
+            "Select a row above for frontier details.")
+        self.huckel_mo_detail.setStyleSheet(
+            "padding:6px; background:#eef3ff; border-radius:4px; "
+            "font-family:monospace;")
+        self.huckel_mo_detail.setWordWrap(True)
+        lay.addWidget(self.huckel_mo_detail)
         self._last_huckel = None
+        self._last_huckel_smiles = ""
         return w
 
     def _on_huckel_run(self) -> None:
@@ -99,6 +112,7 @@ class OrbitalsDialog(QDialog):
                 "(e.g. `c1ccccc1` or `C=CC=C`).")
             return
         self._last_huckel = result
+        self._last_huckel_smiles = smi
         self._populate_huckel_table(result)
         self.huckel_save.setEnabled(True)
         homo = result.homo_index
@@ -131,6 +145,32 @@ class OrbitalsDialog(QDialog):
             for col, it in enumerate(items):
                 it.setTextAlignment(Qt.AlignCenter)
                 self.huckel_table.setItem(i, col, it)
+
+    def _on_huckel_row_changed(self, row: int, _col: int,
+                               _prev_row: int, _prev_col: int) -> None:
+        """Wire the `show_molecular_orbital` agent action to row
+        selection (Phase 14d)."""
+        if (row < 0 or self._last_huckel is None
+                or not self._last_huckel_smiles):
+            return
+        try:
+            from orgchem.agent.actions import invoke
+            res = invoke("show_molecular_orbital",
+                         smiles=self._last_huckel_smiles, index=row)
+        except Exception:
+            return
+        if res.get("error"):
+            self.huckel_mo_detail.setText(res["error"])
+            return
+        self.huckel_mo_detail.setText(
+            f"MO #{res['index'] + 1}  ·  role = {res['role']}  ·  "
+            f"energy = α{res['energy_beta']:+.4f}β  ·  "
+            f"occupation = {res['occupation']}   "
+            f"(HOMO = #{res['homo_index'] + 1} / "
+            f"LUMO = #{res['lumo_index'] + 1}; "
+            f"{res['n_pi_electrons']} π e⁻ across "
+            f"{res['n_pi_atoms']} atoms)"
+        )
 
     def _on_huckel_save(self) -> None:
         if self._last_huckel is None:
@@ -167,6 +207,19 @@ class OrbitalsDialog(QDialog):
         self.wh_list.currentItemChanged.connect(self._on_wh_selection)
         left.addWidget(self.wh_list, 1)
 
+        # Phase 14d / 14b follow-up — `explain_wh`: type a reaction
+        # name and jump to the matching W-H rule.
+        explain_row = QHBoxLayout()
+        explain_row.addWidget(QLabel("For a reaction:"))
+        self.wh_reaction_input = QLineEdit()
+        self.wh_reaction_input.setPlaceholderText(
+            "e.g. Diels-Alder, Claisen rearrangement, 1,5-H shift")
+        explain_row.addWidget(self.wh_reaction_input, 1)
+        self.wh_explain_btn = QPushButton("Explain")
+        self.wh_explain_btn.clicked.connect(self._on_wh_explain)
+        explain_row.addWidget(self.wh_explain_btn)
+        left.addLayout(explain_row)
+
         lay.addLayout(left, 2)
 
         self.wh_body = QTextBrowser()
@@ -187,6 +240,36 @@ class OrbitalsDialog(QDialog):
             self.wh_list.addItem(item)
         if self.wh_list.count() > 0:
             self.wh_list.setCurrentRow(0)
+
+    def _on_wh_explain(self) -> None:
+        """Phase 14d — `explain_wh`. Find the W-H rule that governs
+        the user-typed reaction and select it in the list."""
+        query = self.wh_reaction_input.text().strip()
+        if not query:
+            return
+        try:
+            from orgchem.agent.actions import invoke
+            res = invoke("explain_wh", reaction_name_or_id=query)
+        except Exception as e:  # noqa: BLE001
+            QMessageBox.warning(self, "Explain W-H", f"{e}")
+            return
+        if res.get("error"):
+            QMessageBox.information(self, "Explain W-H", res["error"])
+            return
+        if not res.get("matched"):
+            QMessageBox.information(
+                self, "Explain W-H",
+                res.get("note") or "No pericyclic rule matched.")
+            return
+        rule_id = res["rule_id"]
+        # Make sure the family filter shows the rule, then select it.
+        self.wh_family.setCurrentIndex(0)  # (all)
+        self._rebuild_wh_list()
+        for i in range(self.wh_list.count()):
+            item = self.wh_list.item(i)
+            if item.data(Qt.UserRole) == rule_id:
+                self.wh_list.setCurrentRow(i)
+                break
 
     def _on_wh_selection(self, cur, _prev) -> None:
         if cur is None:

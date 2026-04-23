@@ -43,8 +43,40 @@ class PubChemSource(DataSource):
         smi = c.canonical_smiles
         if not smi:
             raise NetworkError(f"CID {identifier} has no canonical SMILES")
-        m = Molecule.from_smiles(smi, name=c.iupac_name or f"CID {identifier}")
+        # Round 58 — prefer a common-name ("title") for display over
+        # the long systematic IUPAC name. PubChem's "synonyms" list
+        # is ordered by usage; its first entry is usually the
+        # recognised trivial name (e.g. "Retinol" rather than
+        # "(2E,4E,6E,8E)-3,7-dimethyl-9-(…)nona-2,4,6,8-tetraen-1-ol").
+        synonyms = list(c.synonyms or [])
+        primary = _pick_display_name(synonyms, c.iupac_name,
+                                     fallback=f"CID {identifier}")
+        m = Molecule.from_smiles(smi, name=primary)
         m.source = f"PubChem:{identifier}"
         m.properties["cid"] = identifier
-        m.properties["synonyms"] = (c.synonyms or [])[:10]
+        m.properties["iupac_name"] = c.iupac_name or ""
+        m.properties["synonyms"] = synonyms[:10]
         return m
+
+
+def _pick_display_name(synonyms, iupac_name, fallback):
+    """Choose a friendly display name from PubChem output.
+
+    Prefers the first short synonym (≤ 40 chars, no trailing
+    stereochemistry-heavy IUPAC descriptors) over the raw
+    ``iupac_name`` field — PubChem's synonym list is ordered by
+    usage frequency, so the head of the list is almost always the
+    trivial name. Falls back to ``iupac_name`` then to ``fallback``
+    (typically the CID).
+    """
+    for syn in synonyms or []:
+        if not syn or len(syn) > 40:
+            continue
+        # Skip obvious systematic forms (any parenthesised stereo
+        # prefix like "(2E,4E,…)" or bracketed numeric prefixes).
+        if syn.startswith("(") and "," in syn[:20]:
+            continue
+        if syn[:1].isdigit():
+            continue
+        return syn
+    return iupac_name or fallback

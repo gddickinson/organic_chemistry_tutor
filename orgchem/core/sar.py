@@ -163,6 +163,140 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
         ],
     ),
+
+    # ---- Phase 31k content expansion (2026-04-23) ----------------
+    SARSeries(
+        id="beta-blockers",
+        name="β-adrenergic blocker series",
+        target="β₁ / β₂ adrenergic receptors",
+        parent_scaffold_smiles="CC(C)NCC(O)COc1ccccc1",  # propranolol core
+        source="Black 1988 *Br. J. Clin. Pharmacol.* 26:1-18 "
+               "(Nobel 1988 lecture)",
+        activity_columns=["beta1_pki", "beta2_pki",
+                          "beta1_selectivity"],
+        variants=[
+            SARVariant(
+                name="Propranolol",
+                smiles="CC(C)NCC(O)COc1cccc2ccccc12",
+                r_group_label="1-naphthyloxypropanolamine",
+                activity={"beta1_pki": 8.2, "beta2_pki": 9.0,
+                          "beta1_selectivity": 0.16},
+                notes="First clinically successful β-blocker (Black, "
+                      "1964). Non-selective — blocks β₁ AND β₂, so "
+                      "can worsen asthma. Lipophilic (logP ~ 3), "
+                      "CNS-penetrant.",
+            ),
+            SARVariant(
+                name="Atenolol",
+                smiles="CC(C)NCC(O)COc1ccc(CC(N)=O)cc1",
+                r_group_label="p-acetamido aryl; hydrophilic",
+                activity={"beta1_pki": 6.6, "beta2_pki": 5.5,
+                          "beta1_selectivity": 13.0},
+                notes="β₁-selective ('cardioselective'); safer in "
+                      "asthma. Hydrophilic (logP ~ 0) → minimal "
+                      "CNS side effects.",
+            ),
+            SARVariant(
+                name="Metoprolol",
+                smiles="COCCc1ccc(OCC(O)CNC(C)C)cc1",
+                r_group_label="p-(2-methoxyethyl) aryl",
+                activity={"beta1_pki": 7.3, "beta2_pki": 5.8,
+                          "beta1_selectivity": 32.0},
+                notes="β₁-selective. More lipophilic than atenolol "
+                      "→ faster CNS entry + more sleep-disturbance "
+                      "reports.",
+            ),
+            SARVariant(
+                name="Bisoprolol",
+                smiles="CC(C)NCC(O)COc1ccc(COCCC(C)C)cc1",
+                r_group_label="p-(isopropoxymethyl) aryl",
+                activity={"beta1_pki": 7.9, "beta2_pki": 5.7,
+                          "beta1_selectivity": 170.0},
+                notes="Most β₁-selective of this set. First-line "
+                      "for chronic heart failure (MERIT-HF / CIBIS-II).",
+            ),
+            SARVariant(
+                name="Carvedilol",
+                smiles="COc1ccccc1OCCNCC(O)COc1cccc2[nH]c3ccccc3c12",
+                r_group_label="carbazole-oxypropanolamine + "
+                              "2-methoxyphenoxyethylamine",
+                activity={"beta1_pki": 9.1, "beta2_pki": 9.0,
+                          "beta1_selectivity": 1.3},
+                notes="Non-selective β-blocker + α₁-antagonist + "
+                      "antioxidant. Used in CHF — mortality benefit "
+                      "in the COPERNICUS trial.",
+            ),
+        ],
+    ),
+    SARSeries(
+        id="ace-inhibitors",
+        name="ACE-inhibitor series",
+        target="Angiotensin-converting enzyme (ACE)",
+        parent_scaffold_smiles="O=C(N1CCCC1C(=O)O)C(C)CC",  # captopril-ish
+        source="Cushman & Ondetti 1980 *Biochemistry* 19:177-184; "
+               "Acharya 2003 *Nat. Rev. Drug Discov.* 2:891-902",
+        activity_columns=["ic50_nM", "oral_bioavail_pct",
+                          "t_half_h"],
+        variants=[
+            SARVariant(
+                name="Captopril",
+                smiles="CC(CS)C(=O)N1CCC[C@H]1C(=O)O",
+                r_group_label="free thiol zinc-binder; proline",
+                activity={"ic50_nM": 23.0, "oral_bioavail_pct": 75.0,
+                          "t_half_h": 2.0},
+                notes="First-in-class ACE-I (1981). Thiol binds the "
+                      "catalytic Zn²⁺. Short half-life + sulfhydryl-"
+                      "linked ADRs (rash, taste loss).",
+            ),
+            SARVariant(
+                name="Enalaprilat",
+                smiles="CCC(NC(Cc1ccccc1)C(=O)N1CCC[C@H]1C(=O)O)"
+                       "C(=O)O",
+                r_group_label="dicarboxylate zinc-binder; "
+                              "Phe-Pro peptidomimetic",
+                activity={"ic50_nM": 1.2, "oral_bioavail_pct": 10.0,
+                          "t_half_h": 11.0},
+                notes="Active metabolite of enalapril. Dicarboxylate "
+                      "replaces thiol → longer half-life, no rash. "
+                      "Prodrug (ethyl ester = enalapril) fixes oral "
+                      "availability.",
+            ),
+            SARVariant(
+                name="Lisinopril",
+                smiles="NCCCC[C@H](N[C@@H](CCc1ccccc1)C(=O)O)C(=O)"
+                       "N1CCC[C@H]1C(=O)O",
+                r_group_label="lysyl side-chain (hydrophilic); "
+                              "no prodrug needed",
+                activity={"ic50_nM": 1.2, "oral_bioavail_pct": 25.0,
+                          "t_half_h": 12.0},
+                notes="Not a prodrug — active as-is. Polar / renally "
+                      "cleared. Workhorse for hypertension + CHF.",
+            ),
+            SARVariant(
+                name="Ramipril",
+                smiles="CCC(C(=O)OCC)N[C@@H](C)C(=O)N1[C@H](C(=O)O)"
+                       "C[C@H]2CCC[C@H]12",
+                r_group_label="bicyclic 2-aza-bicyclic ring in "
+                              "place of proline",
+                activity={"ic50_nM": 7.0, "oral_bioavail_pct": 55.0,
+                          "t_half_h": 17.0},
+                notes="Ester prodrug → ramiprilat (active). Longer "
+                      "half-life; HOPE trial showed mortality benefit "
+                      "in high-CV-risk patients.",
+            ),
+            SARVariant(
+                name="Benazepril",
+                smiles="CCOC(=O)C(CCc1ccccc1)N[C@H](C)"
+                       "C(=O)N1c2ccccc2CC[C@@H]1C(=O)O",
+                r_group_label="benzazepine 7-membered-ring core",
+                activity={"ic50_nM": 5.0, "oral_bioavail_pct": 37.0,
+                          "t_half_h": 11.0},
+                notes="Ester prodrug → benazeprilat. Fused-bicyclic "
+                      "proline replacement tightens binding and "
+                      "tunes pharmacokinetics.",
+            ),
+        ],
+    ),
 ]
 
 

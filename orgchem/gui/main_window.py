@@ -214,6 +214,14 @@ class MainWindow(QMainWindow):
         )
         a_reset_layout.triggered.connect(self.reset_layout_to_default)
         m_view.addAction(a_reset_layout)
+        a_palette = QAction("Command palette…", self)
+        a_palette.setShortcut(QKeySequence("Ctrl+K"))
+        a_palette.setToolTip(
+            "Type a glossary term, reaction, or molecule name and "
+            "jump straight to it. Works from anywhere in the app."
+        )
+        a_palette.triggered.connect(self.open_command_palette)
+        m_view.addAction(a_palette)
 
         m_tools = mb.addMenu("&Tools")
         a_formula = QAction("Empirical / Molecular Formula Calculator…", self)
@@ -328,6 +336,17 @@ class MainWindow(QMainWindow):
         win.raise_()
         win.activateWindow()
         return win
+
+    def open_command_palette(self):
+        """Show the Ctrl+K command palette (Phase 11b follow-up).
+        Lazily imports so the dialog's DB probe only runs when the
+        user actually invokes it."""
+        from orgchem.gui.dialogs.command_palette import (
+            CommandPaletteDialog,
+        )
+        dlg = CommandPaletteDialog(self)
+        dlg.exec()
+        return dlg
 
     # ---------------- actions -----------------------------------------
 
