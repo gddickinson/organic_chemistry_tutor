@@ -20,7 +20,7 @@ from orgchem.db.session import session_scope
 
 log = logging.getLogger(__name__)
 
-SEED_VERSION = 4
+SEED_VERSION = 6
 
 
 # (term, aliases, category, see_also, definition_md)
@@ -430,7 +430,107 @@ _GLOSSARY: List[Dict[str, Any]] = [
         "leaving group departs. Often the rate-determining step in "
         "carbonyl chemistry; stabilised by the oxyanion hole in protease "
         "active sites."},
+
+    # ---- Phase 31f content expansion (2026-04-23) ------------------
+    {"term": "Kinetic vs thermodynamic control", "aliases": [],
+     "category": "mechanism",
+     "see_also": ["Hammond postulate", "Reaction coordinate"],
+     "definition_md":
+        "When a reaction can give more than one product, **kinetic** "
+        "control favours the product with the lowest activation barrier "
+        "(formed fastest) — usually at low temperature / short time. "
+        "**Thermodynamic** control favours the most stable product "
+        "(lowest ΔG) — usually at high temperature / long time (allowing "
+        "equilibration). Classic example: 1,2- vs 1,4-addition of HBr "
+        "to butadiene (1,2 kinetic, 1,4 thermodynamic)."},
+    {"term": "Hammond postulate", "aliases": [],
+     "category": "mechanism",
+     "see_also": ["Kinetic vs thermodynamic control", "Transition state",
+                  "Reaction coordinate"],
+     "definition_md":
+        "The transition state of a step resembles the species (reactant "
+        "or product) **closer to it in energy**. So endothermic steps "
+        "have *late* (product-like) TS's; exothermic steps have *early* "
+        "(reactant-like) TS's. Lets you predict selectivity and "
+        "structure–reactivity trends from thermodynamic data alone."},
+    {"term": "Markovnikov's rule", "aliases": ["Markovnikov",
+                                                "anti-Markovnikov"],
+     "category": "reactions",
+     "example_smiles": "CC=C.[H]Br>>CC(Br)C",
+     "see_also": ["Carbocation stability", "Hyperconjugation",
+                  "Radical addition"],
+     "definition_md":
+        "In H–X addition to an unsymmetrical alkene, the hydrogen goes "
+        "to the carbon **bearing more hydrogens**, and X goes to the "
+        "more-substituted carbon — because that route proceeds through "
+        "the more stable carbocation. **Anti-Markovnikov** addition "
+        "(e.g. HBr with peroxides via radicals; hydroboration / "
+        "oxidation) inverts the regiochemistry."},
+    {"term": "Zaitsev's rule", "aliases": ["Saytzeff", "Zaitsev"],
+     "category": "reactions",
+     "example_smiles": "CCC(Br)C>>CC=CC",
+     "see_also": ["E2", "E1", "Hofmann elimination"],
+     "definition_md":
+        "In elimination reactions, the **most substituted (most stable) "
+        "alkene** is the major product. Stabilisation comes from "
+        "hyperconjugation and alkyl-donor effects. **Hofmann's rule** "
+        "(opposite regiochemistry: less substituted alkene) kicks in "
+        "with bulky bases (e.g. potassium *tert*-butoxide) or when the "
+        "leaving group is a quaternary ammonium — steric / stereochem "
+        "constraints override the thermodynamic preference."},
+    {"term": "Anti-periplanar", "aliases": [],
+     "category": "stereochemistry",
+     "see_also": ["E2", "Newman projection", "Staggered",
+                  "Dihedral angle"],
+     "definition_md":
+        "A dihedral angle of **180°** — the H and the leaving group lie "
+        "on opposite sides of the C–C axis in a Newman projection. E2 "
+        "eliminations require this geometry because the breaking C–H σ "
+        "must align with the breaking C–LG σ* to form the new π bond. "
+        "Explains why *meso*- and *dl*- diastereomers can give different "
+        "alkene geometries under E2."},
+    {"term": "Baldwin's rules", "aliases": [],
+     "category": "mechanism",
+     "see_also": ["Ring closure", "Cyclisation", "Hybridisation"],
+     "definition_md":
+        "Empirical rules for predicting the **feasibility of ring-closing "
+        "reactions**, coded as *n-endo-X* vs *n-exo-X* where `n` is the "
+        "ring size, *exo*/*endo* tells which side of the breaking bond "
+        "is in the ring, and X = tet/trig/dig for the hybridisation of "
+        "the attacked atom. Key predictions: **3-7-exo-tet, 3-7-exo-trig, "
+        "5-7-endo-dig are favoured**; **5-endo-trig, 3-5-endo-dig are "
+        "disfavoured**. Based on whether the nucleophile can approach at "
+        "the required Bürgi-Dunitz angle."},
+    {"term": "Chemoselectivity", "aliases": [],
+     "category": "synthesis",
+     "see_also": ["Regioselectivity", "Stereoselectivity",
+                  "Protecting group"],
+     "definition_md":
+        "Preferential reaction at **one functional group in the "
+        "presence of others**. E.g. NaBH₄ reduces aldehydes / ketones "
+        "but leaves esters / amides untouched — chemoselective for the "
+        "most reactive carbonyl. Achieving chemoselectivity without a "
+        "protecting-group strategy is a hallmark of elegant synthesis."},
+    {"term": "Bioisostere", "aliases": [],
+     "category": "medicinal-chemistry",
+     "example_smiles": "c1ccc(C(=O)O)cc1",
+     "see_also": ["Pharmacophore", "SAR", "Drug-likeness"],
+     "definition_md":
+        "A group that **replaces another with similar biological "
+        "properties** but different chemistry — letting medicinal "
+        "chemists tune potency, metabolism, or permeability without "
+        "losing binding. Classical examples: carboxylic acid ↔ "
+        "tetrazole, methyl ↔ trifluoromethyl, phenyl ↔ thiophene, "
+        "amide ↔ sulfonamide. See the *Tools → Medicinal chemistry → "
+        "Bioisosteres* dialog for the full catalogue."},
 ]
+
+
+# Phase 31f follow-up: additional terms live in a sibling module to
+# keep this file near the project's 500-line soft cap. Extend in place
+# so the seeding logic below doesn't have to care.
+from orgchem.db.seed_glossary_extra import EXTRA_TERMS
+_GLOSSARY.extend(EXTRA_TERMS)
 
 
 def seed_glossary_if_empty(force: bool = False) -> int:

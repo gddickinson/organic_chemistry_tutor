@@ -85,7 +85,7 @@ def test_audit_entries_point_at_panel(app):
     for name in ("list_nucleic_acids", "get_nucleic_acid",
                  "nucleic_acid_families"):
         entry = GUI_ENTRY_POINTS.get(name, "")
-        assert "Nucleic acids tab" in entry, entry
+        assert "Macromolecules" in entry and "Nucleic acids" in entry, entry
 
 
 def test_gui_coverage_still_100(app):

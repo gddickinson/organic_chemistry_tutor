@@ -1900,7 +1900,161 @@ by giving an interactive 3D counterpart (great for exploration).
 
 ---
 
-## Phase 30 — Unified Macromolecules window *(NEW — 2026-04-23; user-flagged)*
+## Phase 31 — Seeded content expansion *(NEW — 2026-04-23; user-flagged)*
+
+User directive (2026-04-23): *"please add a roadmap item to further
+expand molecules, synthesis examples, tutorials, reactions, synthesis
+and all seeded items to grow the scope of the project."* Phase 31 is
+a long-running content phase that runs in parallel with every code
+phase. Each sub-item is a bundle of additive seeds that graduate
+through `SEED_VERSION` bumps, so existing DBs pick them up on next
+launch.
+
+**Target end-state (by end of the phase):** 400 molecules, 50 named
+reactions, 20 mechanisms, 25 synthesis pathways, 20 energy profiles,
+80 glossary terms, 30 tutorial lessons, 40 carbohydrates / 40 lipids
+/ 40 nucleic-acid entries, 15 SAR series, 15 seeded proteins.
+
+- [~] **31a. Molecules → 400.** First 25 shipped (α/β-pinene,
+      limonene, myrcene, camphor, menthol, geraniol, farnesol;
+      18-crown-6, 15-crown-5, free-base porphine; styrene, vinyl
+      chloride, ethylene glycol, bisphenol-A, caprolactam;
+      glyphosate, atrazine, DDT; glycerol, HMPA, diglyme; indigo,
+      methylene blue). ~170 more to come. Keep growing
+      `seed_molecules_extended.py`:
+      another 190 molecules across families that are currently
+      thin — metal complexes (ferrocene, vitamin B12 core,
+      cisplatin), macrocycles (18-crown-6, porphyrins, cryptands),
+      terpene skeletons (α-pinene, limonene, camphor, menthol),
+      alkaloids beyond the current set (morphine, codeine,
+      strychnine core, reserpine), polymers / monomers (styrene,
+      vinyl chloride, ethylene glycol, bisphenol-A), agrochemicals
+      (glyphosate, atrazine, DDT), synthetic dyes (methylene blue,
+      malachite green, indigo), common solvents not yet seeded
+      (diglyme, HMPA, glycerol, pentane). Each entry tagged via
+      `auto_tag` and `seed_source_tags` so the Phase 28 filter
+      bar immediately surfaces them.
+- [~] **31b. Reactions → 50.** First 5 shipped (Buchwald-Hartwig,
+      Sonogashira, Mitsunobu, Swern, HWE). 19 more named reactions
+      still to come. Priority
+      list: Buchwald-Hartwig amination, Negishi coupling, Heck
+      reaction, Stille coupling, Sonogashira coupling, Mitsunobu
+      reaction, Swern oxidation, Dess-Martin oxidation, Jones
+      oxidation, Oppenauer oxidation, Birch reduction, Corey-Chaykovsky
+      epoxidation, Horner-Wadsworth-Emmons, Julia olefination,
+      Peterson olefination, Appel reaction, Mukaiyama aldol,
+      Evans aldol, Sharpless asymmetric epoxidation, Sharpless
+      dihydroxylation, Jacobsen epoxidation, CBS reduction, Shapiro
+      reaction, Ramberg-Bäcklund. Atom-mapped SMARTS where
+      possible to feed the 3D side-by-side viewer.
+- [ ] **31c. Mechanisms → 20.** Pair 11 new reactions from 31b with
+      full curly-arrow `Mechanism` JSON. Prioritise the ones that
+      most benefit from step-by-step visualisation: Buchwald-Hartwig
+      catalytic cycle, Swern oxidation (5 steps), HWE mechanism,
+      Mitsunobu, Birch reduction, Mukaiyama aldol, Sharpless
+      epoxidation catalytic cycle, CBS catalytic cycle, Jacobsen,
+      Stille, Sonogashira.
+- [ ] **31d. Synthesis pathways → 25.** 13 more industrial /
+      classical multi-step routes. Priority: taxol (abbreviated —
+      Baran-style endgame), morphine (Rice or Trost endgame),
+      lysergic acid, reserpine (Woodward), cortisone fragment,
+      longifolene core, oseltamivir (Shibasaki), sildenafil,
+      atorvastatin (final assembly), cephalosporin fragment,
+      penicillin V, progesterone (Djerassi endgame), glyphosate
+      (industrial). Each with per-step SMILES, conditions, yields,
+      notes + reagent annotations.
+- [~] **31e. Energy profiles → 20.** First 3 shipped (Sonogashira
+      catalytic cycle with OA as RDS, HWE via oxaphosphetane collapse,
+      Mitsunobu via oxyphosphonium SN2) — now **12 total**; 8 more
+      to come. Priority list: 11 more reaction-coordinate
+      diagrams. Priority: Diels-Alder endo/exo comparison, Wittig,
+      Aldol (enolate vs enol), Claisen, Michael, Heck (β-hydride
+      elimination as RDS), Buchwald-Hartwig (oxidative-addition
+      RDS), SN2 on 1° / 2° / 3° halides (3-way comparison),
+      retro-Diels-Alder. Each with proper Ea / ΔH / ΔG values from
+      textbook references.
+- [~] **31f. Glossary → 80.** First 18 shipped. Round-44 batch:
+      kinetic vs thermodynamic control, Hammond postulate,
+      Markovnikov / Zaitsev, anti-periplanar, Baldwin's rules,
+      chemoselectivity, bioisostere. Round-46 batch (in
+      `seed_glossary_extra.py`): Saytzeff/Hofmann, Bürgi-Dunitz
+      angle, kinetic isotope effect, HOMO/LUMO, Alder endo rule,
+      gauche, A-value, pharmacophore, prodrug, J-coupling. Catalogue
+      now **61**; 19 more still to come, prioritising the
+      gaps tutors ran into this round: kinetic vs thermodynamic
+      control, Hammond postulate, isosteres, pharmacophore,
+      orthogonal protecting groups, chemoselectivity,
+      stereoselectivity, Baldwin's rules, Markovnikov / anti-
+      Markovnikov, Saytzeff / Hofmann elimination, anti-periplanar
+      geometry, Diels-Alder endo rule, Woodward-Fieser rules,
+      tautomerism vs resonance, conformational analysis terminology
+      (gauche / anti / eclipsed / staggered), etc. Each gets an
+      example_smiles → figure via the Phase 26a pipeline.
+- [ ] **31g. Tutorials → 30.** 12 more lessons spread across tiers:
+      beginner (stereochemistry 101, acid-base practice,
+      retrosynthesis primer), intermediate (pericyclic warm-up,
+      organometallic coupling survey, total-synthesis walkthrough:
+      ibuprofen), advanced (asymmetric catalysis, bioorganic:
+      sugars + proteins, green chemistry case studies),
+      graduate (metal-catalysed C-H activation, flow chemistry,
+      photoredox catalysis). Each lesson carries embedded agent
+      action calls so learners can interact with the app from
+      inside the lesson.
+- [~] **31h. Carbohydrates → 40.** First 10 shipped (glucosamine,
+      GlcNAc, glucuronic acid, fucose, rhamnose, sorbitol,
+      mannitol, xylitol, tagatose, trehalose) — 25 total; 15 more
+      to come. Target list: rare sugars
+      (tagatose, psicose, allose), aminosugars (glucosamine,
+      N-acetylglucosamine, chitosan), uronic acids (glucuronic,
+      galacturonic), deoxy sugars beyond dR (fucose, rhamnose),
+      sugar alcohols (sorbitol, mannitol, xylitol, erythritol),
+      storage / structural polysaccharides (glycogen fragment,
+      chitin, hyaluronic acid disaccharide, heparin disaccharide),
+      glycoproteins sample (N-glycan core), sweeteners (aspartame
+      — bridges to AA category, saccharin, stevioside, sucralose),
+      blood-group glycans (H, A, B epitopes).
+- [~] **31i. Lipids → 40.** First 10 shipped (caprylic acid C8:0,
+      capric acid C10:0, PGE2, TXA2, cholic acid, taurocholic
+      acid, progesterone, cortisol, retinol, α-tocopherol) —
+      catalogue now **31**; 9 more to come. Priority list:
+      medium-chain fatty
+      acids (caproic / caprylic / capric), branched-chain
+      (phytanic), hydroxy fatty acids (ricinoleic), eicosanoids
+      (PGE2, TXA2, LTB4), plasmalogens, cardiolipin, gangliosides
+      (GM1), bile acids (cholic, taurocholic), steroid hormones
+      beyond testosterone / estradiol (progesterone, cortisol,
+      aldosterone, DHT), lipid-soluble vitamins (A / E / K).
+- [~] **31j. Nucleic acids → 40.** First 10 shipped (hypoxanthine,
+      xanthine, inosine, pseudouridine Ψ, NADH, NADPH, FAD,
+      coenzyme A, SAM, GCGCUUUUGCGC RNA hairpin) — catalogue now
+      **33**; 7 more to come. Target list: modified /
+      non-canonical bases (inosine, pseudouridine, xanthine,
+      hypoxanthine, wobble positions), more nucleotide cofactors
+      (NADH, NADPH, FAD, FADH2, coenzyme A, SAM), aptamers sample,
+      locked NA (LNA) monomer, phosphorothioate linkage example,
+      Z-DNA motif, cruciform / hairpin small examples, pre-miRNA
+      example sequence.
+- [ ] **31k. SAR series → 15.** 13 more medicinal-chem families:
+      β-lactam antibiotics, β-blockers, ACE inhibitors,
+      benzodiazepines, phenothiazines, PDE5 inhibitors (sildenafil
+      analogs), kinase inhibitors (imatinib / dasatinib analogs),
+      SSRIs, opioids, antihistamines (H1 / H2), cannabinoid
+      analogs, aromatase inhibitors, retinoids.
+- [~] **31l. Proteins → 15.** First 3 shipped (lysozyme 1LYZ,
+      myoglobin 1MBN, GFP 1EMA) — catalogue now **9**; 6 more
+      to come: haemoglobin 1HHO, chymotrypsin alt form, ion
+      channel (KcsA 1BL8), kinesin motor, nucleosome core (1AOI),
+      antibody Fab fragment (1IGT).
+
+Shipping cadence: ~1 sub-item per round, interleaved with code
+phases. Each sub-item ships its own tests and ROADMAP check-box,
+updates `INTERFACE.md` / `PROJECT_STATUS.md` counts, and graduates
+the seed version so users on older DBs get the additive upgrade
+on next launch.
+
+---
+
+## Phase 30 — Unified Macromolecules window *(NEW — 2026-04-23; user-flagged; COMPLETE 2026-04-23)*
 
 User directive (2026-04-23): *"I think all macromolecules should be in
 a separate GUI that is accessed [via] a new menu item."* The Phase 29
@@ -1913,34 +2067,38 @@ macromolecule panels can share a richer common toolbar (sequence-view
 toggle, PDB fetch, 3D cartoon, export) without clashing with the main
 menu.
 
-- [ ] **30a. `MacromoleculesWindow` class.** A new top-level
+- [x] **30a. `MacromoleculesWindow` class.** A new top-level
       `QMainWindow` hosting the Proteins / Carbohydrates / Lipids /
       Nucleic-acids panels as inner tabs. Lives in
       `orgchem/gui/windows/macromolecules_window.py`. Remembers its
-      size + last-active tab across sessions (via `session_state`).
-- [ ] **30b. Menu entry.** A new *Window → Macromolecules…* action
+      size + last-active tab across sessions (via `QSettings`).
+- [x] **30b. Menu entry.** A new *Window → Macromolecules…* action
       on the main window constructs-or-raises the window (single
       persistent instance, not modal). Ctrl+Shift+M accelerator.
-      Agent action `open_macromolecules_window()` added so
-      tutor-panel / stdio bridge can pop it up programmatically.
-- [ ] **30c. Migrate existing panels.** Move the Proteins tab out of
-      the main window's tabbar and into the new window; same for
-      Carbohydrates (shipped as a main-window tab in Phase 29a).
-      Keep a small *Open Macromolecules…* banner on the main-window
-      Tutorial tab so users coming from biology tutorials still have
-      a one-click path in.
-- [ ] **30d. GUI-wiring audit updates.** Every macromolecule agent
-      action's `GUI_ENTRY_POINTS` entry points at the new path
-      (`"Window → Macromolecules… → {sub-tab}"`). Coverage gate
-      stays at 100%.
-- [ ] **30e. Cross-panel messaging.** The NA panel's *Fetch PDB*
-      button (currently hops to the Proteins main-window tab) is
-      rewired to switch the inner tab inside the new window rather
-      than the main-window tab.
-- [ ] **30f. Tests.** `tests/test_macromolecules_window.py`
-      exercises: window opens from menu; four inner tabs present;
-      state persists across close/reopen; NA → Protein cross-nav
-      still works; coverage gate still 100%.
+      Agent action `open_macromolecules_window(tab)` shipped in
+      `agent/actions_windows.py`.
+- [x] **30c. Migrate existing panels.** Proteins / Carbohydrates /
+      Lipids / Nucleic-acids removed from the main-window tabbar.
+      Panels are still constructed once in `MainWindow._build_central`
+      and reparented into the secondary window — `win.proteins` etc.
+      remain valid attributes so existing agent actions / tests
+      keep working.
+- [x] **30d. GUI-wiring audit updates.** Every macromolecule agent
+      action's `GUI_ENTRY_POINTS` entry now reads
+      `"Window → Macromolecules… → {sub-tab} → …"`. New entry for
+      `open_macromolecules_window` itself. Coverage gate still 100 %.
+- [x] **30e. Cross-panel messaging.** The NA panel's *Fetch PDB*
+      button now calls
+      `main_window().open_macromolecules_window(tab_label="Proteins")`
+      then populates the protein panel's ID field and triggers
+      fetch — all inside the secondary window.
+- [x] **30f. Tests.** `tests/test_macromolecules_window.py` (9 tests)
+      exercises: panels absent from main tabbar, window opens and
+      returns same instance on re-open, four inner tabs present,
+      `switch_to` focuses and rejects unknown labels, inner panels
+      are identity-equal to `win.proteins` etc., agent action works,
+      audit entry exists, coverage still 100 %. Full suite: **676
+      passed, 1 skipped** (+9).
 
 ---
 

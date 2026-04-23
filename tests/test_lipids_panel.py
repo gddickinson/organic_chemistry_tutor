@@ -77,7 +77,7 @@ def test_audit_entries_point_at_panel(app):
     from orgchem.gui.audit import GUI_ENTRY_POINTS
     for name in ("list_lipids", "get_lipid", "lipid_families"):
         entry = GUI_ENTRY_POINTS.get(name, "")
-        assert "Lipids tab" in entry, entry
+        assert "Macromolecules" in entry and "Lipids" in entry, entry
 
 
 def test_gui_coverage_still_100(app):

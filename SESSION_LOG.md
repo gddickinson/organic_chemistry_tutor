@@ -1,5 +1,203 @@
 # Session Log — OrgChem Studio
 
+## 2026-04-23 — Round 46 (Phase 31 third content batch)
+
+### What shipped
+- **31e (+3 energy profiles).** Pedagogical-grade reaction-
+  coordinate diagrams for Sonogashira (Pd/Cu catalytic cycle —
+  OA as RDS; 7-point curve through the Ar-Pd-I intermediate),
+  HWE (6-point curve through the oxaphosphetane; retro-[2+2]
+  TS sets E-selectivity), and Mitsunobu (5-point curve through
+  alkoxyphosphonium; final P=O bond strength is the thermodynamic
+  driver). `seed_energy_profiles.SEED_VERSION` bumped 2 → 3 so
+  existing DBs pick them up additively.
+- **31f (+10 glossary terms).** New module `seed_glossary_extra.py`
+  holds the continued-expansion content: Saytzeff/Hofmann,
+  Bürgi-Dunitz angle, kinetic isotope effect, HOMO/LUMO,
+  Alder endo rule, gauche, A-value, pharmacophore, prodrug,
+  J-coupling (Karplus). `seed_glossary.py` imports and extends
+  `_GLOSSARY` at module load so seeding logic stays unchanged;
+  `SEED_VERSION` bumped 5 → 6.
+- **31l (+3 seeded proteins).** Added to `core/protein.py
+  SEEDED_PROTEINS`: hen egg-white lysozyme (1LYZ), sperm-whale
+  myoglobin (1MBN), GFP (1EMA). Rich teaching stories anchoring
+  the glycosidase mechanism debate, the first solved protein
+  structure, and the β-barrel / autocyclised chromophore.
+
+### Design decision: split glossary into a sibling module
+- `seed_glossary.py` had already crossed the project's 500-line
+  soft cap (576 lines). Adding +10 more terms would have pushed
+  it well past, so extracted the Phase-31f-onward additions into
+  `seed_glossary_extra.py` with the same schema. The main file
+  imports and extends `_GLOSSARY` in place — existing
+  `seed_glossary_if_empty()` logic + SEED_VERSION rewrite
+  semantics are unchanged. Pattern: base catalogue stays canonical,
+  continued-expansion lives in a sibling, they merge on import.
+
+### Test suite
+- **676 passed, 1 skipped** — still green. Had to add an
+  INTERFACE.md entry for the new `seed_glossary_extra.py` module
+  to keep `test_docs_coverage` happy.
+
+### Doc updates (per standing directive)
+- **ROADMAP.md** — 31e / 31f / 31l all marked `[~]` with running
+  tallies (12 / 61 / 9).
+- **INTERFACE.md** — glossary row refreshed with extras-module
+  mention; new row added for `seed_glossary_extra.py`.
+- **PROJECT_STATUS.md** — last-updated date bumped; Phase 31
+  paragraph refreshed with round-46 totals.
+
+### Next
+- Continue Phase 31. Candidate next batch: **31c (+2-3 mechanism
+  JSONs)** — paired arrow-pushing animations for the new reactions.
+  Or **31g (+3 tutorial markdown lessons)** / **31k (+2 SAR
+  series)**.
+
+---
+
+## 2026-04-23 — Round 45 (Phase 31 second content batch)
+
+### What shipped
+- **31i (+10 lipids).** Medium-chain fatty acids (caprylic C8:0,
+  capric C10:0); eicosanoids (PGE2 cyclopentane prostanoid, TXA2
+  oxetane thromboxane); bile acids (cholic, taurocholic); steroid
+  hormones (progesterone, cortisol); fat-soluble vitamins (retinol
+  A, α-tocopherol E). LIPIDS catalogue grew 21 → **31**.
+- **31j (+10 nucleic-acid entries).** Non-canonical bases
+  (hypoxanthine, xanthine); modified nucleosides (inosine for
+  wobble pairing, pseudouridine Ψ for rRNA / tRNA stabilisation);
+  redox coenzymes (NADH, NADPH, FAD); acyl carrier (CoA-SH);
+  methyl donor (SAM); secondary-structure teaching entry
+  (GCGCUUUUGCGC RNA hairpin). NUCLEIC_ACIDS catalogue grew 23 → **33**.
+- **31a (+25 general molecules).** Terpenes (α-pinene, β-pinene,
+  limonene, myrcene, camphor, menthol, geraniol, farnesol);
+  macrocycles (18-crown-6, 15-crown-5, free-base porphine);
+  polymers / monomers (styrene, vinyl chloride, ethylene glycol,
+  bisphenol-A, caprolactam); agrochemicals (glyphosate, atrazine,
+  DDT); solvents (glycerol, HMPA, diglyme); dyes (indigo,
+  methylene blue). Seeded-molecules catalogue grew 169 → **193**.
+
+### Bugs caught along the way
+- **Porphine SMILES.** Aromatic-c written form (`c1cc2cc3...n3`)
+  failed RDKit's kekulisation. Swapped to the explicit Kekulé
+  form `C1=CC2=CC3=CC=C(N3)C=C4C=CC(=N4)C=C5C=CC(=N5)C=C1N2`,
+  which parses cleanly.
+
+### Test suite
+- **676 passed, 1 skipped** — no regressions. Tests didn't need
+  edits since all 45 new entries are additive inside
+  `CARBOHYDRATES` / `LIPIDS` / `NUCLEIC_ACIDS` / `_EXTENDED`
+  lists, and the existing tests assert on substrings / minima,
+  not exact counts.
+
+### Doc updates (per user directive: "update all docs")
+- **ROADMAP.md** — Phase 31a / 31i / 31j all flipped from `[ ]` →
+  `[~]` (partial), with counts and completed-item lists.
+- **INTERFACE.md** — `lipids.py` row updated 21 → 31 with new
+  family coverage; `nucleic_acids.py` row updated 23 → 33 with
+  coenzyme / modified-base callouts.
+- **PROJECT_STATUS.md** — last-updated date bumped; Phase 31
+  paragraph updated with second-batch totals.
+
+### Next
+- Continue Phase 31 cadence. Candidate next batch: **31c
+  (+3 mechanism JSONs)** for Swern / HWE / Mitsunobu — pairs with
+  the round 44 reactions. Or **31d (+2-3 synthesis pathways)** —
+  taxol endgame, sildenafil route.
+
+---
+
+## 2026-04-23 — Round 44 (Phase 30 Macromolecules window + Phase 31 scoped)
+
+### What shipped
+- **Phase 30 — Unified Macromolecules window (end-to-end).** New
+  `orgchem/gui/windows/macromolecules_window.py` hosts Proteins /
+  Carbohydrates / Lipids / Nucleic-acids as inner tabs in a
+  dedicated top-level `QMainWindow`. Single persistent instance
+  constructed lazily on first menu click; `QSettings` under
+  ``window/macromolecules`` remembers geometry + last-active tab.
+- **Menu wiring.** New *Window* menu on the main window carries
+  *Macromolecules…* (Ctrl+Shift+M). Four panels removed from the
+  main-window tabbar — they are still constructed once in
+  `_build_central` so `win.proteins` etc. remain valid for agent
+  actions and cross-panel code.
+- **Cross-panel rewire.** NA panel's *Fetch PDB in Proteins tab*
+  button now calls `win.open_macromolecules_window(tab_label=
+  "Proteins")` then drives the protein panel's fetch slot — keeps
+  the user inside the secondary window.
+- **Agent action.** `open_macromolecules_window(tab)` registered
+  in the new `agent/actions_windows.py` module. Returns a dict
+  with `{shown, active_tab, tabs}`.
+- **GUI audit.** All 27 Proteins / Carbohydrates / Lipids / NA
+  entries rewritten to point at the new path (bulk-edited with
+  `replace_all`); new entry for `open_macromolecules_window`.
+  Coverage still **100 %** (109 / 109).
+- **Tests.** New `tests/test_macromolecules_window.py` (9 tests).
+  Updated `test_carbohydrates_panel.py` / `test_lipids_panel.py` /
+  `test_nucleic_acids_panel.py` to assert their tabs are now
+  inside the window rather than on the main tabbar. Full suite:
+  **676 passed, 1 skipped** (+9 from round 43).
+
+### Roadmap additions
+- **Phase 31 — Seeded content expansion** added per user directive
+  (*"please add a roadmap item to further expand molecules,
+  synthesis examples, tutorials, reactions, synthesis and all
+  seeded items to grow the scope of the project"*). 12 sub-items
+  (31a-31l) targeting 400 molecules, 50 reactions, 20 mechanisms,
+  25 pathways, 20 energy profiles, 80 glossary terms, 30
+  tutorials, 40 carbs / 40 lipids / 40 NAs, 15 SAR series, 15
+  proteins. Cadence: ~1 sub-item per round, interleaved with
+  code phases; each sub-item bumps the relevant `SEED_VERSION`
+  so existing DBs pick up upgrades additively.
+
+### Design decisions
+- **Lazy window construction.** Main window constructs the
+  panels eagerly (so they're available as `win.proteins` etc.
+  from the moment the app boots) but constructs the
+  `MacromoleculesWindow` wrapper lazily on first menu click —
+  keeps app startup snappy and avoids a hidden top-level window
+  stealing focus on macOS.
+- **Panels retain their main-window attributes.** `win.proteins`,
+  `win.carbohydrates`, `win.lipids`, `win.nucleic_acids` still
+  point at the panel widgets. Agent actions / tests / the NA
+  fetch button all keep working without chasing the window
+  reference.
+- **Bulk-edit audit with `replace_all`.** Instead of hand-editing
+  27 `GUI_ENTRY_POINTS` entries, used four `replace_all` edits
+  keyed off `"Proteins tab"` / `"Carbohydrates tab"` / `"Lipids
+  tab"` / `"Nucleic acids tab"` — safer than a 27-way merge.
+
+### Phase 31 first content batch (tacked onto round 44 after user
+prompt: *"please continue"*)
+- **31b (+5 reactions).** Buchwald-Hartwig amination, Sonogashira
+  coupling, Mitsunobu, Swern oxidation, Horner-Wadsworth-Emmons.
+  SMILES validated through `AllChem.ReactionFromSmarts`. Seeded
+  reactions now **31** (was 26).
+- **31f (+8 glossary terms).** Kinetic vs thermodynamic control,
+  Hammond postulate, Markovnikov's / Zaitsev's rules, anti-
+  periplanar, Baldwin's rules, chemoselectivity, bioisostere.
+  Glossary `SEED_VERSION` bumped 4 → 5 so existing DBs pick up
+  the additions on next launch. Seeded terms now **51** (was 43).
+- **31h (+10 carbohydrates).** Aminosugars (glucosamine, GlcNAc),
+  uronic acids (glucuronic), deoxy sugars (fucose, rhamnose),
+  sugar alcohols (sorbitol, mannitol, xylitol), rare aldose
+  (tagatose), non-reducing disaccharide (trehalose). Catalogue
+  now **25** (was 15).
+- **Fragment-consistency audit** (test_fragment_consistency.py)
+  flagged 10 new reaction fragments not yet in `seed_intermediates`.
+  Backfilled: 4-phenylmorpholine, iodobenzene, phenylacetylene,
+  diphenylacetylene, isopropyl acetate, 1-octanol, octanal,
+  triethyl phosphonoacetate, ethyl (E)-cinnamate, diethyl
+  phosphate. Intermediates table grew 128 → 138.
+
+### Next
+- Continue Phase 31. Candidate next batch: **31c (2-3 mechanism
+  JSONs)** paired with the new reactions just shipped (Swern
+  mechanism 3 steps, HWE 4 steps, Mitsunobu 4 steps), or **31i
+  (+10 lipids)** matching the Phase 31h carb bundle.
+
+---
+
 ## 2026-04-23 — Round 43 (Phase 29b Lipids + 29c Nucleic-acids sibling tabs)
 
 ### What shipped

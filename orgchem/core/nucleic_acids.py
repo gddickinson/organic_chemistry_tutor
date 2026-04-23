@@ -197,6 +197,96 @@ NUCLEIC_ACIDS: List[NucleicAcidEntry] = [
         notes="Self-cleaving RNA motif. Catalyses in-line phosphoryl "
               "transfer — canonical SN2-at-P mechanism.",
     ),
+
+    # ---- Phase 31j content expansion (2026-04-23) -----------------
+    # Non-canonical / wobble / modified bases
+    NucleicAcidEntry(
+        name="Hypoxanthine", family="nucleobase",
+        smiles="O=c1[nH]cnc2[nH]cnc12", role="purine",
+        notes="Purine with a keto group at C6. Base of inosine; "
+              "arises from hydrolytic deamination of adenine.",
+    ),
+    NucleicAcidEntry(
+        name="Xanthine", family="nucleobase",
+        smiles="O=c1[nH]c(=O)c2[nH]cnc2[nH]1", role="purine",
+        notes="2,6-dioxopurine. Intermediate in purine catabolism "
+              "(xanthine oxidase → uric acid). Target of allopurinol.",
+    ),
+    NucleicAcidEntry(
+        name="Inosine", family="nucleoside",
+        smiles="O=c1[nH]cnc2c1ncn2[C@@H]1O[C@H](CO)[C@@H](O)[C@H]1O",
+        strand="RNA", role="modified-nucleoside",
+        notes="Hypoxanthine + ribose. Wobble-position base in tRNA "
+              "(pairs with U, C, A). Basis of inosine-containing "
+              "mRNA editing (ADAR enzymes).",
+    ),
+    NucleicAcidEntry(
+        name="Pseudouridine (Ψ)", family="nucleoside",
+        smiles="OC[C@H]1O[C@H]([C@@H](O)[C@@H]1O)"
+               "c1cc(=O)[nH]c(=O)[nH]1",
+        strand="RNA", role="modified-nucleoside",
+        notes="C5-linked uracil — the most abundant RNA modification. "
+              "Stabilises tRNA / rRNA helices; pseudouridylation is "
+              "programmable via H/ACA snoRNAs.",
+    ),
+    # Coenzyme nucleotides
+    NucleicAcidEntry(
+        name="NADH", family="nucleotide",
+        smiles="NC(=O)C1=CN(C=CC1)[C@@H]1O[C@H](COP(=O)(O)OP(=O)(O)"
+               "OC[C@H]2O[C@@H](n3cnc4c(N)ncnc43)[C@H](O)[C@@H]2O)"
+               "[C@@H](O)[C@H]1O",
+        strand="RNA", role="redox-coenzyme",
+        notes="Reduced form of NAD⁺. Hydride carrier in cellular "
+              "metabolism; λmax 340 nm lets biochemists follow "
+              "oxidoreductase kinetics.",
+    ),
+    NucleicAcidEntry(
+        name="NADPH", family="nucleotide",
+        smiles="NC(=O)C1=CN(C=CC1)[C@@H]1O[C@H](COP(=O)(O)OP(=O)(O)"
+               "OC[C@H]2O[C@@H](n3cnc4c(N)ncnc43)[C@H](OP(=O)(O)O)"
+               "[C@@H]2O)[C@@H](O)[C@H]1O",
+        strand="RNA", role="redox-coenzyme",
+        notes="2'-phosphorylated NADH. Reducing equivalents for "
+              "biosynthesis (fatty-acid synthase, cholesterol "
+              "biosynthesis, P450 reductases).",
+    ),
+    NucleicAcidEntry(
+        name="FAD", family="nucleotide",
+        smiles="Cc1cc2nc3c(=O)[nH]c(=O)n(C[C@H](O)[C@@H](O)[C@@H](O)"
+               "COP(=O)(O)OP(=O)(O)OC[C@H]4O[C@@H](n5cnc6c(N)ncnc65)"
+               "[C@H](O)[C@@H]4O)c3nc2cc1C",
+        strand="RNA", role="redox-coenzyme",
+        notes="Flavin adenine dinucleotide. Two-electron / one-"
+              "electron capable; isoalloxazine ring handles radical "
+              "chemistry (e.g. dehydrogenases, monoamine oxidase).",
+    ),
+    NucleicAcidEntry(
+        name="Coenzyme A (CoA-SH)", family="nucleotide",
+        smiles="CC(C)(COP(=O)(O)OP(=O)(O)OC[C@H]1O[C@@H]"
+               "(n2cnc3c(N)ncnc32)[C@H](OP(=O)(O)O)[C@@H]1O)"
+               "[C@@H](O)C(=O)NCCC(=O)NCCS",
+        strand="RNA", role="acyl-carrier",
+        notes="Carries acyl groups (via thioester at the terminal "
+              "–SH). Central to fatty-acid metabolism, TCA cycle, "
+              "and acetylation of histones / proteins.",
+    ),
+    NucleicAcidEntry(
+        name="S-Adenosyl-L-methionine (SAM)", family="nucleotide",
+        smiles="C[S+](CC[C@H](N)C(=O)O)C[C@H]1O[C@@H]"
+               "(n2cnc3c(N)ncnc32)[C@H](O)[C@@H]1O",
+        strand="RNA", role="methyl-donor",
+        notes="Universal biological methyl donor. Sulfonium salt "
+              "makes the methyl group electrophilic. Drives DNA / "
+              "RNA / protein / small-molecule methylation.",
+    ),
+    # Secondary-structure / motif teaching entries
+    NucleicAcidEntry(
+        name="RNA hairpin (GCGCUUUUGCGC)", family="oligonucleotide",
+        strand="RNA", role="secondary-structure",
+        notes="Canonical tetraloop hairpin: 4-bp stem + UUUU loop. "
+              "Common motif in ribosomal RNA and mRNA 3'-UTRs. "
+              "Rendered as sequence — no single-ligand SMILES.",
+    ),
 ]
 
 

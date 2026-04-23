@@ -94,7 +94,7 @@ def test_audit_entries_point_at_panel(app):
     for name in ("list_carbohydrates", "get_carbohydrate",
                  "carbohydrate_families"):
         entry = GUI_ENTRY_POINTS.get(name, "")
-        assert "Carbohydrates tab" in entry, entry
+        assert "Macromolecules" in entry and "Carbohydrates" in entry, entry
 
 
 def test_gui_coverage_still_100(app):

@@ -1,7 +1,7 @@
 # Project Status — OrgChem Studio
 
 > Living document. Update at the end of every meaningful session.
-> Last updated: **2026-04-23** (round 43 — Phase 29b Lipids + 29c Nucleic-acids tabs shipped)
+> Last updated: **2026-04-23** (round 46 — Phase 31 third content batch: +3 energy profiles / +10 glossary terms / +3 proteins)
 
 ## Current phase
 **Phases 1, 2a, 2b, 2c.1, 2c.2, 3a, 3b, 6a (partial), 8a–c, 10a, 11a/b/d
@@ -19,18 +19,27 @@ reactions, 9 mechanisms, 11 synthesis pathways, 9 energy profiles, 43
 glossary terms. Future phases 9 (docking), 10b (OpenMM MD), 13c
 (full-kinetics composite), 12 (IUPAC nomenclature), 14b (orbital
 isosurfaces), 15d (characterisation), 16 (bio-organic), 17b-e / 18b-e /
-19a/c-e are scoped. **667 tests pass + 1 skipped** (round 43, +16
-new from Phase 29b Lipids tab (21-entry catalogue — fatty acids,
-triglycerides, phospholipids, sphingolipids, sterols, fat-soluble
-vitamins / hormones) and Phase 29c Nucleic-acids tab (23-entry
-catalogue — bases, nucleosides, nucleotides, short oligos +
-canonical PDB motifs 1BNA / 1EHZ / 143D / 1HMH). Both panels mirror
-the Carbohydrates tab pattern (family combo + free-text filter +
-entry list + 2D SVG viewer + meta pane); NA panel's PDB-motif rows
-expose a *Fetch PDB in Proteins tab* button. GUI coverage remains
-**100.0 %** (108 / 108 actions wired). User directive logged
-mid-round: all macromolecule surfaces should be unified into a
-separate window opened from a menu item — captured as Phase 30.
+19a/c-e are scoped. **676 tests pass + 1 skipped** (round 44).
+**Phase 30 shipped end-to-end**: Proteins / Carbohydrates / Lipids /
+Nucleic-acids were removed from the main-window tabbar and moved
+into a dedicated `MacromoleculesWindow` opened via *Window →
+Macromolecules…* (Ctrl+Shift+M). Single persistent instance;
+geometry + last-active-tab persist via QSettings. Agent action
+`open_macromolecules_window(tab)` added. NA panel's *Fetch PDB*
+button now opens/focuses the window's Proteins inner tab rather
+than switching the main tabbar. GUI coverage still **100.0 %**
+(109 / 109 actions wired). **Phase 31 (content-expansion) third batch shipped in round 46**
+(cumulative totals across rounds 44-46): **+5 reactions** → 31;
+**+18 glossary terms** → 61 (round 46 adds live in
+`seed_glossary_extra.py`); **+25 carbohydrates** → 25; **+10
+lipids** → 31; **+10 nucleic-acid entries** → 33; **+25 general
+molecules** → 193; **+3 energy profiles** (Sonogashira, HWE,
+Mitsunobu) → 12; **+3 seeded proteins** (lysozyme 1LYZ,
+myoglobin 1MBN, GFP 1EMA) → 9. Plus 10 intermediate-fragment
+backfills to keep the fragment-consistency audit green. Target end-state: 400 molecules, 50 reactions, 20
+mechanisms, 25 pathways, 20 energy profiles, 80 glossary terms, 30
+tutorials, 40 carbs / 40 lipids / 40 nucleic acids, 15 SAR series,
+15 proteins — runs in parallel with future code phases.
 
 ## What works today
 

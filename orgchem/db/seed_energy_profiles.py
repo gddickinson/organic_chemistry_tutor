@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 
 #: Bump whenever seed data changes. Existing rows with a lower embedded
 #: ``seed_version`` are overwritten on next app launch.
-SEED_VERSION = 2
+SEED_VERSION = 3
 
 
 # ------------------------------------------------------------------
@@ -206,6 +206,91 @@ def _michael_profile() -> ReactionEnergyProfile:
     )
 
 
+# ---- Phase 31e content expansion (2026-04-23) -----------------------
+
+def _sonogashira_profile() -> ReactionEnergyProfile:
+    """Sonogashira catalytic cycle: OA of ArI (RDS) → Cu-acetylide
+    transmetalation → reductive elimination. Energies are qualitative
+    estimates in the palladium-catalysed regime."""
+    return ReactionEnergyProfile(
+        title="Sonogashira coupling: Pd(0) / CuI dual catalysis",
+        energy_unit="kJ/mol",
+        source="pedagogical estimate (Hartwig OTM §18)",
+        points=[
+            StationaryPoint(label="Ar-I + Pd(0)", energy=0.0,
+                            note="plus Cu-acetylide (formed on Cu cycle)"),
+            StationaryPoint(label="TS OA", energy=85.0, is_ts=True,
+                            note="rate-determining oxidative addition"),
+            StationaryPoint(label="Ar-Pd-I", energy=-10.0,
+                            note="Pd(II) intermediate"),
+            StationaryPoint(label="TS transmetalation", energy=40.0,
+                            is_ts=True,
+                            note="Cu-C ↔ Pd-C swap"),
+            StationaryPoint(label="Ar-Pd-C≡C-Ar'", energy=-35.0,
+                            note="diaryl Pd(II) complex"),
+            StationaryPoint(label="TS red. elim.", energy=15.0,
+                            is_ts=True,
+                            note="C(sp²)–C(sp) bond forms"),
+            StationaryPoint(label="Ar-C≡C-Ar' + Pd(0)", energy=-130.0,
+                            note="product + regenerated catalyst"),
+        ],
+    )
+
+
+def _hwe_profile() -> ReactionEnergyProfile:
+    """Horner-Wadsworth-Emmons: stabilised carbanion + aldehyde → E-alkene.
+    Oxaphosphetane collapse via retro-[2+2] is the selectivity-setting step."""
+    return ReactionEnergyProfile(
+        title="Horner-Wadsworth-Emmons: β-ketoester phosphonate + aldehyde",
+        energy_unit="kJ/mol",
+        source="pedagogical estimate (Clayden 2e §27)",
+        points=[
+            StationaryPoint(label="Reactants + base", energy=0.0,
+                            note="phosphonate, aldehyde, NaH"),
+            StationaryPoint(label="Phosphonate carbanion", energy=-25.0,
+                            note="resonance-stabilised"),
+            StationaryPoint(label="TS C-C bond", energy=30.0, is_ts=True,
+                            note="carbanion attacks C=O"),
+            StationaryPoint(label="Betaine / oxaphosphetane",
+                            energy=-15.0,
+                            note="4-membered P–C–C–O ring"),
+            StationaryPoint(label="TS retro-[2+2]", energy=10.0,
+                            is_ts=True,
+                            note="E-selective fragmentation"),
+            StationaryPoint(label="E-alkene + phosphate", energy=-120.0,
+                            note="thermodynamic sink (P=O strength)"),
+        ],
+    )
+
+
+def _mitsunobu_profile() -> ReactionEnergyProfile:
+    """Mitsunobu reaction: PPh₃ + DIAD activates the alcohol; SN2 on
+    oxyphosphonium inverts configuration. Driving force is P=O
+    formation (≈ 580 kJ/mol bond-strength bonus)."""
+    return ReactionEnergyProfile(
+        title="Mitsunobu: PPh₃ / DIAD esterification with inversion",
+        energy_unit="kJ/mol",
+        source="pedagogical estimate (Clayden 2e §17)",
+        points=[
+            StationaryPoint(label="ROH + PPh₃ + DIAD",
+                            energy=0.0,
+                            note="plus acidic pronucleophile"),
+            StationaryPoint(label="Betaine (PPh₃-DIAD adduct)",
+                            energy=-15.0,
+                            note="hydrazide dianion + P(V) cation"),
+            StationaryPoint(label="Alkoxyphosphonium RO-PPh₃⁺",
+                            energy=-30.0,
+                            note="alcohol activated; Nu⁻ now free"),
+            StationaryPoint(label="TS SN2 inversion", energy=55.0,
+                            is_ts=True,
+                            note="backside attack displaces O-PPh₃"),
+            StationaryPoint(label="Products: R′-Nu + O=PPh₃",
+                            energy=-115.0,
+                            note="inverted at C; driven by P=O"),
+        ],
+    )
+
+
 _PROFILE_MAP: Dict[str, Callable[[], ReactionEnergyProfile]] = {
     "SN2: methyl bromide":  _sn2_profile,
     "SN1: tert-butyl":      _sn1_profile,
@@ -216,6 +301,9 @@ _PROFILE_MAP: Dict[str, Callable[[], ReactionEnergyProfile]] = {
     "Grignard addition":    _grignard_profile,
     "Wittig reaction":      _wittig_profile,
     "Michael addition":     _michael_profile,
+    "Sonogashira coupling": _sonogashira_profile,
+    "Horner-Wadsworth":     _hwe_profile,
+    "Mitsunobu":            _mitsunobu_profile,
 }
 
 

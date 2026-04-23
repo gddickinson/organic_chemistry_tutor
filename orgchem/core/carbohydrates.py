@@ -170,6 +170,98 @@ CARBOHYDRATES: List[Carbohydrate] = [
         notes="β-1,4 glycosidic bonds force linear ribbons that "
               "hydrogen-bond into insoluble fibres — plant cell walls.",
     ),
+
+    # ---- Phase 31h content expansion (2026-04-23) ----------------
+    # Aminosugars
+    Carbohydrate(
+        name="D-Glucosamine", family="monosaccharide",
+        form="pyranose", carbonyl_type="aldose", anomer="β",
+        smiles="N[C@H]1[C@@H](O)O[C@H](CO)[C@@H](O)[C@@H]1O",
+        notes="2-amino-2-deoxy-D-glucose. Precursor to GlcNAc; building "
+              "block of chitin and glycosaminoglycans. Dietary "
+              "supplement in OA.",
+    ),
+    Carbohydrate(
+        name="N-Acetylglucosamine (GlcNAc)", family="monosaccharide",
+        form="pyranose", carbonyl_type="aldose", anomer="β",
+        smiles="CC(=O)N[C@H]1[C@@H](O)O[C@H](CO)[C@@H](O)[C@@H]1O",
+        notes="Core monomer of chitin, peptidoglycan, and hyaluronic "
+              "acid. Lysozyme hydrolyses β-1,4 GlcNAc–MurNAc bonds.",
+    ),
+    # Uronic acids
+    Carbohydrate(
+        name="D-Glucuronic acid", family="monosaccharide",
+        form="pyranose", carbonyl_type="aldose", anomer="β",
+        smiles="O=C(O)[C@H]1O[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O",
+        notes="Liver phase-II drug conjugation (glucuronidation) "
+              "solubilises xenobiotics for excretion. Component of "
+              "hyaluronic acid, heparin, proteoglycans.",
+    ),
+    # Deoxy sugars beyond 2-deoxyribose
+    Carbohydrate(
+        name="L-Fucose (6-deoxy-L-galactose)",
+        family="monosaccharide",
+        form="pyranose", carbonyl_type="aldose", anomer="α",
+        smiles="C[C@@H]1O[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O",
+        notes="Terminal sugar on many N-glycans and blood-group "
+              "antigens (H antigen). Fucosylation is a major "
+              "cancer-biomarker axis.",
+    ),
+    Carbohydrate(
+        name="L-Rhamnose (6-deoxy-L-mannose)",
+        family="monosaccharide",
+        form="pyranose", carbonyl_type="aldose", anomer="α",
+        smiles="C[C@@H]1O[C@H](O)[C@@H](O)[C@H](O)[C@H]1O",
+        notes="Common plant sugar; part of pectin side-chains, "
+              "flavonoid and saponin glycosides. Also caps the "
+              "O-antigen of many Gram-negative bacteria.",
+    ),
+    # Sugar alcohols
+    Carbohydrate(
+        name="D-Sorbitol", family="monosaccharide",
+        form="open-chain", carbonyl_type="",
+        smiles="OC[C@H](O)[C@@H](O)[C@H](O)[C@H](O)CO",
+        notes="Reduced form of glucose (aldehyde → 1° alcohol). "
+              "Non-cariogenic sweetener; also an osmolyte — "
+              "accumulation drives diabetic cataract formation.",
+    ),
+    Carbohydrate(
+        name="D-Mannitol", family="monosaccharide",
+        form="open-chain", carbonyl_type="",
+        smiles="OC[C@@H](O)[C@@H](O)[C@H](O)[C@H](O)CO",
+        notes="Reduced form of mannose. Clinical osmotic diuretic; "
+              "used to reduce intracranial pressure. Differs from "
+              "sorbitol only at C2.",
+    ),
+    Carbohydrate(
+        name="Xylitol", family="monosaccharide",
+        form="open-chain", carbonyl_type="",
+        smiles="OC[C@@H](O)C(O)[C@H](O)CO",
+        notes="5-carbon sugar alcohol. Anticariogenic sweetener "
+              "(oral bacteria can't metabolise it). Same sweetness "
+              "as sucrose with ⅔ the calories.",
+    ),
+    # Rare aldoses
+    Carbohydrate(
+        name="D-Tagatose", family="monosaccharide",
+        form="pyranose", carbonyl_type="ketose", anomer="α",
+        smiles="OC[C@H]1O[C@](O)(CO)[C@H](O)[C@@H]1O",
+        notes="C4 epimer of fructose — a rare hexulose. "
+              "Low-glycaemic sweetener; isomerised from lactose-"
+              "derived galactose industrially.",
+    ),
+    # Disaccharide biology extras
+    Carbohydrate(
+        name="Trehalose (α,α-1,1 glucose dimer)",
+        family="disaccharide", form="pyranose–pyranose",
+        carbonyl_type="non-reducing",
+        glycosidic="α,α-1,1",
+        smiles="OC[C@H]1O[C@H](O[C@@H]2O[C@H](CO)[C@@H](O)"
+               "[C@H](O)[C@H]2O)[C@H](O)[C@@H](O)[C@@H]1O",
+        notes="Non-reducing sugar in insects, fungi, yeasts. "
+              "Protects proteins / membranes against desiccation "
+              "(anhydrobiosis). Both anomeric carbons are locked.",
+    ),
 ]
 
 

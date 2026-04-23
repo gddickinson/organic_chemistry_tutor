@@ -204,6 +204,59 @@ _STARTER: List[Tuple[str, str, str, str]] = [
      "the scissile peptide carbonyl. This makes HIV protease the canonical "
      "'active site IS the dimer interface' teaching example.",
      "CC(=O)NCC.O>>CC(=O)O.NCC"),
+
+    # ---- Phase 31b content expansion (2026-04-23) ----------------
+    ("Buchwald-Hartwig amination (bromobenzene + morpholine)",
+     "Cross-coupling (Pd-catalysed)",
+     "Pd/phosphine-catalysed C–N bond formation between an aryl "
+     "halide and a secondary amine. Tolerant of many functional "
+     "groups; widely used in medicinal chemistry to decorate "
+     "drug-like scaffolds. Key steps: oxidative addition of ArBr, "
+     "amine coordination, deprotonation by base (NaOtBu / Cs₂CO₃), "
+     "reductive elimination to deliver Ar-NR₂.",
+     "Brc1ccccc1.C1COCCN1>>c1ccc(N2CCOCC2)cc1.[H]Br"),
+    ("Sonogashira coupling (iodobenzene + phenylacetylene)",
+     "Cross-coupling (Pd/Cu-catalysed)",
+     "Pd(0) + Cu(I) dual-catalysed C(sp²)–C(sp) coupling between "
+     "an aryl/vinyl halide and a terminal alkyne. The copper "
+     "co-catalyst makes an acetylide intermediate that transmetalates "
+     "onto Pd; amine base (Et₃N / iPr₂NH) deprotonates the alkyne. "
+     "One of the workhorses for building conjugated aryl-alkyne "
+     "scaffolds (liquid crystals, OLEDs, drug SAR).",
+     "Ic1ccccc1.C#Cc1ccccc1>>c1ccc(C#Cc2ccccc2)cc1.[H]I"),
+    ("Mitsunobu reaction (alcohol + carboxylic acid)",
+     "Functional-group interconversion",
+     "Converts a 1° or 2° alcohol into an ester, ether, or amine "
+     "with inversion of configuration. Reagents: PPh₃ + DIAD "
+     "(or DEAD). PPh₃ activates the alcohol's OH as an oxyphosphonium, "
+     "the acidic pronucleophile (pKa ≤ ~13) is deprotonated by the "
+     "hydrazide anion, then SN2 displacement of OPPh₃ delivers the "
+     "product. Workhorse for installing oxygen nucleophiles with "
+     "stereochemical inversion.",
+     "CC(O)C.CC(=O)O>>CC(OC(C)=O)C.O"),
+    ("Swern oxidation (1-octanol → octanal)",
+     "Oxidation",
+     "Mild, chromium-free oxidation of a 1° alcohol to an aldehyde "
+     "(or 2° alcohol to a ketone) using DMSO activated by oxalyl "
+     "chloride at −78 °C, followed by triethylamine. The activated "
+     "DMSO (chloromethyleneketene dimethyl ammonium) forms an "
+     "alkoxysulfonium, which is deprotonated at a methyl, ejects "
+     "Me₂S, and the resulting alkoxide furnishes the carbonyl. "
+     "Does NOT over-oxidise to carboxylic acid — a major advantage "
+     "over Jones / KMnO₄.",
+     "CCCCCCCCO>>CCCCCCCC=O"),
+    ("Horner-Wadsworth-Emmons olefination (benzaldehyde + "
+     "triethyl phosphonoacetate)",
+     "Olefination",
+     "Stabilised phosphonate-carbanion analogue of the Wittig "
+     "reaction. Strong preference for the E-alkene (thermodynamic "
+     "betaine opens via retro-[2+2] to the trans product). "
+     "Phosphate by-product is water-soluble, so workup is cleaner "
+     "than Wittig. Use: install α,β-unsaturated esters / ketones / "
+     "nitriles from aldehydes.",
+     "O=Cc1ccccc1.CCOC(=O)CP(=O)(OCC)OCC"
+     ">>CCOC(=O)/C=C/c1ccccc1.O=P(OCC)(OCC)O"),
+
     ("RNase A: phosphoryl transfer on RNA",
      "Enzyme (phosphodiesterase)",
      "Bovine pancreatic ribonuclease A cleaves RNA in two chemically "

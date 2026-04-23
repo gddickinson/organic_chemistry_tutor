@@ -284,6 +284,41 @@ _EXTENDED: List[Tuple[str, str, str]] = [
     ("Formamide",        "NC=O",                                      "amide"),
     ("Acetamide",        "CC(=O)N",                                   "amide"),
     ("Urea",             "NC(=O)N",                                   "amide"),
+
+    # ---- Phase 31a content expansion (2026-04-23) ---------------------
+    # Terpenes — monoterpenes + sesquiterpene + diterpene skeletons
+    ("α-Pinene",         "CC1=CC[C@@H]2CC1[C@]2(C)C",                 "terpene"),
+    ("β-Pinene",         "C=C1CC[C@H]2CC1[C@@]2(C)C",                 "terpene"),
+    ("Limonene",         "CC(=C)[C@@H]1CC=C(C)CC1",                   "terpene"),
+    ("Myrcene",          "CC(=CCCC(=C)C=C)C",                         "terpene"),
+    ("Camphor",          "CC1(C)[C@@H]2CC[C@]1(C)C(=O)C2",            "terpene"),
+    ("Menthol",          "CC(C)[C@@H]1CC[C@@H](C)C[C@H]1O",           "terpene"),
+    ("Geraniol",         "CC(=CCC/C(C)=C/CO)C",                       "terpene"),
+    ("Farnesol",         "CC(=CCC/C(C)=C/CC/C(C)=C/CO)C",             "terpene"),
+    # Macrocycles — crown ethers + porphyrin (free base)
+    ("18-Crown-6",       "O1CCOCCOCCOCCOCCOCC1",                      "macrocycle"),
+    ("15-Crown-5",       "O1CCOCCOCCOCCOCC1",                         "macrocycle"),
+    ("Porphine (free-base porphyrin)",
+        "C1=CC2=CC3=CC=C(N3)C=C4C=CC(=N4)C=C5C=CC(=N5)C=C1N2",        "macrocycle"),
+    # Polymers / monomers
+    ("Styrene",          "C=Cc1ccccc1",                               "monomer"),
+    ("Vinyl chloride",   "C=CCl",                                     "monomer"),
+    ("Ethylene glycol",  "OCCO",                                      "monomer"),
+    ("Bisphenol-A",      "CC(C)(c1ccc(O)cc1)c1ccc(O)cc1",             "monomer"),
+    ("Caprolactam",      "O=C1CCCCCN1",                               "monomer"),
+    # Agrochemicals
+    ("Glyphosate",       "OC(=O)CNCP(=O)(O)O",                        "agrochemical"),
+    ("Atrazine",         "CCNc1nc(Cl)nc(NC(C)C)n1",                   "agrochemical"),
+    ("DDT",              "ClC(Cl)(Cl)C(c1ccc(Cl)cc1)c1ccc(Cl)cc1",    "agrochemical"),
+    # Common solvents and simple dye — fills gaps in the solvent catalogue
+    ("Glycerol",         "OCC(O)CO",                                  "solvent"),
+    ("HMPA (hexamethylphosphoramide)",
+        "CN(C)P(=O)(N(C)C)N(C)C",                                     "solvent"),
+    ("Diglyme (diethylene glycol dimethyl ether)",
+        "COCCOCCOC",                                                  "solvent"),
+    ("Indigo",           "O=C1/C(=C2/C(=O)c3ccccc3N2)Nc2ccccc21",     "dye"),
+    ("Methylene blue",
+        "CN(C)c1ccc2nc3ccc(N(C)C)cc3[s+]c2c1",                        "dye"),
 ]
 
 

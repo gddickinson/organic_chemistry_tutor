@@ -229,6 +229,30 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
     # Fmoc protecting-group base residue.
     ("Fmoc-OH (9-fluorenylmethyl carbonate)",
         "O=C(O)OCC1c2ccccc2-c2ccccc21",                                "intermediate"),
+
+    # ---- Phase 31b reaction-fragment backfill (2026-04-23) ------------
+    # Products / byproducts referenced by the five new reactions so the
+    # fragment-consistency audit stays clean.
+    ("4-Phenylmorpholine",
+        "c1ccc(N2CCOCC2)cc1",                                          "intermediate"),
+    ("Iodobenzene",
+        "Ic1ccccc1",                                                   "intermediate"),
+    ("Phenylacetylene",
+        "C#Cc1ccccc1",                                                 "intermediate"),
+    ("Diphenylacetylene (tolan)",
+        "C(#Cc1ccccc1)c1ccccc1",                                       "intermediate"),
+    ("Isopropyl acetate",
+        "CC(=O)OC(C)C",                                                "intermediate"),
+    ("1-Octanol",
+        "CCCCCCCCO",                                                   "intermediate"),
+    ("Octanal",
+        "CCCCCCCC=O",                                                  "intermediate"),
+    ("Triethyl phosphonoacetate",
+        "CCOC(=O)CP(=O)(OCC)OCC",                                      "intermediate"),
+    ("Ethyl (E)-cinnamate",
+        "CCOC(=O)/C=C/c1ccccc1",                                       "intermediate"),
+    ("Diethyl phosphate",
+        "CCOP(=O)(O)OCC",                                              "intermediate"),
 ]
 
 

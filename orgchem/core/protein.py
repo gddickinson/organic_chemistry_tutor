@@ -323,6 +323,45 @@ SEEDED_PROTEINS: List[SeededProtein] = [
             "Teaching anchor for NA-ligand analysis (Phase 24k)."
         ),
     ),
+
+    # ---- Phase 31l content expansion (2026-04-23) ---------------------
+    SeededProtein(
+        pdb_id="1LYZ",
+        name="Hen egg-white lysozyme",
+        ligand_name="",
+        teaching_story=(
+            "The first enzyme to have its 3D structure solved (Phillips, "
+            "1965) and the archetypal glycosidase mechanism. Hydrolyses "
+            "β-1,4 GlcNAc–MurNAc bonds in bacterial peptidoglycan. Glu35 "
+            "+ Asp52 act as general acid + nucleophile-stabiliser — the "
+            "canonical Koshland double-displacement / Phillips oxocarbenium "
+            "mechanism debate lives here."
+        ),
+    ),
+    SeededProtein(
+        pdb_id="1MBN",
+        name="Sperm-whale myoglobin",
+        ligand_name="HEM (heme-b)",
+        teaching_story=(
+            "The first protein structure ever solved (Kendrew, 1958 — "
+            "shared 1962 Nobel). Single globin fold with a heme prosthetic "
+            "group. Shows how a distal histidine tunes O₂ vs CO "
+            "discrimination. Foundation structure for the globin family."
+        ),
+    ),
+    SeededProtein(
+        pdb_id="1EMA",
+        name="Green fluorescent protein (GFP)",
+        ligand_name="CRO (chromophore: Thr-Tyr-Gly autocycle)",
+        teaching_story=(
+            "The 11-strand β-barrel that revolutionised cell biology "
+            "(Shimomura / Chalfie / Tsien, 2008 Nobel). Chromophore is "
+            "formed post-translationally by autocyclisation of the S65-"
+            "Y66-G67 tripeptide inside the barrel. Structural anchor for "
+            "fluorescent-tag teaching and protein-engineering case studies "
+            "(EGFP, YFP, CFP)."
+        ),
+    ),
 ]
 
 

@@ -2,15 +2,18 @@
 
 An interactive PySide6 desktop application for **learning and teaching
 organic chemistry**. Built on RDKit + 3Dmol.js + SQLAlchemy/SQLite, with
-over **500 seeded molecules**, **30 named reactions**, **13 multi-step
-mechanisms** (including enzyme active sites), **12 classical synthesis
-pathways**, and an integrated **protein / small-molecule interaction
-stack** that fetches from RCSB and AlphaFold DB.
+**371 seeded molecules** in the main database (plus 89 curated
+macromolecule entries across carbohydrates / lipids / nucleic acids),
+**35 named reactions**, **13 multi-step mechanisms** (including enzyme
+active sites like HIV protease + RNase A), **12 classical synthesis
+pathways**, **12 reaction-coordinate energy profiles**, **61 glossary
+terms**, and an integrated **protein / small-molecule interaction stack**
+that fetches from RCSB and AlphaFold DB.
 
 The full catalogue of features is reachable from the GUI — the current
 audit gate pins **100 % GUI coverage** (every registered agent action
-has a corresponding menu / panel / dialog entry) and **642 tests** run
-green.
+has a corresponding menu / panel / dialog entry — **109 / 109**) and
+**676 tests + 1 skipped** run green.
 
 ![Main window — molecule workspace](screenshots/tour/01_caffeine.png)
 
@@ -69,12 +72,50 @@ structure comparison.
 ![Compare tab](screenshots/tour/11_compare.png)
 
 ### Glossary
-~50 searchable terms across bonding, stereochem, mechanism,
-reactions, synthesis, spectroscopy, lab-technique, and enzyme-
-mechanism categories. 15 anchor terms ship with example SMILES
-rendered on click via the *View figure* button.
+**61** searchable terms across bonding, stereochem, mechanism,
+reactions, synthesis, spectroscopy, lab-technique, enzyme-
+mechanism, and medicinal-chemistry categories. Anchor terms ship
+with example SMILES rendered on click via the *View figure*
+button. Continued-expansion entries (Hammond, Bürgi-Dunitz, KIE,
+HOMO/LUMO, pharmacophore, prodrug, J-coupling, …) live in
+`seed_glossary_extra.py` to keep the main seed module near the
+500-line cap.
 
 ![Glossary tab](screenshots/tour/13_glossary.png)
+
+### Macromolecules window (Phase 30)
+All four macromolecule workspaces (**Proteins**, **Carbohydrates**,
+**Lipids**, **Nucleic acids**) live in a dedicated top-level
+window accessed via *Window → Macromolecules…* (Ctrl+Shift+M) —
+the main tabbar stays focused on small-molecule workflows.
+Single persistent instance; geometry + last-active tab persist
+across sessions.
+
+- **Proteins** — PDB / AlphaFold ingestion, pocket finder,
+  contact / PPI / NA-ligand analysers, interactive 3D viewer
+  with click-to-inspect (picked residue bounces back to Qt via
+  QWebChannel), 2D PoseView-style interaction-map exporter.
+- **Carbohydrates** — 25 entries: monosaccharides (aldoses /
+  ketoses, α/β/open-chain), aminosugars (glucosamine, GlcNAc),
+  uronic acid (glucuronic), deoxy sugars (fucose, rhamnose),
+  sugar alcohols (sorbitol, mannitol, xylitol), disaccharides
+  (sucrose, lactose, maltose, cellobiose, trehalose),
+  polysaccharide fragments (amylose, cellulose).
+- **Lipids** — 31 entries spanning fatty acids (C8 caprylic →
+  C22 DHA, ω-3 / ω-6 / ω-9 tags), eicosanoids (PGE2, TXA2),
+  triglycerides, phospholipids (POPC, POPE, phosphatidic acid),
+  sphingolipids (ceramide, sphingomyelin), sterols + bile acids
+  (cholesterol, ergosterol, cholic, taurocholic), steroid
+  hormones (testosterone, estradiol, progesterone, cortisol),
+  fat-soluble vitamins (D₃, A retinol, E α-tocopherol).
+- **Nucleic acids** — 33 entries: bases (A/G/C/T/U + m6A /
+  m5C + hypoxanthine / xanthine), nucleosides (adenosine,
+  inosine, pseudouridine Ψ, …), nucleotides (ATP, cAMP, GTP,
+  NAD⁺ / NADH / NADPH, FAD, CoA, SAM), oligonucleotides, plus
+  canonical PDB motifs (1BNA B-DNA, 1EHZ tRNA-Phe, 143D
+  G-quadruplex, 1HMH hammerhead ribozyme). *Fetch PDB*
+  button for any PDB-motif entry jumps directly into the
+  Proteins inner tab.
 
 ### Tools menu
 A single-click path to every core capability, each as its own
@@ -172,11 +213,15 @@ exposed as both a library call (`orgchem/core/formula.py`) and a
 Tools menu dialog.
 
 ## Status
-- **642 tests + 1 skipped** across the full suite (2026-04-23).
-- **100 % GUI coverage** of the agent-action registry (102/102
+- **676 tests + 1 skipped** across the full suite (2026-04-23).
+- **100 % GUI coverage** of the agent-action registry (109/109
   actions reachable from a menu, panel, or dialog — guard-rail
   pinned in `tests/test_gui_audit.py`).
 - All autonomous-loop rounds documented in
-  [`SESSION_LOG.md`](SESSION_LOG.md).
-- User-flagged roadmap items complete through Phase 29a; Phase 29b
-  (Carbohydrates / Lipids / Nucleic-acid tabs) in flight.
+  [`SESSION_LOG.md`](SESSION_LOG.md) (46+ rounds).
+- User-flagged roadmap items complete through **Phase 30** (unified
+  Macromolecules window). **Phase 31** (long-running content
+  expansion — target: 400 molecules, 50 reactions, 25 pathways,
+  20 mechanisms, 20 energy profiles, 80 glossary terms, 30
+  tutorials, 40 carbs / 40 lipids / 40 NAs, 15 SAR series, 15
+  proteins) is actively shipping — ~1 sub-batch per round.

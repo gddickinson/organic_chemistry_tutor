@@ -154,6 +154,75 @@ LIPIDS: List[Lipid] = [
     Lipid(name="Estradiol", family="sterol",
           smiles="C[C@]12CCC3c4ccc(O)cc4CC[C@H]3[C@@H]1CC[C@@H]2O",
           notes="Estrogen. Aromatic A-ring is its structural signature."),
+
+    # ---- Phase 31i content expansion (2026-04-23) ----------------
+    # Medium-chain saturated fatty acids (MCT oil components)
+    Lipid(name="Caprylic acid (C8:0)", family="fatty-acid",
+          smiles="CCCCCCCC(=O)O",
+          chain_length=8, unsaturations=0, melting_point_c=16.5,
+          notes="Medium-chain fatty acid — liquid at room temperature. "
+                "MCT oil component; rapidly oxidised in liver for "
+                "ketogenic energy supply."),
+    Lipid(name="Capric acid (C10:0)", family="fatty-acid",
+          smiles="CCCCCCCCCC(=O)O",
+          chain_length=10, unsaturations=0, melting_point_c=31.6,
+          notes="Medium-chain fatty acid. Coconut / palm-kernel oils; "
+                "goat-milk caprylate triglyceride backbone."),
+    # Eicosanoids (signalling)
+    Lipid(name="Prostaglandin E2 (PGE2)", family="fatty-acid",
+          smiles="CCCCC[C@H](O)/C=C/[C@H]1[C@H](O)CC(=O)[C@@H]1"
+                 "C/C=C\\CCCC(=O)O",
+          chain_length=20, unsaturations=2,
+          notes="Arachidonic-acid-derived eicosanoid. Cyclopentane ring "
+                "+ α / ω side chains. COX-2 target; mediates fever, "
+                "pain, inflammation, parturition."),
+    Lipid(name="Thromboxane A2 (TXA2)", family="fatty-acid",
+          smiles="CCCCC[C@H](O)/C=C/[C@H]1O[C@@H]2C[C@H]1"
+                 "[C@@H](C/C=C\\CCCC(=O)O)O2",
+          chain_length=20, unsaturations=2,
+          notes="Oxetane-bearing eicosanoid — platelet aggregator "
+                "and vasoconstrictor. Target of low-dose aspirin (COX-1 "
+                "acetylation in platelets)."),
+    # Bile acids
+    Lipid(name="Cholic acid", family="sterol",
+          smiles="C[C@H](CCC(=O)O)[C@H]1CC[C@@H]2[C@@]1(C)"
+                 "[C@@H](O)C[C@H]1[C@H]2[C@@H](O)C[C@@H]2C[C@H](O)"
+                 "CC[C@]12C",
+          notes="Primary bile acid — synthesised in liver from "
+                "cholesterol. Emulsifies dietary fat. 3α, 7α, 12α-"
+                "trihydroxy-5β-cholan-24-oic acid."),
+    Lipid(name="Taurocholic acid", family="sterol",
+          smiles="C[C@H](CCC(=O)NCCS(=O)(=O)O)[C@H]1CC[C@@H]2"
+                 "[C@@]1(C)[C@@H](O)C[C@H]1[C@H]2[C@@H](O)C"
+                 "[C@@H]2C[C@H](O)CC[C@]12C",
+          notes="Taurine-conjugated bile salt. Deprotonated at "
+                "intestinal pH — potent detergent for micelle "
+                "formation with dietary fats."),
+    # Steroid hormones
+    Lipid(name="Progesterone", family="sterol",
+          smiles="C[C@]12CC[C@H]3[C@@H](CCC4=CC(=O)CC[C@@]34C)"
+                 "[C@@H]1CC[C@@H]2C(=O)C",
+          notes="C21 steroid hormone. Uterine lining maintenance; "
+                "pregnancy. Precursor to cortisol + aldosterone."),
+    Lipid(name="Cortisol", family="sterol",
+          smiles="OC[C@@]12[C@@](O)([C@@H](O)C[C@@H]1[C@@H]1CC"
+                 "[C@H]3CC(=O)CC[C@]3(C)[C@H]1C[C@@H]2O)C(=O)CO",
+          notes="Glucocorticoid — stress hormone. Anti-inflammatory "
+                "and gluconeogenic. Clinical analogue: prednisolone "
+                "(Δ¹-dehydrocortisol)."),
+    # Fat-soluble vitamins
+    Lipid(name="Retinol (vitamin A)", family="vitamin",
+          smiles="CC1=C(/C=C/C(C)=C/C=C/C(C)=C/CO)C(C)(C)CCC1",
+          chain_length=20, unsaturations=5,
+          notes="All-trans retinol — precursor to retinal (vision) "
+                "and retinoic acid (transcriptional regulator, "
+                "RAR/RXR)."),
+    Lipid(name="α-Tocopherol (vitamin E)", family="vitamin",
+          smiles="Cc1c(C)c2c(c(C)c1O)CC[C@@](C)(CCC[C@H](C)CCC"
+                 "[C@H](C)CCCC(C)C)O2",
+          notes="Main circulating form of vitamin E. Chain-breaking "
+                "antioxidant in cell membranes — phenolic H-atom "
+                "donor to lipid peroxyl radicals."),
 ]
 
 
