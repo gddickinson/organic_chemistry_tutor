@@ -59,6 +59,37 @@ class PubChemSource(DataSource):
         return m
 
 
+def fetch_synonyms_by_inchikey(inchikey: str,
+                               limit: int = 10) -> List[str]:
+    """Phase 35b — best-effort PubChem synonym lookup by InChIKey.
+
+    Returns a list of up to *limit* natural-language synonyms on
+    success; returns an empty list on any failure (missing
+    ``pubchempy``, network error, compound not found).  Never
+    raises — callers use this purely to decorate a DB row, not
+    to gate the insert.
+    """
+    key = (inchikey or "").strip()
+    if not key:
+        return []
+    try:
+        import pubchempy as pcp
+    except ImportError:
+        return []
+    try:
+        hits = pcp.get_compounds(key, namespace="inchikey")
+    except Exception:  # noqa: BLE001 — network / HTTP / parse errors
+        return []
+    for c in hits or []:
+        try:
+            syns = list(c.synonyms or [])
+        except Exception:  # noqa: BLE001
+            continue
+        if syns:
+            return syns[:limit]
+    return []
+
+
 def _pick_display_name(synonyms, iupac_name, fallback):
     """Choose a friendly display name from PubChem output.
 

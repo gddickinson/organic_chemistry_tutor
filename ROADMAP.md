@@ -2035,7 +2035,8 @@ reactions, 20 mechanisms, 25 synthesis pathways, 20 energy profiles,
       penicillin V, progesterone (Djerassi endgame), glyphosate
       (industrial). Each with per-step SMILES, conditions, yields,
       notes + reagent annotations.
-- [~] **31e. Energy profiles → 20.** Shipped across rounds 41-99:
+- [x] **31e. Energy profiles → 20. COMPLETE (round 106).**
+      Shipped across rounds 41-106:
       Sonogashira catalytic cycle (OA as RDS), HWE via oxaphosphetane
       collapse, Mitsunobu via oxyphosphonium SN2,
       Claisen condensation (round 98) — "final deprotonation drives
@@ -2077,7 +2078,29 @@ reactions, 20 mechanisms, 25 synthesis pathways, 20 energy profiles,
       stabilises) → deprotonation → ketone (−70).  The
       "oxocarbenium lower than tert-C⁺" inequality is why
       1,2-shifts run forward, not reverse.
-      Catalogue now **18 total**; 2 more to come. Priority list: 11 more reaction-coordinate
+      **Chymotrypsin catalytic triad (round 105)** — first
+      **enzyme-catalysed** profile in the catalogue. 9 points,
+      4 TSs bracketing two tetrahedral intermediates and the
+      covalent acyl-enzyme well. Distinctive "double-hump"
+      shape: the acyl-enzyme sits BELOW the Michaelis complex
+      (acylation half favourable; deacylation half does the
+      remaining work). Both tetrahedral intermediates sit
+      above the Michaelis complex but below the highest TS —
+      the oxyanion-hole stabilisation point. Covalent
+      catalysis splitting one ~80-kJ/mol solution barrier into
+      two ~50-kJ/mol enzyme barriers gives the textbook
+      kcat/Km enhancement of ~10¹⁰.
+      **Friedel-Crafts alkylation (round 106 — CLOSES Phase 31e)**
+      — second EAS profile. Pairs with the round-101 nitration
+      curve. Distinctive shape: an extra pre-equilibrium TS
+      for CH₃⁺ generation via AlCl₃·Cl⁻ abstraction, landing
+      in a genuine endergonic free-cation minimum (+25 kJ/mol)
+      BEFORE the standard Wheland cycle. That "cation is real
+      and unstable" shape is *why* FC alkylation rearranges
+      (1° → 2°/3° via H-shift) and over-alkylates (toluene is
+      more nucleophilic than benzene) — a textbook failure
+      mode that nitration does not share.
+      **Catalogue 20/20 — phase CLOSED.** Priority list: 11 more reaction-coordinate
       diagrams. Priority: Diels-Alder endo/exo comparison, Wittig,
       Aldol (enolate vs enol), Claisen, Michael, Heck (β-hydride
       elimination as RDS), Buchwald-Hartwig (oxidative-addition
@@ -2162,29 +2185,55 @@ reactions, 20 mechanisms, 25 synthesis pathways, 20 energy profiles,
       locked NA (LNA) monomer, phosphorothioate linkage example,
       Z-DNA motif, cruciform / hairpin small examples, pre-miRNA
       example sequence.
-- [~] **31k. SAR series → 15.** Shipped across rounds 40-100:
-      β-blockers (5 variants), ACE inhibitors (5 variants),
-      SSRIs (round 96), **β-lactam penicillin series (round 100)** —
-      5 variants: penicillin G / ampicillin / amoxicillin /
-      methicillin / cloxacillin, MIC vs β-lactamase-stability
-      vs oral-bioavailability table. Three teaching points
-      encoded numerically: (a) α-amino side chains tune oral
-      bioavailability (Pen-G 20 % → ampicillin 40 % → amoxicillin
-      90 %), (b) steric shielding (2,6-di-OMe methicillin,
-      isoxazolyl cloxacillin) buys β-lactamase stability,
-      (c) shielding costs MIC (methicillin ~150× weaker than
-      Pen-G). Catalogue now **6**; 9 more medicinal-chem families
+- [~] **31k. SAR series → 15.** Shipped across rounds 40-108:
+      β-blockers (5), ACE inhibitors (5), SSRIs (round 96),
+      β-lactam penicillins (round 100),
+      **PDE5 inhibitors (round 108)** — 5 variants: sildenafil /
+      vardenafil / tadalafil / avanafil / udenafil with PDE5 IC50
+      + half-life + PDE6 selectivity. Three teaching points
+      encoded: (a) vardenafil most potent (regioisomeric
+      scaffold + N-Et piperazine); (b) tadalafil is the
+      long-half-life outlier (β-carboline chemotype switch,
+      17.5 h vs 4 h) — the classic "weekend pill" story;
+      (c) tadalafil also has the best PDE6 selectivity (~700×)
+      so the chemotype switch resolves both half-life AND
+      visual-disturbance liabilities simultaneously.
+      Catalogue now **7**; 8 more medicinal-chem families
       to come:
       β-lactam antibiotics, β-blockers, ACE inhibitors,
       benzodiazepines, phenothiazines, PDE5 inhibitors (sildenafil
       analogs), kinase inhibitors (imatinib / dasatinib analogs),
       SSRIs, opioids, antihistamines (H1 / H2), cannabinoid
       analogs, aromatase inhibitors, retinoids.
-- [~] **31l. Proteins → 15.** First 3 shipped (lysozyme 1LYZ,
-      myoglobin 1MBN, GFP 1EMA) — catalogue now **9**; 6 more
-      to come: haemoglobin 1HHO, chymotrypsin alt form, ion
-      channel (KcsA 1BL8), kinesin motor, nucleosome core (1AOI),
-      antibody Fab fragment (1IGT).
+- [x] **31l. Proteins → 15. COMPLETE (round 116).**
+      Shipped across rounds 44-116:
+      lysozyme 1LYZ, myoglobin 1MBN, GFP 1EMA,
+      haemoglobin 1HHO R-state (round 107),
+      KcsA potassium channel 1BL8 (round 114),
+      nucleosome 1AOI + IgG 1IGT (round 115),
+      **bovine α-chymotrypsin 5CHA + SARS-CoV-2 main protease 6LU7
+      (round 116 — CLOSES the phase at 15/15).**  5CHA completes
+      the round-62 chymotrypsin-mechanism + round-105 energy-
+      profile + now-structure teaching triad for the most-taught
+      serine protease in biochemistry.  6LU7 (Jin/Yang/Rao 2020
+      *Nature*) is the first SARS-CoV-2 Mpro structure — pairs
+      pedagogically with the 1HPV HIV protease entry to contrast
+      cysteine-protease covalent catalysis (Cys145-His41, covalent
+      warhead → nirmatrelvir/Paxlovid) against aspartic-protease
+      non-covalent peptidomimetic inhibition (HIV Mpro + ritonavir).
+      **Catalogue 15/15 — phase CLOSED.**  Earlier round-115
+      content:  1AOI (Luger /
+      Richmond 1997 *Nature* 389:251) captures 147 bp of DNA
+      wrapped 1.65× around the H2A/H2B/H3/H4 histone octamer —
+      foundation for every nucleosome-positioning + histone-tail
+      modification story.  1IGT (Harris / Edmundson 1997
+      *Biochemistry* 36:1581) is the first complete IgG at 2.8 Å
+      — Y-shaped heavy+light tetramer held together by conserved
+      disulfides + Fc interactions, with the Asn297 glycan that
+      gates Fc-receptor engagement on display (the entire
+      biological-drug glycoengineering arc starts here).
+      Catalogue now **13**; 2 more to close the phase: chymotrypsin
+      alt form + kinesin motor (or another pedagogically-rich pick).
 
 Shipping cadence: ~1 sub-item per round, interleaved with code
 phases. Each sub-item ships its own tests and ROADMAP check-box,
@@ -2533,6 +2582,346 @@ title.
       ("Raney" → BHC Ibuprofen pathway), empty-query fallback,
       ranked-order preservation in `reload_ids`.  Full-suite
       regression: 958 passing.
+
+---
+
+## Phase 35 — Universal synonyms + synonym-aware search *(NEW — 2026-04-24; user-flagged)*
+
+User directive (2026-04-24): *"add synonyms to all molecules and
+have this be a field that is populated when molecules are loaded.
+The synonyms need to be incorporated in all searches etc so users
+can find molecules of interest."*
+
+Current state (round 58 baseline):
+- `Molecule.synonyms_json` column exists and holds a JSON list
+  (e.g. `["Acetaminophen", "Paracetamol", "APAP"]`).
+- `orgchem/db/seed_synonyms.py` has a **curated** map (~dozens of
+  entries) plus InChIKey-based cross-catalogue reconciliation
+  (any molecule whose key matches a Lipid / Carbohydrate /
+  Nucleic-acid catalogue entry inherits that entry's canonical
+  name as a synonym).
+- `db/queries.py::list_molecules` + `find_molecule_by_name` already
+  hit `synonyms_json` via `ILIKE '%q%'`.
+- `core/fulltext_search.py` reads `synonyms_json` when building
+  the molecule blob.
+- `sources/pubchem.py::PubChemSource.fetch` pulls synonym lists
+  from PubChem and puts them in `Molecule.properties["synonyms"]`
+  *— but does NOT persist them to the DB column on import.*
+
+**Gap.** Most seeded molecules + every PubChem-downloaded molecule
+ends up with an empty `synonyms_json`.  Users typing *"vitamin C"*,
+*"aspirin"*, *"APAP"*, *"ASA"*, *"8-oxoguanine"*, *"Tylenol"*, …
+hit only the surfaces that already consult `synonyms_json`
+(browser filter, full-text search, find_molecule_by_name) and
+miss the ones that don't (**command palette**, **Compare tab
+lookup**, **tutor `show_molecule`**).
+
+### Sub-phases
+
+- [ ] **35a. Auto-persist synonyms on PubChem import.** When
+      `sources/pubchem.py::PubChemSource.fetch` succeeds, the
+      `Molecule.properties["synonyms"]` list is already populated.
+      Wire the `download_from_pubchem` agent action (+ the search
+      panel's *Import selected* button) to write this list into
+      `Molecule.synonyms_json` before the DB insert.  Deduplicate
+      against the canonical name + existing synonyms (case-
+      insensitive) via the same `_add_syn` helper already in
+      `seed_synonyms.py`.
+
+- [x] **35b. Optional PubChem lookup in `add_molecule` (round 113).**
+      Shipped the `fetch_synonyms=False` kwarg.  Pipeline: after
+      RDKit validation + dedup checks pass, if the caller opted
+      in, call the new
+      `sources/pubchem.py::fetch_synonyms_by_inchikey(inchikey)`
+      helper — which returns `[]` on any failure (missing
+      `pubchempy`, HTTP / parse errors, no hit).  Raw synonyms
+      pass through the same round-109
+      `_looks_like_registry_id` filter to drop CAS / ChEMBL /
+      UNII / InChI / InChIKey noise + dedup against the
+      canonical name (case-insensitive) + cap at 10.  Cleaned
+      list writes to `Molecule.synonyms_json` as JSON in the
+      same transaction that inserts the row.  Accepted
+      response now carries `synonyms_fetched: int` reporting
+      how many natural-language aliases were persisted (0
+      when offline / no match / empty — never errors the
+      insert).  5 new pytest cases in
+      `tests/test_add_molecule_fetch_synonyms.py` with
+      monkeypatched `fetch_synonyms_by_inchikey`: default-off
+      path, happy-path populates + filters CAS, empty-hit
+      insert-still-succeeds, raising-lookup never bubbles up
+      (helper catch-all verified via direct `_boom` call),
+      and import-error-equivalent simulation via
+      `sys.modules.pop` + `builtins.__import__` block.  All
+      tests pollution-safe — inserted rows use the
+      `Tutor-test-…` prefix that the round-94/97 purge wipes at
+      session end.
+
+- [ ] **35c. Bulk backfill for existing DB rows.**
+      `orgchem/db/backfill_synonyms.py` + companion
+      `scripts/backfill_molecule_synonyms.py` CLI.  Walks every
+      `Molecule` row with an empty / short `synonyms_json`,
+      queries PubChem by InChIKey (using the existing pubchempy
+      adapter), appends returned synonyms.  Rate-limited (1 req
+      / 200 ms) to stay under PubChem's 5 req/sec free-tier cap.
+      Idempotent — re-running after a few new imports just
+      top-ups the unfilled rows.  One-off: also reconcile
+      against the ChEMBL / DrugBank names when present in
+      `properties`.
+
+- [x] **35d. Wire synonyms into the command palette (round 109).**
+      `gui/dialogs/command_palette.py::_molecule_entries()` now
+      emits one `PaletteEntry` per canonical row **plus** one
+      extra aliased entry per synonym — same `target=mid` but
+      distinct `label=synonym`, sublabel `"alias of <canonical>"`.
+      `_looks_like_registry_id()` helper filters noise (CAS
+      `nnn-nn-n`, pure digits, `CHEMBL\d+`, `UNII-…`, `DTXSID`,
+      `InChI=…`, 27-char InChIKey pattern) so the palette stays
+      readable.  Typing *"Paracetamol"* now reaches Acetaminophen
+      via its synonym row; the curated round-58 `Retinol ↔
+      Vitamin A` pair is likewise reachable.  2 new pytest-qt
+      tests: `test_palette_emits_synonym_aliases` walks every
+      row with a non-empty `synonyms_json` and proves ≥1
+      reachable via its aliases; `test_palette_filter_registry_ids`
+      locks the CAS/ChEMBL/UNII/InChIKey rejection rules.
+
+- [x] **35e. Compare tab lookup + tutor name resolution (round 111).**
+      Audit confirmed both surfaces already routed through
+      `find_molecule_by_name`, which the round-58 patch wired to
+      also ILIKE-match `synonyms_json`.  So no new code — this
+      sub-phase is regression-lock-only.  9 new pytest tests in
+      `tests/test_synonym_lookup_paths.py` cover the full grid:
+      (a) `find_molecule_by_name` direct — resolves
+      *"Paracetamol"*→Acetaminophen + *"ASA"*→Aspirin, is
+      case-insensitive (`PARACETAMOL / paracetamol / paraCetaMol`
+      all dispatch to the same id), returns None for unknown;
+      (b) `show_molecule` agent action — resolves both synonym
+      pairs + errors on unknown; (c) Compare panel slot
+      `_on_load` — typing a synonym into the text field and
+      loading the slot yields a title that contains the canonical
+      name (proving the resolver fired), not the alias.  Future
+      regressions to the round-58 ILIKE behaviour will fail
+      these tests immediately.
+
+- [x] **35f. Synonym hint in the molecule browser row (round 110).**
+      `_MolListModel.data(DisplayRole)` now appends ` · <first
+      synonym>` when a row carries a natural-language alias in
+      `synonyms_json` (e.g. *"Acetaminophen   [C8H9NO2]  ·
+      Paracetamol"*).  `ToolTipRole` extended to list every
+      synonym as a "Also known as: …" line below the SMILES.
+      Registry IDs (CAS / ChEMBL / UNII / DTXSID / InChI /
+      InChIKey) filtered out via the shared
+      `command_palette._looks_like_registry_id()` helper from
+      round 109; canonical-name self-references are also
+      filtered so the hint is never redundant.  5 new pytest-qt
+      tests (`tests/test_molecule_browser_synonym_hint.py`):
+      3 unit tests for `_first_natural_synonym` /
+      `_all_synonyms` helpers (registry-noise stripping,
+      empty-input handling, canonical-self-reference dedup),
+      2 integration tests that walk the real seeded DB + prove
+      ≥1 row shows a synonym hint + ≥1 tooltip contains
+      "Also known as:".
+
+### Design notes / risks
+
+- **Network budget.** The bulk backfill (35c) against ~415
+  molecules at 200 ms/req = ~85 s one-shot.  Fine for a
+  maintainer; should not run on every app launch.  Gate behind
+  an explicit `scripts/backfill_molecule_synonyms.py` CLI, not
+  `seed_if_empty`.
+- **Pollution risk.** PubChem synonym lists include registry
+  IDs (CAS numbers, ChEMBL IDs, UNII, FDA UNII).  Filter these
+  out in 35a/35c via a regex that rejects pure-numeric / hex /
+  `CHEMBL\d+` / `UNII:` patterns — keep only natural-language
+  names.
+- **Search UX.**  With 415 molecules × ~10 synonyms each =
+  ~4 k palette entries (35d).  Still well under the palette's
+  fuzzy-match budget (tested fine at 10 k glossary terms + 35
+  reactions in the round-54 launch).  No perf action required
+  unless it proves sluggish.
+- **Synergy with Phase 33 full-text search.**  Since
+  `core/fulltext_search.py` already indexes `synonyms_json`,
+  35a + 35c automatically improve Ctrl+F results for
+  PubChem-imported molecules without further wiring — a
+  nice free win.
+
+### Cross-references to existing tasks
+
+- Round 58 (`seed_synonyms_if_needed`) — the curated map this
+  phase extends.
+- Round 94 / 97 (`Tutor-test` prefix purge) — backfill must
+  not touch test-pollution rows (prefix-gate before querying
+  PubChem to avoid wasted requests).
+- Phase 33 (cross-surface full-text search) — automatic
+  beneficiary of 35a/35c.
+- Phase 34 (sequence viewer) — unrelated, but both Phase-34
+  and Phase-35 sequence-viewer / synonym metadata are the
+  sort of "invisible polish" that makes the app feel
+  professional.
+
+---
+
+## Phase 34 — Sequence viewer + cross-linked 3D selection *(NEW — 2026-04-24; user-flagged)*
+
+User directive (2026-04-24): *"Add an Amino-acid sequence viewer to
+the 3D protein display panel. The sequence would be displayed in a
+rolling text bar, with the user able to select individual amino-acids,
+or sequences of [residues] and the selection is indicated on the 3D
+rendered image — and vice-versa. The DNA sequence could also be
+displayed above the amino-acid sequence. And the ability to identify
+and highlight genes and structures (binding pockets, ligand binding
+sites) of interest."*
+
+Motivation: the Phase 24l 3D viewer already has click-to-inspect
+(picked residue bounces back to Qt via `_PickBridge` / QWebChannel
+and posts to the session log), but there's no inverse path — users
+can't say *"show me Ser195"* and have the atom highlight on the
+ribbon.  A proper linked sequence bar closes that loop and is the
+primary way every other structural-biology tool (PyMOL, ChimeraX,
+UCSF Chimera, NGL Viewer, Mol*) shows protein data.  Once the
+sequence strip exists, overlays for DNA coding strand, pocket
+residues, and ligand-contact residues follow naturally.
+
+### Sub-phases
+
+- [x] **34a. Core `SequenceView` dataclass + agent action
+      (round 112).**  Shipped `orgchem/core/sequence_view.py`:
+      `SequenceView` (pdb_id + `protein_chains` + `dna_chains` +
+      `highlights`), `ChainSequence` (chain_id, one_letter,
+      three_letter, residue_numbers, kind ∈ {protein, dna, rna}),
+      `HighlightSpan` (chain_id, start, end, kind, label, colour)
+      — each with JSON-serialisable `to_dict()` for the Qt widget
+      + agent action.  `build_sequence_view(protein)` separates
+      chains by majority residue-kind; ion-only pseudo-chains
+      skipped.  Helpers `attach_contact_highlights(view, report)`
+      (Phase 24e contacts → per-kind coloured spans) and
+      `attach_pocket_highlights(view, pockets)` (Phase 24d
+      pockets → one min-max span per chain) populate the
+      `highlights` list.  Shared palette `HIGHLIGHT_COLOURS`
+      (pocket=#9FD5A0, ligand-contact=#F5DF50, active-site=#E88B28,
+      h-bond=#4B8BD5, salt-bridge=#D04040, π-stacking=#A050C0,
+      hydrophobic=#E0984B, user=#F18FB1, gene=#8080C0,
+      ss-helix=#C04848, ss-strand=#4878C0).  Residue-id parser
+      `_parse_residue_seq_id` coerces "HIS57", "A:HIS57", ints,
+      and numeric strings to seq_id.  Agent action
+      `get_sequence_view(pdb_id, include_contacts, ligand_name)`
+      wrapped in `agent/actions_protein.py` — returns the full
+      JSON dict, lazily stamping contact highlights if requested.
+      GUI coverage dict updated.  9 pytest cases in
+      `tests/test_sequence_view.py` (schema + build + both
+      highlight helpers + agent-action happy path + missing-pdb
+      error + residue-id coercion fuzz).  No Qt imports in core;
+      fully headless-testable.
+
+- [x] **34b. `SequenceBar` Qt widget (round 116).**  Shipped
+      `orgchem/gui/widgets/sequence_bar.py` with `SequenceBar`
+      (custom `QWidget`) + `SequenceBarPanel` (scroll-area +
+      status-label wrapper).  Features: monospace rolling strip
+      reading `SequenceView.to_dict()`, residue-number tick marks
+      every 10, per-`HighlightSpan` colour-underlay bands keyed by
+      `HIGHLIGHT_COLOURS` palette, click for single-residue
+      selection, click-drag for span selection (clamped to the
+      anchor row for cross-row drags), `selection_changed(chain_id,
+      start, end)` Qt signal, multi-chain stacking (DNA/RNA above
+      proteins per teaching-reading order).  8 new pytest-qt
+      cases in `tests/test_sequence_bar_widget.py` covering empty
+      / populated view, programmatic set/clear selection, real
+      mouse-driven single + span selection, click-outside
+      clearing, and the Panel-wrapper status-line round-trip.
+      Mini-map for very long sequences deferred until a 500+
+      residue entry shows real pain.
+
+- [x] **34c. Two-way binding to the 3D viewer (round 116/117).**
+      **Reverse path (3D → sequence) — shipped round 116.**
+      `_on_atom_picked(chain, resn, resi)` now calls
+      `self.sequence_panel.set_selection(chain, resi, resi)` so a
+      3D click moves the sequence-bar caret onto the corresponding
+      letter.
+      **Forward path (sequence → 3D) — shipped round 117** via a
+      new JS helper injected into every `build_protein_html`
+      page: `window.orgchemHighlight(chainId, start, end)` clears
+      any previous span + applies yellow-carbon sticks + residue
+      labels to the new span, re-rendering in place; companion
+      `window.orgchemClearHighlight()` resets to the baseline
+      cartoon style.  `_on_sequence_selection` in
+      `protein_panel.py` pushes the selection through
+      `web_3d.page().runJavaScript(...)` — live, no HTML rebuild,
+      no perceptible latency.  The (selection span, JS helper
+      call) round-trip is now **fully closed**: user drags a span
+      on the sequence bar → 3D ribbon shows it as sticks; user
+      clicks a residue on the 3D ribbon → sequence-bar caret moves.
+      New regression `test_build_protein_html_exposes_live_highlight_helper`
+      checks the generated HTML exposes both helpers with the
+      correct `(chainId, start, end)` signature + yellowCarbon
+      stick style matching the static pipeline.
+
+- [x] **34d. DNA strand strip — free from 34b (round 116).**
+      The `SequenceBar` widget already stacks `dna_chains` rows
+      above `protein_chains` rows with identical click + span
+      semantics; the `build_sequence_view` builder (Phase 34a)
+      classifies chains by majority residue-kind.  PDB entries
+      with DNA chains (1BNA, 143D, 1HMH, 1AOI) therefore get
+      the DNA strip *for free* on first render.  Dedicated
+      nucleic-acid colour palette + phosphate-backbone 3D
+      highlight on DNA-span selection is a polish follow-up
+      (same 34c live-channel plumbing).
+
+- [~] **34e. Feature-track overlays — pockets + contacts shipped (round 118).**
+      `ProteinPanel` now caches the most-recent
+      :class:`Pocket` list (`_last_pockets`) and `ContactReport`
+      (`_last_contacts`) at analysis time; `_refresh_sequence_bar`
+      layers both onto the `SequenceView` via the Phase-34a
+      helpers `attach_pocket_highlights` (one green span per
+      chain per pocket, collapsed to min-max residue range) +
+      `attach_contact_highlights` (one span per contact, kind-
+      coloured — H-bond blue, salt-bridge red, π-stacking purple,
+      hydrophobic tan).  Caches reset on new PDB / AlphaFold
+      fetch so stale features don't bleed into the next structure.
+      The existing `SequenceBar._paint_row` renders the underlay
+      bars with the per-kind colour from `HIGHLIGHT_COLOURS`.
+      3 new pytest cases: end-to-end feature-track full-stack
+      test in `test_sequence_view.py`, widget-storage regression,
+      and a real `ProteinPanel._refresh_sequence_bar` integration
+      test that primes fake caches then asserts the resulting
+      widget state.
+      **Still open (34e polish):** secondary-structure track
+      (requires parsing HELIX / SHEET records in `core/protein.py`
+      — the parser currently only reads ATOM / HETATM), user-
+      editable tag track with session-state persistence, and
+      UniProt gene-annotation track for DBREF-carrying PDBs.
+
+- [ ] **34f. Selection-aware agent actions.**  Expose the full
+      selection round-trip through the `@action` registry so
+      tutor / scripts can drive it:
+      - `select_residues(pdb_id, chain, start, end)` — updates
+        both the 3D overlay and the sequence bar.
+      - `get_selection(pdb_id)` — returns the current selection
+        as `{chain_id, start, end, resnames}`.
+      - `highlight_feature(pdb_id, feature_name)` — selects a
+        named span (e.g. *"active site"* or *"signal peptide"*).
+      - `clear_selection(pdb_id)`.
+
+### Design notes
+
+- Fetch → parse → display pipeline is already in place (Phase 24a).
+  This phase is **purely GUI + cross-wiring**; no new chemistry
+  code.  34a is the only new `core/` module and it's thin
+  (pure data extraction from the existing `Protein` dataclass).
+- Long protein sequences (>500 residues, e.g. 1KCN myosin
+  heavy chain) will need a mini-map + scrollbar.  Budget
+  one extra widget for that.
+- Multi-chain structures (haemoglobin 1HHO = 4 chains, HIV
+  protease 1HPV = 2 chains) should stack chain rows vertically
+  — not concatenate — so residue-numbering stays per-chain.
+  The existing teaching stories already use chain-prefixed
+  residue IDs (`A:SER195`, `B:HIS57`), so this is a cosmetic
+  commitment.
+- The DNA strand viewer is a lighter version of the same
+  widget; consider refactoring 34b so 34d is a single-track
+  special case.
+- Testing: headless widget tests via pytest-qt with QSignalSpy
+  on `selection_changed`; 3D round-trip tests can grab the
+  viewer HTML and grep the `highlight_residues` arg without
+  needing a real browser.
 
 ---
 

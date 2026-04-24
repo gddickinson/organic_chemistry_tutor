@@ -241,6 +241,13 @@ def _build_model_js(pdb_text: str,
     if enable_picking:
         lines.append(_PICK_JS.strip())
 
+    # Phase 34c — expose a global JS helper `orgchemHighlight` so the
+    # Qt side can push a sequence-bar selection into the live 3D
+    # viewer via `page.runJavaScript(...)` without re-rendering the
+    # whole HTML.  Clears any previous overlay before applying the
+    # new one.  Safe no-op when called with invalid args.
+    lines.append(_LIVE_HIGHLIGHT_JS.strip())
+
     if spin:
         # 3Dmol.js: v.spin(axis, speed) — axis ∈ {"x", "y", "z"},
         # speed in degrees per frame. Called last so the rendered
@@ -249,6 +256,54 @@ def _build_model_js(pdb_text: str,
         lines.append(f'v.spin("{axis}", {float(spin_speed)});')
 
     return "\n  ".join(lines)
+
+
+#: Phase 34c — JS helper for live sequence→3D highlighting.
+#: Exposes `window.orgchemHighlight(chainId, start, end)` and
+#: `window.orgchemClearHighlight()`.  The helper resets the sticks
+#: applied by the previous call (tracked via a module-level pair),
+#: then stick-highlights every residue in the [start, end] range
+#: on `chainId` in yellow-carbon + labels them, mirroring the
+#: static `highlight_residues` pipeline.
+_LIVE_HIGHLIGHT_JS = """
+window.__orgchemActiveHighlight = null;
+window.orgchemClearHighlight = function () {
+  var prev = window.__orgchemActiveHighlight;
+  if (prev && prev.chain && typeof prev.start === "number") {
+    // Reset the previous span's style to cartoon-only
+    // (`{}` = inherit default protein style).
+    v.setStyle({chain: prev.chain, resi: prev.resi},
+               {cartoon: {}});
+    v.removeAllLabels();
+    v.render();
+    window.__orgchemActiveHighlight = null;
+  }
+};
+window.orgchemHighlight = function (chainId, start, end) {
+  try {
+    if (!chainId) return;
+    var s = parseInt(start, 10);
+    var e = parseInt(end, 10);
+    if (isNaN(s) || isNaN(e)) return;
+    if (s > e) { var tmp = s; s = e; e = tmp; }
+    window.orgchemClearHighlight();
+    var resiRange = [];
+    for (var i = s; i <= e; i++) resiRange.push(i);
+    var sel = {chain: String(chainId), resi: resiRange};
+    v.setStyle(sel, {
+      stick: {colorscheme: "yellowCarbon", radius: 0.2},
+      cartoon: {},
+    });
+    v.addResLabels(sel, {fontSize: 11, backgroundColor: "black",
+                         backgroundOpacity: 0.7});
+    v.render();
+    window.__orgchemActiveHighlight = {chain: chainId, resi: resiRange};
+  } catch (err) {
+    // Swallow — a bad selection shouldn't crash the viewer.
+    console && console.warn && console.warn("orgchemHighlight: " + err);
+  }
+};
+"""
 
 
 # ---------------------------------------------------------------------

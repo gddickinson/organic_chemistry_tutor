@@ -387,3 +387,140 @@ def get_protein_chain_sequence(pdb_id: str, chain_id: str) -> Dict[str, Any]:
     return {"pdb_id": pdb_id.upper(), "chain_id": chain_id,
             "sequence": chain.sequence,
             "n_residues": len(chain.residues)}
+
+
+def _get_sequence_panel():
+    """Phase 34f — locate the live `SequenceBarPanel` on the
+    Proteins tab, or return None if the GUI isn't up / the
+    tab hasn't been instantiated.  Callers route all Qt
+    state changes through this helper."""
+    from orgchem.agent.controller import main_window
+    win = main_window()
+    if win is None:
+        return None
+    proteins = getattr(win, "proteins", None)
+    if proteins is None:
+        return None
+    return getattr(proteins, "sequence_panel", None)
+
+
+@action(category="protein")
+def select_residues(pdb_id: str, chain_id: str,
+                    start: int, end: int) -> Dict[str, Any]:
+    """Phase 34f — programmatic sequence-bar selection.
+
+    Sets the selection on the Proteins-tab sequence bar to
+    ``chain_id:start-end`` (PDB-native residue numbering) and
+    forwards the span to the live 3D viewer via the existing
+    round-117 `orgchemHighlight` JS helper.  A single-residue
+    selection passes ``start == end``.
+
+    The ``pdb_id`` argument is advisory — the call operates on
+    whatever structure is currently loaded in the Proteins tab.
+    Returns ``{"status": "ok", "chain_id", "start", "end"}`` on
+    success or ``{"error": ...}`` if the GUI isn't up or the
+    bounds are invalid.
+    """
+    if start > end:
+        start, end = end, start
+    panel = _get_sequence_panel()
+    if panel is None:
+        return {"error": "Proteins sequence panel unavailable "
+                         "(GUI not running or Proteins tab not open)."}
+    from orgchem.agent._gui_dispatch import run_on_main_thread
+
+    def _apply():
+        panel.set_selection(str(chain_id), int(start), int(end))
+        # set_selection on the bar doesn't fire selection_changed
+        # (only user-driven gestures do), so push the highlight
+        # to 3D directly here.
+        from orgchem.agent.controller import main_window
+        win = main_window()
+        proteins = getattr(win, "proteins", None) if win else None
+        if proteins is not None:
+            proteins._on_sequence_selection(
+                str(chain_id), int(start), int(end))
+
+    ok = run_on_main_thread(_apply)
+    if not ok:
+        return {"error": "Failed to dispatch selection to the "
+                         "GUI thread."}
+    return {"status": "ok",
+            "pdb_id": (pdb_id or "").upper(),
+            "chain_id": str(chain_id),
+            "start": int(start),
+            "end": int(end)}
+
+
+@action(category="protein")
+def get_selection(pdb_id: str = "") -> Dict[str, Any]:
+    """Phase 34f — current sequence-bar selection as
+    ``{"chain_id", "start", "end"}`` or ``{"error": ...}`` when
+    no selection exists / GUI unavailable.  Headless-safe."""
+    panel = _get_sequence_panel()
+    if panel is None:
+        return {"error": "Proteins sequence panel unavailable."}
+    sel = panel.bar.selection()
+    if sel is None:
+        return {"error": "No active selection."}
+    chain_id, start, end = sel
+    return {"pdb_id": (pdb_id or "").upper(),
+            "chain_id": chain_id,
+            "start": int(start),
+            "end": int(end)}
+
+
+@action(category="protein")
+def clear_selection(pdb_id: str = "") -> Dict[str, Any]:
+    """Phase 34f — clear the sequence-bar selection.  Also
+    triggers `orgchemClearHighlight` on the live 3D viewer via
+    the `ProteinPanel._on_sequence_cleared` handler."""
+    panel = _get_sequence_panel()
+    if panel is None:
+        return {"error": "Proteins sequence panel unavailable."}
+    from orgchem.agent._gui_dispatch import run_on_main_thread
+
+    def _apply():
+        panel.bar.clear_selection()
+
+    ok = run_on_main_thread(_apply)
+    if not ok:
+        return {"error": "Failed to dispatch clear to the GUI thread."}
+    return {"status": "ok", "pdb_id": (pdb_id or "").upper()}
+
+
+@action(category="protein")
+def get_sequence_view(pdb_id: str,
+                      include_contacts: bool = False,
+                      ligand_name: str = "") -> Dict[str, Any]:
+    """Phase 34a — return the full :class:`SequenceView` for a
+    cached PDB entry as a JSON-serialisable dict.
+
+    Feeds the Phase 34b SequenceBar Qt widget + anyone driving
+    structure browsing headlessly (tutor, scripting editor).
+    Separates chains into ``protein_chains`` and ``dna_chains``
+    by majority residue kind; each carries 1-letter code + per-
+    residue seq_id list (PDB-native numbering).
+
+    When ``include_contacts=True`` and ``ligand_name`` is given,
+    also stamps a :class:`HighlightSpan` per contact residue
+    (Phase 24e contact-kind colours) onto the returned
+    ``highlights`` list — the same data the 3D viewer picks up.
+    """
+    from orgchem.sources.pdb import parse_from_cache_or_string
+    from orgchem.core.sequence_view import (
+        build_sequence_view, attach_contact_highlights,
+    )
+    protein = parse_from_cache_or_string(pdb_id)
+    if protein is None:
+        return {"error": f"No cached entry for {pdb_id!r}. "
+                         "Call fetch_pdb first."}
+    view = build_sequence_view(protein)
+    if include_contacts and ligand_name:
+        try:
+            from orgchem.core.binding_contacts import analyse_binding
+            report = analyse_binding(protein, ligand_name)
+            attach_contact_highlights(view, report)
+        except Exception as e:  # noqa: BLE001
+            log.warning("contact overlay failed: %s", e)
+    return view.to_dict()

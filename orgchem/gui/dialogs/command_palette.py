@@ -85,24 +85,83 @@ def _reaction_entries() -> List[PaletteEntry]:
 
 
 def _molecule_entries() -> List[PaletteEntry]:
+    """Phase 35d — one entry per (canonical name, synonym) so a user
+    typing *'Vitamin A'* reaches the Retinol row via the palette
+    even though the canonical label is 'Retinol'."""
     try:
+        import json
         from orgchem.db.session import session_scope
         from orgchem.db.models import Molecule as DBMol
         with session_scope() as s:
-            rows = s.query(DBMol.id, DBMol.name, DBMol.smiles).all()
-            out = [
-                PaletteEntry(
+            rows = s.query(DBMol.id, DBMol.name, DBMol.smiles,
+                           DBMol.synonyms_json).all()
+            out: List[PaletteEntry] = []
+            for mid, name, smiles, syn_json in rows:
+                if not name:
+                    continue
+                out.append(PaletteEntry(
                     kind=KIND_MOLECULE,
-                    label=name or smiles or str(mid),
+                    label=name,
                     target=mid,
                     sublabel=f"molecule · {smiles or ''}"[:80],
-                )
-                for mid, name, smiles in rows
-                if name
-            ]
+                ))
+                # Synonym aliases — same target id, distinct label so
+                # the substring match can find either name.
+                if not syn_json:
+                    continue
+                try:
+                    syns = json.loads(syn_json) or []
+                except Exception:  # noqa: BLE001
+                    continue
+                seen_lower = {name.lower()}
+                for syn in syns:
+                    if not syn or not isinstance(syn, str):
+                        continue
+                    key = syn.strip()
+                    if not key or key.lower() in seen_lower:
+                        continue
+                    # Drop registry-ID synonyms (CAS / ChEMBL /
+                    # UNII / DTXSID etc) — they're noise in a
+                    # name-first palette.
+                    if _looks_like_registry_id(key):
+                        continue
+                    seen_lower.add(key.lower())
+                    out.append(PaletteEntry(
+                        kind=KIND_MOLECULE,
+                        label=key,
+                        target=mid,
+                        sublabel=f"alias of {name}",
+                    ))
         return out
     except Exception:  # noqa: BLE001
         return []
+
+
+def _looks_like_registry_id(s: str) -> bool:
+    """Return True if *s* looks like a registry identifier (CAS, UNII,
+    ChEMBL, DTXSID, EC-number, …) rather than a natural-language name.
+    Phase 35d — used to filter palette-synonym noise."""
+    import re
+    s = s.strip()
+    if not s:
+        return True
+    # Pure-digit CID / ChEMBL / NSC / EC fragments.
+    if re.fullmatch(r"\d+(-\d+)*", s):
+        return True
+    # CAS numbers: xxxxxxx-xx-x.
+    if re.fullmatch(r"\d{1,7}-\d{2}-\d", s):
+        return True
+    # Registry prefixes.
+    for prefix in ("CHEMBL", "UNII", "DTXSID", "DTXCID", "NSC",
+                   "BRN", "FDA", "MFCD", "CCDS", "SCHEMBL",
+                   "EINECS", "RTECS"):
+        if s.upper().startswith(prefix):
+            return True
+    # InChI / InChIKey string.
+    if s.startswith("InChI=") or re.fullmatch(r"[A-Z]{14}-[A-Z]{10}-[A-Z]",
+                                              s):
+        return True
+    return False
 
 
 def build_palette_entries() -> List[PaletteEntry]:

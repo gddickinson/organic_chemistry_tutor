@@ -29,6 +29,24 @@ def test_build_protein_html_contains_pdb_text(monkeypatch):
     assert '3dmol.org' in html.lower() or "3Dmol-min" in html
 
 
+def test_build_protein_html_exposes_live_highlight_helper(monkeypatch):
+    """Phase 34c — every generated page must expose the
+    `window.orgchemHighlight` / `orgchemClearHighlight` JS helpers
+    so the Qt side can push sequence-bar selections into the live
+    3D scene without re-rendering."""
+    import orgchem.render.draw_protein_3d as d3d
+    monkeypatch.setattr(d3d, "local_3dmol_available", lambda: False)
+    html = d3d.build_protein_html(_MINI_PDB)
+    assert "window.orgchemHighlight" in html
+    assert "window.orgchemClearHighlight" in html
+    # Helper signatures must accept (chainId, start, end) — check
+    # for the argument names so a signature change fails loudly.
+    assert "function (chainId, start, end)" in html
+    # The helper must set the per-span stick style (yellowCarbon)
+    # that matches the static `highlight_residues` pipeline.
+    assert "yellowCarbon" in html
+
+
 def test_protein_styles_render_different_js(monkeypatch):
     import orgchem.render.draw_protein_3d as d3d
     monkeypatch.setattr(d3d, "local_3dmol_available", lambda: False)

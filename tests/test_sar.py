@@ -18,7 +18,8 @@ def test_library_seeded():
     assert "beta-blockers" in ids
     assert "ace-inhibitors" in ids
     assert "ssri-sert" in ids     # round 96
-    assert "beta-lactams" in ids  # round 100
+    assert "beta-lactams" in ids      # round 100
+    assert "pde5-inhibitors" in ids   # round 108
 
 
 def test_get_series_returns_expected_fields():
@@ -117,6 +118,41 @@ def test_beta_lactam_series_landmarks():
     assert amox["oral_bioavail_pct"] > pen["oral_bioavail_pct"] + 50
     # Methicillin trades MIC for stability — poorer than Pen-G.
     assert meth["mic_s_aureus_ug_ml"] > pen["mic_s_aureus_ug_ml"] * 10
+
+
+def test_pde5_series_landmarks():
+    """Phase 31k round 108 — PDE5 inhibitor series.  Encodes
+    three textbook teaching points:
+    (a) Vardenafil (regioisomeric scaffold + N-Et piperazine) is
+        the most PDE5-potent of the class.
+    (b) Tadalafil is the long-half-life outlier (chemotype switch:
+        β-carboline diketopiperazine instead of pyrazolopyrimidinone).
+    (c) Tadalafil also has the best PDE6 selectivity — both
+        half-life AND selectivity fall out of the chemotype switch,
+        which is the punchline.
+    """
+    from orgchem.core.sar import get_series
+    s = get_series("pde5-inhibitors")
+    assert s is not None
+    names = {v.name for v in s.variants}
+    for expected in ("Sildenafil", "Vardenafil", "Tadalafil",
+                     "Avanafil", "Udenafil"):
+        assert expected in names
+    rows = s.compute_descriptors()
+    var = next(r for r in rows if r["name"] == "Vardenafil")
+    tad = next(r for r in rows if r["name"] == "Tadalafil")
+    sil = next(r for r in rows if r["name"] == "Sildenafil")
+    ava = next(r for r in rows if r["name"] == "Avanafil")
+    # (a) Vardenafil is most potent (smallest IC50).
+    for other in (sil, tad, ava):
+        assert var["pde5_ic50_nM"] < other["pde5_ic50_nM"]
+    # (b) Tadalafil has the longest half-life — strictly longer
+    # than every other variant.
+    for other in (sil, var, ava):
+        assert tad["t_half_h"] > other["t_half_h"]
+    # (c) Tadalafil's PDE6 selectivity is the highest of the class.
+    for other in (sil, var, ava):
+        assert tad["pde6_selectivity"] > other["pde6_selectivity"]
 
 
 # ---- Renderer --------------------------------------------------------

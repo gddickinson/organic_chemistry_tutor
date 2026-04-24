@@ -67,9 +67,16 @@ class ProteinPanel(QWidget):
 
     pdb_loaded = Signal(str)   # PDB id once a structure is in memory
 
+    # Phase 34e (round 118) — most-recent analysis results cached
+    # at the panel level so the sequence bar's feature tracks
+    # persist across re-renders.  Populated by `_on_find_pockets`
+    # and `_on_analyse_binding{,_plip}`; consumed by
+    # `_refresh_sequence_bar`.
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._current_pdb: Optional[str] = None
+        self._last_pockets = None        # list[Pocket] | None
+        self._last_contacts = None       # ContactReport | None
 
         root = QVBoxLayout(self)
 
@@ -220,6 +227,19 @@ class ProteinPanel(QWidget):
                 self._channel = QWebChannel(self.web_3d)
                 self._channel.registerObject("qtBridge", self._pick_bridge)
                 self.web_3d.page().setWebChannel(self._channel)
+            # Phase 34b — sequence bar below the 3D view.  Populated
+            # on each render_3d / fetch so the user has the full
+            # amino-acid + (optional) DNA strand visible alongside
+            # the structure.  Selections forwarded to the existing
+            # highlight-residue pipeline via `_on_sequence_selection`.
+            from orgchem.gui.widgets.sequence_bar import SequenceBarPanel
+            self.sequence_panel = SequenceBarPanel()
+            self.sequence_panel.setMaximumHeight(160)
+            self.sequence_panel.selection_changed.connect(
+                self._on_sequence_selection)
+            self.sequence_panel.selection_cleared.connect(
+                self._on_sequence_cleared)
+            lay.addWidget(self.sequence_panel)
         else:
             self.web_3d = None
             self.picked_label = None
@@ -392,6 +412,10 @@ class ProteinPanel(QWidget):
                                 f"{type(e).__name__}: {e}")
             return
         self._current_pdb = pid.upper()
+        # Phase 34e — new structure → drop stale feature tracks so
+        # they don't bleed into the new sequence-bar render.
+        self._last_pockets = None
+        self._last_contacts = None
         self._show_summary(protein.summary())
         self.pdb_loaded.emit(self._current_pdb)
         bus().message_posted.emit("INFO", f"Loaded PDB {pid.upper()}")
@@ -414,6 +438,9 @@ class ProteinPanel(QWidget):
             return
         summary = r.summary()
         self._current_pdb = summary.get("uniprot_id", uid).upper()
+        # Phase 34e — reset feature caches on new AlphaFold model.
+        self._last_pockets = None
+        self._last_contacts = None
         self._show_summary(summary, alphafold=True)
         self.pdb_loaded.emit(self._current_pdb)
         # AlphaFold models ship their pLDDT in the B-factor column —
@@ -434,7 +461,11 @@ class ProteinPanel(QWidget):
         return True
 
     def _on_atom_picked(self, chain: str, resn: str, resi: int) -> None:
-        """Update the picked-residue label and nudge the Properties panel."""
+        """Update the picked-residue label and nudge the Properties panel.
+
+        Phase 34c — also forward the pick to the sequence bar so a
+        3D click scrolls the caret onto the corresponding residue.
+        """
         if resn:
             label = f"Picked: {chain}:{resn}{resi}"
         else:
@@ -442,6 +473,11 @@ class ProteinPanel(QWidget):
         if self.picked_label is not None:
             self.picked_label.setText(label)
         bus().message_posted.emit("INFO", label)
+        if getattr(self, "sequence_panel", None) and chain and resi:
+            # set_selection also scrolls the SequenceBar's viewport
+            # via its next paintEvent — good enough for 34c without
+            # custom QScrollArea.ensureVisible plumbing.
+            self.sequence_panel.set_selection(chain, int(resi), int(resi))
 
     def _on_render_3d(self) -> None:
         if not self._require_loaded():
@@ -488,6 +524,98 @@ class ProteinPanel(QWidget):
             "INFO",
             f"3D structure rendered for {self._current_pdb} "
             f"({len(highlight)} residues highlighted)")
+        # Phase 34b — populate the sequence bar from the same PDB.
+        self._refresh_sequence_bar()
+
+    def _refresh_sequence_bar(self) -> None:
+        """Push the current PDB's sequence view into the
+        `SequenceBarPanel`, stamping any cached pockets / contacts
+        as colour-coded feature-track spans (Phase 34e).
+
+        Best-effort — a missing sequence panel (WebEngine
+        unavailable branch) or a failing parse shouldn't break the
+        3D render pipeline."""
+        if not getattr(self, "sequence_panel", None):
+            return
+        if not self._current_pdb:
+            return
+        try:
+            from orgchem.sources.pdb import parse_from_cache_or_string
+            from orgchem.core.sequence_view import (
+                build_sequence_view,
+                attach_contact_highlights,
+                attach_pocket_highlights,
+            )
+            protein = parse_from_cache_or_string(self._current_pdb)
+            if protein is None:
+                return
+            view = build_sequence_view(protein)
+            # Phase 34e — feature-track overlays.  Order matters:
+            # pockets first (full spans) so ligand-contact spans
+            # paint on top (narrower, kind-coloured).
+            if self._last_pockets:
+                try:
+                    attach_pocket_highlights(view, self._last_pockets)
+                except Exception as e:  # noqa: BLE001
+                    log.warning("pocket overlay failed: %s", e)
+            if self._last_contacts is not None:
+                try:
+                    attach_contact_highlights(view, self._last_contacts)
+                except Exception as e:  # noqa: BLE001
+                    log.warning("contact overlay failed: %s", e)
+            self.sequence_panel.set_view(view.to_dict())
+        except Exception as e:  # noqa: BLE001
+            log.warning("sequence-bar refresh failed: %s", e)
+
+    def _on_sequence_selection(self, chain_id: str,
+                               start: int, end: int) -> None:
+        """Phase 34c — sequence-bar selection fired.  Post to the
+        session log, update the picked-residue label, AND push the
+        selection into the live 3Dmol.js viewer via
+        ``page.runJavaScript('orgchemHighlight(...)')`` so the
+        user sees the residue span highlighted on the ribbon
+        instantly — no re-render required."""
+        if start == end:
+            label = f"Selected {chain_id}:{start}"
+        else:
+            label = f"Selected {chain_id}:{start}-{end} " \
+                    f"({end - start + 1} residues)"
+        if self.picked_label is not None:
+            self.picked_label.setText(label)
+        bus().message_posted.emit("INFO", label)
+        # Live-update the 3D scene via the Phase 34c JS helper.
+        # `runJavaScript` silently no-ops when the helper isn't
+        # yet defined (pre-render) — acceptable; the user will
+        # render first to see a structure.
+        if self.web_3d is not None:
+            try:
+                safe_chain = str(chain_id).replace("\\", "").replace('"', '')
+                self.web_3d.page().runJavaScript(
+                    f'if (window.orgchemHighlight) '
+                    f'window.orgchemHighlight('
+                    f'"{safe_chain}", {int(start)}, {int(end)});'
+                )
+            except Exception as e:  # noqa: BLE001
+                log.warning("live 3D highlight failed: %s", e)
+
+    def _on_sequence_cleared(self) -> None:
+        """Phase 34c polish (round 117) — sequence selection cleared
+        (via Clear button, toggle-click, or `clear_selection()`).
+        Reset the 3D ribbon to the baseline cartoon via the
+        `orgchemClearHighlight` JS helper."""
+        if self.picked_label is not None:
+            self.picked_label.setText(
+                "Selection cleared.  Click a residue in the 3D view "
+                "to inspect it here.")
+        bus().message_posted.emit("INFO", "Sequence selection cleared")
+        if self.web_3d is not None:
+            try:
+                self.web_3d.page().runJavaScript(
+                    'if (window.orgchemClearHighlight) '
+                    'window.orgchemClearHighlight();'
+                )
+            except Exception as e:  # noqa: BLE001
+                log.warning("live 3D clear-highlight failed: %s", e)
 
     def _on_save_3d_html(self) -> None:
         if not self._require_loaded():
@@ -539,6 +667,10 @@ class ProteinPanel(QWidget):
             ]
             for col, it in enumerate(items):
                 self.pockets_table.setItem(row, col, it)
+        # Phase 34e — cache pockets + push them onto the sequence
+        # bar as green underlay spans.
+        self._last_pockets = pockets
+        self._refresh_sequence_bar()
 
     def _on_analyse_binding(self) -> None:
         if not self._require_loaded():
@@ -555,6 +687,11 @@ class ProteinPanel(QWidget):
             return
         report = analyse_binding(protein, ligand)
         self._populate_contacts_table(report.summary()["contacts"])
+        # Phase 34e — cache contacts + push ligand-contact spans
+        # onto the sequence bar (kind-coloured: H-bond blue,
+        # salt-bridge red, π-stack purple, hydrophobic tan).
+        self._last_contacts = report
+        self._refresh_sequence_bar()
 
     def _on_analyse_binding_plip(self) -> None:
         if not self._require_loaded():
@@ -574,6 +711,9 @@ class ProteinPanel(QWidget):
             pdb_path=pdb_path if pdb_path.exists() else None,
         )
         self._populate_contacts_table(result.summary()["contacts"])
+        # Phase 34e — PLIP report + sequence-bar feature track.
+        self._last_contacts = result.report
+        self._refresh_sequence_bar()
         bus().message_posted.emit(
             "INFO", f"Analysed {ligand}@{self._current_pdb} via "
                     f"engine={result.engine}")

@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 
 #: Bump whenever seed data changes. Existing rows with a lower embedded
 #: ``seed_version`` are overwritten on next app launch.
-SEED_VERSION = 9
+SEED_VERSION = 11
 
 
 # ------------------------------------------------------------------
@@ -342,6 +342,117 @@ def _nabh4_profile() -> ReactionEnergyProfile:
     )
 
 
+def _friedel_crafts_profile() -> ReactionEnergyProfile:
+    """Friedel-Crafts alkylation (benzene + CH₃Cl / AlCl₃):
+    second EAS profile in the catalogue, pairs with the
+    round-101 nitration curve.  Distinctive from nitration:
+    an **extra pre-equilibrium TS** for alkyl-cation
+    generation (AlCl₃ pulls Cl⁻ from CH₃Cl) before the
+    standard Wheland-intermediate cycle.  The free methyl
+    cation is genuinely unstable — +25 kJ/mol above reactants
+    — which is *why* FC alkylation suffers from rearrangement
+    (1° → 2° / 3° via H-shift) and from poly-alkylation (the
+    alkylated product is more reactive than benzene itself).
+    Nitronium, by contrast, is a stable / isolable cation
+    and doesn't rearrange."""
+    return ReactionEnergyProfile(
+        title="Friedel-Crafts alkylation: benzene + CH₃Cl / AlCl₃",
+        energy_unit="kJ/mol",
+        source="pedagogical estimate (Clayden 2e §22; Olah 1964 "
+               "*JACS* 86:1039 — superacid C⁺ characterisation)",
+        points=[
+            StationaryPoint(label="Reactants", energy=0.0,
+                            note="benzene + CH₃Cl + AlCl₃ "
+                                 "(Lewis-acid catalyst)"),
+            StationaryPoint(label="TS cation generation",
+                            energy=60.0, is_ts=True,
+                            note="AlCl₃ abstracts Cl⁻ from CH₃Cl; "
+                                 "ion pair forming"),
+            StationaryPoint(label="Methyl cation + AlCl₄⁻",
+                            energy=25.0,
+                            note="unstable 1° C⁺ — rearranges to "
+                                 "more stable cations if possible; "
+                                 "this is why FC fails for 1° RX"),
+            StationaryPoint(label="TS EAS attack",
+                            energy=70.0, is_ts=True,
+                            note="rate-limiting CH₃⁺ attack on "
+                                 "benzene π-electrons; commits to "
+                                 "Wheland formation"),
+            StationaryPoint(label="Wheland (arenium) intermediate",
+                            energy=30.0,
+                            note="sp³ C–CH₃ + H; positive charge "
+                                 "delocalised over 5 ring carbons"),
+            StationaryPoint(label="TS deprotonation",
+                            energy=45.0, is_ts=True,
+                            note="AlCl₄⁻ grabs sp³ proton; "
+                                 "aromaticity restored"),
+            StationaryPoint(label="Products", energy=-20.0,
+                            note="toluene + HCl + regenerated "
+                                 "AlCl₃; net mildly exergonic — but "
+                                 "toluene is *more* nucleophilic than "
+                                 "benzene → poly-alkylation"),
+        ],
+    )
+
+
+def _chymotrypsin_profile() -> ReactionEnergyProfile:
+    """Chymotrypsin peptide-bond hydrolysis: the first **enzyme
+    catalytic mechanism** profile in the catalogue.  The shape
+    is distinctive — two tetrahedral intermediates bracketing a
+    covalent **acyl-enzyme** well that no solution-phase profile
+    shows.  Catalytic triad (Ser195-His57-Asp102) + oxyanion
+    hole lower both tetrahedral-intermediate energies; covalent
+    catalysis splits one 20-kcal/mol solution barrier into two
+    10-kcal/mol enzyme barriers (kcat/Km enhancement ≈ 10¹⁰).
+    The "double hump" is the teaching point."""
+    return ReactionEnergyProfile(
+        title="Chymotrypsin: catalytic triad peptide hydrolysis",
+        energy_unit="kJ/mol",
+        source="pedagogical estimate (Fersht 1999 §13; Hedstrom "
+               "2002 *Chem. Rev.* 102:4501)",
+        points=[
+            StationaryPoint(label="Michaelis complex", energy=0.0,
+                            note="E·S; substrate bound in S1 pocket; "
+                                 "Ser-195 primed by H-bond to His-57"),
+            StationaryPoint(label="TS acylation",
+                            energy=65.0, is_ts=True,
+                            note="Ser-O attacks scissile C=O; "
+                                 "His-57 acts as general base; "
+                                 "oxyanion developing"),
+            StationaryPoint(label="Tetrahedral intermediate 1",
+                            energy=25.0,
+                            note="sp³ alkoxide stabilised by "
+                                 "oxyanion-hole H-bonds (Gly-193, "
+                                 "Ser-195 backbone NH)"),
+            StationaryPoint(label="TS amine leaves",
+                            energy=40.0, is_ts=True,
+                            note="collapse of T1; His-57 protonates "
+                                 "departing amine"),
+            StationaryPoint(label="Acyl-enzyme intermediate",
+                            energy=-15.0,
+                            note="covalent Ser195-O-C(=O)-R; peptide "
+                                 "C-terminal half has diffused away; "
+                                 "real isolable intermediate"),
+            StationaryPoint(label="TS deacylation",
+                            energy=50.0, is_ts=True,
+                            note="water attacks acyl-enzyme; "
+                                 "His-57 now deprotonates water"),
+            StationaryPoint(label="Tetrahedral intermediate 2",
+                            energy=15.0,
+                            note="mirror of T1; oxyanion-hole again "
+                                 "stabilising"),
+            StationaryPoint(label="TS Ser-O leaves",
+                            energy=30.0, is_ts=True,
+                            note="collapse; carboxylic acid forms; "
+                                 "Ser-OH regenerated"),
+            StationaryPoint(label="E + 2 products",
+                            energy=-80.0,
+                            note="free enzyme + both peptide halves; "
+                                 "strongly exergonic"),
+        ],
+    )
+
+
 def _pinacol_profile() -> ReactionEnergyProfile:
     """Pinacol rearrangement (pinacol → pinacolone, H⁺-cat.):
     the textbook **1,2-methyl-shift** profile.  The pedagogical
@@ -549,6 +660,8 @@ _PROFILE_MAP: Dict[str, Callable[[], ReactionEnergyProfile]] = {
     "NaBH4 reduction": _nabh4_profile,
     "Bromination of ethene": _bromination_ethene_profile,
     "Pinacol rearrangement": _pinacol_profile,
+    "Chymotrypsin":          _chymotrypsin_profile,
+    "Friedel-Crafts alkylation": _friedel_crafts_profile,
 }
 
 

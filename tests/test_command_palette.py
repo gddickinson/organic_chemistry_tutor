@@ -30,6 +30,62 @@ def test_build_palette_entries_includes_three_kinds(app):
     assert len(entries) > 100  # plenty of seeded content
 
 
+# ---- Phase 35d: synonym aliases -----------------------------------
+
+def test_palette_emits_synonym_aliases(app):
+    """Phase 35d round 109 — molecule rows with non-empty
+    `synonyms_json` should appear in the palette under each
+    synonym, each pointing at the same canonical target."""
+    from orgchem.gui.dialogs.command_palette import (
+        build_palette_entries, KIND_MOLECULE,
+    )
+    entries = build_palette_entries()
+    by_label = {}
+    for e in entries:
+        if e.kind == KIND_MOLECULE:
+            by_label.setdefault(e.label.lower(), []).append(e)
+
+    # Find any canonical row whose DB record has a synonym.  We
+    # don't hard-code which — the curated list already includes
+    # Acetaminophen / Paracetamol, Retinol / Vitamin A, etc.
+    from orgchem.db.session import session_scope
+    from orgchem.db.models import Molecule as DBMol
+    import json as _json
+    hits = 0
+    with session_scope() as s:
+        rows = s.query(DBMol).filter(
+            DBMol.synonyms_json.isnot(None)).all()
+        for r in rows:
+            syns = _json.loads(r.synonyms_json or "[]") or []
+            for syn in syns:
+                if not isinstance(syn, str):
+                    continue
+                matched = by_label.get(syn.lower(), [])
+                if any(e.target == r.id for e in matched):
+                    hits += 1
+                    break
+    assert hits >= 1, (
+        "Expected ≥1 molecule to be reachable via at least one "
+        "synonym in the palette")
+
+
+def test_palette_filter_registry_ids():
+    """CAS numbers / ChEMBL / UNII / InChIKey / pure digits should
+    all be rejected from palette synonym output."""
+    from orgchem.gui.dialogs.command_palette import (
+        _looks_like_registry_id,
+    )
+    for junk in ("50-78-2", "123456", "CHEMBL112",
+                 "UNII-R16CO5Y76E", "DTXSID9020112",
+                 "InChI=1S/C9H8O4/c1-6(10)13-8-5-3-2-4-7(8)9(11)12/h2-5H,1H3,(H,11,12)",
+                 "BSYNRYMUTXBXSQ-UHFFFAOYSA-N",
+                 "NSC 27223", "SCHEMBL6484"):
+        assert _looks_like_registry_id(junk), junk
+    for real in ("Aspirin", "Acetaminophen", "Vitamin A",
+                 "N-acetyl-4-aminophenol", "acetylsalicylic acid"):
+        assert not _looks_like_registry_id(real), real
+
+
 # ---- dialog instantiation + filtering ----------------------------
 
 def test_palette_dialog_instantiates(app):

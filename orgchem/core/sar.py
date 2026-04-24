@@ -459,6 +459,93 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
         ],
     ),
+
+    # ---- Phase 31k round 108 — PDE5 inhibitors --------------------
+    SARSeries(
+        id="pde5-inhibitors",
+        name="PDE5 inhibitor series",
+        target="cGMP-specific phosphodiesterase 5 (PDE5) — opposed "
+               "by PDE6 retinal off-target",
+        parent_scaffold_smiles="Cc1nn2c(nc(=O)[nH]c2=O)n1",  # pyrazolopyrimidinone
+        source="Rotella 2002 *Nat. Rev. Drug Discov.* 1:674 "
+               "(PDE5 structure-based SAR review)",
+        activity_columns=["pde5_ic50_nM", "t_half_h",
+                          "pde6_selectivity"],
+        variants=[
+            SARVariant(
+                name="Sildenafil",
+                smiles="CCCc1nn(C)c2c1nc([nH]c2=O)-c1cc("
+                       "S(=O)(=O)N2CCN(C)CC2)ccc1OCC",
+                r_group_label="pyrazolopyrimidinone + aryl "
+                              "sulfonamide (4-methylpiperazine)",
+                activity={"pde5_ic50_nM": 3.5, "t_half_h": 4.0,
+                          "pde6_selectivity": 10.0},
+                notes="Viagra (1998) — first-in-class (Pfizer). "
+                      "Originally developed for angina. "
+                      "Modest PDE6 selectivity → ~3 % of patients "
+                      "report blue-tint visual disturbance.",
+            ),
+            SARVariant(
+                name="Vardenafil",
+                smiles="CCCc1nc(C)c2c(=O)[nH]c(-c3cc("
+                       "S(=O)(=O)N4CCN(CC)CC4)ccc3OCC)nn12",
+                r_group_label="imidazotriazinone (regioisomer of "
+                              "sildenafil's pyrazolopyrimidinone) "
+                              "+ N-ethyl piperazine",
+                activity={"pde5_ic50_nM": 0.1, "t_half_h": 4.0,
+                          "pde6_selectivity": 15.0},
+                notes="Levitra (2003, Bayer) — the most potent "
+                      "of the class. Ring regioisomerisation + "
+                      "N-Et on piperazine doubles affinity. Same "
+                      "~4 h half-life as sildenafil.",
+            ),
+            SARVariant(
+                name="Tadalafil",
+                smiles="O=C1N(C)CC(=O)N2[C@@H]1Cc1c([C@H]2c2ccc3"
+                       "OCOc3c2)[nH]c2ccccc12",
+                r_group_label="β-carboline-fused diketopiperazine "
+                              "(completely different chemotype)",
+                activity={"pde5_ic50_nM": 1.8, "t_half_h": 17.5,
+                          "pde6_selectivity": 700.0},
+                notes="Cialis (2003, Lilly/ICOS) — the 'weekend "
+                      "pill'. 17.5-h half-life (vs 4 h for the "
+                      "sildenafil family) lets single dose cover "
+                      "Fri-Sun. High PDE6 selectivity → no visual "
+                      "side-effects. Chemotype switch rather than "
+                      "scaffold tweak.",
+            ),
+            SARVariant(
+                name="Avanafil",
+                smiles="COc1cc(CNc2ncnc(N3CCC[C@@H]3CO)c2"
+                       "NC(=O)c2ncc(Cl)cn2)ccc1",
+                r_group_label="pyrimidine-based third chemotype; "
+                              "chloro-pyrimidine amide + prolinol",
+                activity={"pde5_ic50_nM": 5.2, "t_half_h": 1.5,
+                          "pde6_selectivity": 120.0},
+                notes="Stendra (2012, Mitsubishi Tanabe) — fastest "
+                      "onset (~15 min) due to 1.5-h half-life. "
+                      "Trades potency + half-life for pharmaco-"
+                      "kinetic speed. Third distinct chemotype in "
+                      "the class.",
+            ),
+            SARVariant(
+                name="Udenafil",
+                smiles="CCCc1nc(C)c2c(=O)[nH]c(-c3cc("
+                       "S(=O)(=O)CCCN(CC)C4CCCCC4)ccc3OCC)nn12",
+                r_group_label="vardenafil core + sulfonyl-propyl-"
+                              "(N-cyclohexyl, N-ethyl)amine "
+                              "(replaces piperazine)",
+                activity={"pde5_ic50_nM": 8.2, "t_half_h": 11.0,
+                          "pde6_selectivity": 50.0},
+                notes="Zydena (2005, Dong-A, S Korea approval). "
+                      "Piperazine → acyclic tertiary amine tweak "
+                      "on vardenafil scaffold gives ~11-h t½ with "
+                      "moderate PDE6 selectivity. Regional / less "
+                      "global market than the Pfizer / Lilly / "
+                      "Bayer big three.",
+            ),
+        ],
+    ),
 ]
 
 

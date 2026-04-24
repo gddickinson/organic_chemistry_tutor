@@ -59,6 +59,7 @@ def _accepted(**fields: Any) -> Dict[str, Any]:
 @action(category="authoring")
 def add_molecule(mol_name: str, smiles: str, notes: str = "",
                  source_tags: Optional[list] = None,
+                 fetch_synonyms: bool = False,
                  ) -> Dict[str, Any]:
     """Add a new molecule to the seeded DB at runtime.
 
@@ -74,6 +75,14 @@ def add_molecule(mol_name: str, smiles: str, notes: str = "",
     seeded catalogue — e.g. a student asks about a drug the app
     doesn't know. Canonical SMILES from PubChem or the
     `search_pubchem` action is safer than hand-typed fragments.
+
+    **Phase 35b** — pass ``fetch_synonyms=True`` to also query
+    PubChem by InChIKey after validation and populate
+    ``Molecule.synonyms_json``.  Best-effort: silent skip on
+    missing ``pubchempy`` / network error; never affects the
+    accepted/rejected outcome.  The accepted response's
+    ``synonyms_fetched`` field reports how many natural-language
+    aliases were added (0 when offline / no match).
     """
     name = mol_name
     if not name or not name.strip():
@@ -136,6 +145,33 @@ def add_molecule(mol_name: str, smiles: str, notes: str = "",
                     f"{name!r} as a synonym on that row instead.",
                     existing_id=existing_by_key.id,
                 )
+        # Phase 35b — best-effort PubChem synonym lookup.
+        syns_payload: Optional[str] = None
+        synonyms_fetched = 0
+        if fetch_synonyms and key:
+            from orgchem.sources.pubchem import fetch_synonyms_by_inchikey
+            from orgchem.gui.dialogs.command_palette import (
+                _looks_like_registry_id,
+            )
+            raw = fetch_synonyms_by_inchikey(key)
+            name_lower = name.strip().lower()
+            cleaned: list[str] = []
+            seen = {name_lower}
+            for s_ in raw:
+                if not isinstance(s_, str):
+                    continue
+                s_ = s_.strip()
+                if not s_ or s_.lower() in seen:
+                    continue
+                if _looks_like_registry_id(s_):
+                    continue
+                seen.add(s_.lower())
+                cleaned.append(s_)
+                if len(cleaned) >= 10:
+                    break
+            if cleaned:
+                syns_payload = json.dumps(cleaned)
+                synonyms_fetched = len(cleaned)
         row = DBMol(
             name=name.strip(),
             smiles=canonical,
@@ -147,13 +183,15 @@ def add_molecule(mol_name: str, smiles: str, notes: str = "",
                 "tutor_notes": notes or "",
             }) if notes else None,
             source_tags_json=json.dumps(list(source_tags or [])),
+            synonyms_json=syns_payload,
         )
         s.add(row)
         s.flush()
         new_id = row.id
     log.info("Tutor-authored molecule added: %s (id=%d)", name, new_id)
     return _accepted(id=new_id, name=name.strip(),
-                     smiles=canonical, notes=notes)
+                     smiles=canonical, notes=notes,
+                     synonyms_fetched=synonyms_fetched)
 
 
 # ---------------------------------------------------------------------

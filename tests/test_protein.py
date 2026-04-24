@@ -86,10 +86,44 @@ def test_infer_element_fallback():
 def test_seeded_proteins_has_core_targets():
     from orgchem.core.protein import list_seeded_proteins, get_seeded_protein
     ids = {s["pdb_id"] for s in list_seeded_proteins()}
-    for must_have in ("2YDO", "1EQG", "1HWK", "1HPV", "4INS", "1D12"):
+    for must_have in ("2YDO", "1EQG", "1HWK", "1HPV", "4INS", "1D12",
+                      # Phase 31l expansion.
+                      "1LYZ", "1MBN", "1EMA",
+                      "1HHO",       # round 107
+                      "1BL8",       # round 114
+                      "1AOI",       # round 115 — nucleosome
+                      "1IGT",       # round 115 — IgG
+                      "5CHA",       # round 116 — chymotrypsin
+                      "6LU7"):      # round 116 — SARS-CoV-2 Mpro
         assert must_have in ids
+    # Phase 31l CLOSED at 15/15 in round 116.
+    assert len(ids) >= 15, f"expected ≥15 seeded proteins, got {len(ids)}"
     assert get_seeded_protein("1EQG").ligand_name.startswith("IBP")
     assert get_seeded_protein("no_such_pdb") is None
+    # 1HHO teaching story pairs pedagogically with myoglobin.
+    hho = get_seeded_protein("1HHO")
+    assert hho is not None
+    assert "R-state" in hho.name or "haemoglobin" in hho.name.lower()
+    assert "cooperativity" in hho.teaching_story.lower()
+    # 1BL8 must reference the selectivity filter story — that's
+    # the teaching-point invariant this entry exists for.
+    kcsa = get_seeded_protein("1BL8")
+    assert kcsa is not None
+    assert "KcsA" in kcsa.name or "potassium" in kcsa.name.lower()
+    assert "selectivity filter" in kcsa.teaching_story.lower() or \
+           "selectivity" in kcsa.teaching_story.lower()
+    # 1AOI — nucleosome — teaching story must mention histones
+    # (the whole reason this structure is canonical teaching
+    # material).
+    nuc = get_seeded_protein("1AOI")
+    assert nuc is not None
+    assert "histone" in nuc.teaching_story.lower()
+    # 1IGT — IgG — teaching story must mention CDR / antigen /
+    # Fab so students know why this structure appears.
+    igg = get_seeded_protein("1IGT")
+    assert igg is not None
+    story = igg.teaching_story.lower()
+    assert "cdr" in story or "antigen" in story or "fab" in story
 
 
 # ---- Cache layer (no network) -------------------------------------

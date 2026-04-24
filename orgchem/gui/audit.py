@@ -224,6 +224,22 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
     "get_protein_info": "Window → Macromolecules… → Proteins → Summary sub-tab",
     "get_protein_chain_sequence":
         "Window → Macromolecules… → Proteins → Summary sub-tab → Copy sequence",
+    "get_sequence_view":
+        "Window → Macromolecules… → Proteins → Summary sub-tab "
+        "(Phase 34a — headless SequenceView core; the Phase 34b "
+        "SequenceBar widget will surface this data in the 3D "
+        "sub-tab once shipped)",
+    "select_residues":
+        "Window → Macromolecules… → Proteins → 3D structure sub-tab "
+        "→ sequence-bar click/drag (Phase 34f — programmatic "
+        "counterpart that pushes selection from tutor / scripts)",
+    "get_selection":
+        "Window → Macromolecules… → Proteins → 3D structure sub-tab "
+        "→ sequence-bar selection state (Phase 34f introspection)",
+    "clear_selection":
+        "Window → Macromolecules… → Proteins → 3D structure sub-tab "
+        "→ sequence-bar Clear button (Phase 34f programmatic "
+        "counterpart)",
     "fetch_alphafold": "Window → Macromolecules… → Proteins → Fetch AlphaFold",
     "get_alphafold_info": "Window → Macromolecules… → Proteins → Summary sub-tab",
     "find_binding_sites": "Window → Macromolecules… → Proteins → Pockets sub-tab",

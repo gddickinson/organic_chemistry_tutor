@@ -117,8 +117,9 @@ def app():
 def test_seeded_profiles_present(app):
     rows = app.call("list_energy_profiles")
     names = {r["name"] for r in rows}
-    assert len(rows) >= 18, f"expected ≥18 energy profiles, got {len(rows)}"
-    # All mechanism-carrying reactions should have profiles
+    assert len(rows) >= 20, f"expected ≥20 energy profiles, got {len(rows)}"
+    # All mechanism-carrying reactions should have profiles —
+    # Phase 31e closes at 20/20 in round 106.
     for expected in ("SN2: methyl bromide", "SN1: tert-butyl",
                      "E1: tert-butyl", "E2: 2-bromobutane",
                      "Diels-Alder", "Aldol", "Grignard",
@@ -129,8 +130,81 @@ def test_seeded_profiles_present(app):
                      "Nitration of benzene",
                      "NaBH4 reduction",
                      "Bromination of ethene",
-                     "Pinacol rearrangement"):
+                     "Pinacol rearrangement",
+                     "Chymotrypsin",
+                     "Friedel-Crafts alkylation"):
         assert any(expected in n for n in names), f"missing profile for {expected!r}"
+
+
+def test_friedel_crafts_profile_has_free_cation(app):
+    """Phase 31e round 106 — Friedel-Crafts alkylation must
+    show the distinctive pre-equilibrium free-cation step
+    that separates it pedagogically from nitration.  The
+    methyl cation intermediate (step 2) sits above the
+    reactant baseline — a genuine endergonic free-cation
+    minimum — unlike nitration where the nitronium ion is
+    pre-formed in the H₂SO₄ / HNO₃ mixture.  That "cation is
+    real and unstable" shape is why FC alkylation suffers
+    rearrangement + poly-alkylation."""
+    from orgchem.core.energy_profile import ReactionEnergyProfile
+    rows = app.call("list_energy_profiles")
+    fc = next(r for r in rows if "Friedel-Crafts alkylation" in r["name"])
+    got = app.call("get_energy_profile", reaction_id=fc["id"])
+    prof = ReactionEnergyProfile.from_dict(got["profile"])
+    pts = prof.points
+    ts_count = sum(1 for p in pts if p.is_ts)
+    # 3 TSs (cation gen, attack, deprotonation) vs nitration's 2 TSs.
+    assert ts_count == 3, ts_count
+    # Methyl cation intermediate present and strictly above
+    # the reactant baseline (endergonic).
+    cation_min = next(p for p in pts
+                      if "Methyl cation" in p.label)
+    assert cation_min.energy > 0, (
+        "Free CH₃⁺ intermediate should sit above the reactant "
+        "baseline — that's the FC teaching point")
+    # Wheland intermediate also present; its energy is the
+    # σ-complex valley familiar from nitration.
+    wheland = next(p for p in pts
+                   if "Wheland" in p.label or "arenium" in p.label.lower())
+    # Wheland sits above the reactant baseline too (like nitration).
+    assert wheland.energy > 0
+
+
+def test_chymotrypsin_profile_acyl_enzyme_well(app):
+    """Phase 31e round 105 — enzyme-catalysed serine protease
+    hydrolysis must encode the **covalent-catalysis double-hump**
+    shape: two tetrahedral intermediates bracketing a covalent
+    acyl-enzyme minimum that sits BELOW the starting Michaelis
+    complex.  The acyl-enzyme as a real isolable intermediate is
+    THE structural feature that separates serine proteases from
+    solution-phase amide hydrolysis."""
+    from orgchem.core.energy_profile import ReactionEnergyProfile
+    rows = app.call("list_energy_profiles")
+    ch = next(r for r in rows if "Chymotrypsin" in r["name"])
+    got = app.call("get_energy_profile", reaction_id=ch["id"])
+    prof = ReactionEnergyProfile.from_dict(got["profile"])
+    pts = prof.points
+    ts_count = sum(1 for p in pts if p.is_ts)
+    assert ts_count == 4, ts_count
+    # Locate the acyl-enzyme minimum and both tetrahedral
+    # intermediates by name.
+    acyl = next(p for p in pts if "Acyl-enzyme" in p.label)
+    t1 = next(p for p in pts if "Tetrahedral intermediate 1" in p.label)
+    t2 = next(p for p in pts if "Tetrahedral intermediate 2" in p.label)
+    michaelis = pts[0]
+    # Acyl-enzyme sits BELOW the Michaelis complex — the key
+    # "first half is favourable" inequality.
+    assert acyl.energy < michaelis.energy, (
+        "Acyl-enzyme intermediate should sit below the Michaelis "
+        "complex: the acylation half-reaction is favourable, the "
+        "deacylation half-reaction does the remaining work")
+    # Both tetrahedral intermediates sit above Michaelis but
+    # below the highest TS — the oxyanion-hole stabilisation
+    # point.  (They're real minima, not saddles.)
+    highest_ts_energy = max(p.energy for p in pts if p.is_ts)
+    for tet in (t1, t2):
+        assert tet.energy > michaelis.energy
+        assert tet.energy < highest_ts_energy
 
 
 def test_pinacol_profile_methyl_shift_downhill(app):

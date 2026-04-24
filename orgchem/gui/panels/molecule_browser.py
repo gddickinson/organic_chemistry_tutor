@@ -22,6 +22,41 @@ log = logging.getLogger(__name__)
 _MIME_MOLECULE_ID = "application/x-orgchem-molecule-id"
 
 
+def _all_synonyms(row) -> list[str]:
+    """Return the row's natural-language synonyms (registry IDs
+    filtered out).  Phase 35f."""
+    import json
+    raw = getattr(row, "synonyms_json", None)
+    if not raw:
+        return []
+    try:
+        syns = json.loads(raw) or []
+    except Exception:  # noqa: BLE001
+        return []
+    # Lazy import to avoid pulling the palette module unless synonyms
+    # are actually present.
+    from orgchem.gui.dialogs.command_palette import _looks_like_registry_id
+    name_lower = (row.name or "").lower()
+    out: list[str] = []
+    for s in syns:
+        if not isinstance(s, str):
+            continue
+        s = s.strip()
+        if not s or s.lower() == name_lower:
+            continue
+        if _looks_like_registry_id(s):
+            continue
+        out.append(s)
+    return out
+
+
+def _first_natural_synonym(row) -> str:
+    """Return just the top synonym for the row header, or "" if none
+    qualifies.  Phase 35f."""
+    syns = _all_synonyms(row)
+    return syns[0] if syns else ""
+
+
 class _MolListModel(QAbstractListModel):
     def __init__(self):
         super().__init__()
@@ -50,10 +85,22 @@ class _MolListModel(QAbstractListModel):
             return None
         row = self._rows[index.row()]
         if role == Qt.DisplayRole:
-            return f"{row.name}   [{row.formula or '?'}]"
+            # Phase 35f — include the first natural-language
+            # synonym in parentheses so users see that the row is
+            # also reachable by its common alias (e.g.
+            # "Acetaminophen   [C8H9NO2]  · Paracetamol").
+            first_syn = _first_natural_synonym(row)
+            base = f"{row.name}   [{row.formula or '?'}]"
+            return f"{base}  · {first_syn}" if first_syn else base
         if role == Qt.UserRole:
             return row.id
         if role == Qt.ToolTipRole:
+            # Expose full synonym list in the tooltip for users who
+            # want to see every alias (still scoped to 10 max from
+            # the PubChem / curated feeds).
+            syns = _all_synonyms(row)
+            if syns:
+                return f"{row.smiles}\n\nAlso known as: " + ", ".join(syns)
             return row.smiles
         return None
 
