@@ -1,7 +1,7 @@
 # Project Status — OrgChem Studio
 
 > Living document. Update at the end of every meaningful session.
-> Last updated: **2026-04-23** (round 61 — Phase 31c +2 mechanisms: Claisen condensation + Pinacol rearrangement; catalogue now 18/20)
+> Last updated: **2026-04-23** (round 69 — **Phase 32c shipped** — rich Workbench controls per user directive: per-track visibility checkbox + style combo + ✕ remove (inline TrackRow widget), plus scene-wide Fit-to-view, Toggle-bg dark↔light, Export-HTML buttons. 7 new pytest-qt tests. Plus round 68 hotfix (SIGTRAP fix for worker-thread scene mutations via Qt.QueuedConnection + rebuild debounce), rounds 66-67 Phase 32b hybrid Workbench + Phase 32d first 6 bundled demos.
 
 ## Current phase
 **Phases 1, 2a, 2b, 2c.1, 2c.2, 3a, 3b, 6a (partial), 8a–c, 10a, 11a/b/d
@@ -230,7 +230,7 @@ tutorials, 40 carbs / 40 lipids / 40 nucleic acids, 15 SAR series,
 |------------------------------------------------|-----------------|
 | Molecules seeded                               | **332** (210 main + 122 intermediate) |
 | Reactions seeded                               | 28 (incl. 2 enzyme reactions) |
-| Mechanisms seeded                              | 11 (SN1/SN2/E1/E2/DA/Aldol/Grignard/Wittig/Michael + chymotrypsin + aldolase) |
+| Mechanisms seeded                              | **20** (9 classic: SN1/SN2/E1/E2/DA/aldol/Grignard/Wittig/Michael + 4 enzyme: chymotrypsin, aldolase, HIV protease, RNase A + 7 expansion: Fischer ester., NaBH₄, nitration, Claisen, pinacol, **bromination of ethene**, **Friedel-Crafts alkylation**) |
 | Reactions with atom-mapped SMARTS              | 6               |
 | **Synthesis pathways seeded**                  | **12** (7 multi-step, incl. Fmoc SPPS 5-step for Met-enkephalin) |
 | **Energy profiles seeded**                     | **4** (SN2, SN1, E1, Diels-Alder) |

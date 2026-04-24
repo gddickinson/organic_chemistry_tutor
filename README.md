@@ -4,8 +4,9 @@ An interactive PySide6 desktop application for **learning and teaching
 organic chemistry**. Built on RDKit + 3Dmol.js + SQLAlchemy/SQLite, with
 **371 seeded molecules** in the main database (plus 89 curated
 macromolecule entries across carbohydrates / lipids / nucleic acids),
-**35 named reactions**, **13 multi-step mechanisms** (including enzyme
-active sites like HIV protease + RNase A), **14 classical synthesis
+**35 named reactions**, **20 multi-step mechanisms** (including enzyme
+active sites like HIV protease + RNase A, and the canonical
+bromonium-ion alkene halogenation + Friedel-Crafts EAS), **14 classical synthesis
 pathways**, **12 reaction-coordinate energy profiles**, **61 glossary
 terms**, **21 tutorial lessons** across beginner / intermediate /
 advanced / graduate tiers, **4 SAR series** for medicinal-chemistry
@@ -215,7 +216,7 @@ exposed as both a library call (`orgchem/core/formula.py`) and a
 Tools menu dialog.
 
 ## Status
-- **816 tests + 0 skipped** across the full suite (2026-04-23).
+- **823 tests + 0 skipped** across the full suite (2026-04-23).
 - **100 % GUI coverage** of the agent-action registry (124/124
   actions reachable from a menu, panel, or dialog — guard-rail
   pinned in `tests/test_gui_audit.py`).

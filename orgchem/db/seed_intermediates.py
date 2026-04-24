@@ -275,6 +275,17 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
         "CCNCC",                                                       "intermediate"),
     ("Lidocaine",
         "CCN(CC)CC(=O)Nc1c(C)cccc1C",                                  "drug"),
+    # Procaine route (round 65)
+    ("Thionyl chloride",
+        "ClS(=O)Cl",                                                   "reagent"),
+    ("4-Aminobenzoyl chloride",
+        "Nc1ccc(C(=O)Cl)cc1",                                          "intermediate"),
+    ("Sulfur dioxide",
+        "O=S=O",                                                       "reagent"),
+    ("2-(Diethylamino)ethanol",
+        "CCN(CC)CCO",                                                  "intermediate"),
+    ("Procaine",
+        "CCN(CC)CCOC(=O)c1ccc(N)cc1",                                  "drug"),
 ]
 
 

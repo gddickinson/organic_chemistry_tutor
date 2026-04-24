@@ -264,6 +264,13 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
     "open_macromolecules_window":
         "Window → Macromolecules… (Ctrl+Shift+M)",
 
+    # ---- Scripting (Phase 32a / 32b) ----------------------------
+    "open_script_editor":
+        "Tools → Script editor (Python)… (Ctrl+Shift+E)",
+    "open_workbench":
+        "Main tabbar → Workbench (or Window → Workbench… / "
+        "Ctrl+Shift+B when detached)",
+
     # ---- Periodic table (Phase 27) ------------------------------
     "list_elements": "Tools → Periodic table… (grid)",
     "get_element":

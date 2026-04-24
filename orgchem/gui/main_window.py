@@ -80,6 +80,14 @@ class MainWindow(QMainWindow):
         mv.addWidget(split)
         self.tabs.addTab(mol_tab, "Molecule Workspace")
 
+        # Workbench (Phase 32b) — scriptable scene composer.
+        from orgchem.gui.panels.workbench import WorkbenchWidget
+        self.workbench = WorkbenchWidget(parent=self)
+        self.workbench.detach_requested.connect(self._detach_workbench)
+        self.workbench.reattach_requested.connect(self._reattach_workbench)
+        self.tabs.addTab(self.workbench, "Workbench")
+        self._workbench_window = None  # filled when detached
+
         # Tutorials
         self.tutorial_panel = TutorialPanel()
         self.tabs.addTab(self.tutorial_panel, "Tutorials")
@@ -262,6 +270,15 @@ class MainWindow(QMainWindow):
         a_green.triggered.connect(self._on_green_metrics)
         m_tools.addAction(a_green)
         m_tools.addSeparator()
+        a_script = QAction("Script editor (Python)…", self)
+        a_script.setShortcut(QKeySequence("Ctrl+Shift+E"))
+        a_script.setToolTip(
+            "Open a Python REPL that can drive any registered action "
+            "— Phase 32a scripting workbench foundation."
+        )
+        a_script.triggered.connect(self._on_script_editor)
+        m_tools.addAction(a_script)
+        m_tools.addSeparator()
         a_prefs = QAction("Preferences…", self)
         a_prefs.setShortcut(QKeySequence("Ctrl+,"))
         a_prefs.setMenuRole(QAction.PreferencesRole)  # macOS App menu
@@ -269,6 +286,15 @@ class MainWindow(QMainWindow):
         m_tools.addAction(a_prefs)
 
         m_window = mb.addMenu("&Window")
+        a_work = QAction("Workbench…", self)
+        a_work.setShortcut(QKeySequence("Ctrl+Shift+B"))
+        a_work.setToolTip(
+            "Focus the Workbench — scene composer driven by the "
+            "Script Editor and the tutor. Detach to a floating "
+            "window from its toolbar."
+        )
+        a_work.triggered.connect(self.open_workbench)
+        m_window.addAction(a_work)
         a_macro = QAction("Macromolecules…", self)
         a_macro.setShortcut(QKeySequence("Ctrl+Shift+M"))
         a_macro.setToolTip(
@@ -388,6 +414,69 @@ class MainWindow(QMainWindow):
 
     def _on_green_metrics(self) -> None:
         GreenMetricsDialog(self).exec()
+
+    def _on_script_editor(self) -> None:
+        """Open the Phase 32a script editor / REPL (singleton, non-modal)."""
+        from orgchem.gui.dialogs.script_editor import ScriptEditorDialog
+
+        dlg = ScriptEditorDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    # ------------------------------------------------------------------
+    # Workbench placement (Phase 32b hybrid)
+
+    def _detach_workbench(self) -> None:
+        """Move the Workbench widget out of the tabbar and into a
+        standalone top-level :class:`WorkbenchWindow`."""
+        from orgchem.gui.windows.workbench_window import WorkbenchWindow
+
+        if self._workbench_window is not None:
+            # Already detached — just raise it.
+            self._workbench_window.raise_()
+            self._workbench_window.activateWindow()
+            return
+
+        idx = self.tabs.indexOf(self.workbench)
+        if idx >= 0:
+            self.tabs.removeTab(idx)
+
+        self.workbench.set_mode(detached=True)
+        win = WorkbenchWindow(self.workbench, parent=self)
+        win.reattach_requested.connect(self._reattach_workbench)
+        win.closed_by_user.connect(self._reattach_workbench)
+        win.show()
+        self._workbench_window = win
+
+    def _reattach_workbench(self) -> None:
+        """Pull the Workbench widget back into the main tabbar."""
+        if self._workbench_window is None:
+            return
+        win = self._workbench_window
+        self._workbench_window = None
+        try:
+            win.takeCentralWidget()
+        except Exception:
+            pass
+        self.workbench.setParent(self.tabs)
+        # Always re-insert at index 1, i.e. right after Molecule Workspace.
+        self.tabs.insertTab(1, self.workbench, "Workbench")
+        self.workbench.set_mode(detached=False)
+        try:
+            win.close()
+        except Exception:
+            pass
+        self.tabs.setCurrentWidget(self.workbench)
+
+    def open_workbench(self) -> None:
+        """Focus the Workbench tab (or raise the detached window
+        if it's separated)."""
+        if self._workbench_window is not None:
+            self._workbench_window.raise_()
+            self._workbench_window.activateWindow()
+            return
+        self.tabs.setCurrentWidget(self.workbench)
 
     def _on_preferences(self) -> None:
         PreferencesDialog(self.cfg, self).exec()

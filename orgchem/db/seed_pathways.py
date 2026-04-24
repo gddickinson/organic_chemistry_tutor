@@ -426,6 +426,60 @@ _STARTER: List[Tuple[str, str, str, str, str, str, List[Dict[str, Any]]]] = [
     ),
 
     (
+        "Procaine — 2-step acyl chloride route (Einhorn)",
+        "Procaine",
+        "CCN(CC)CCOC(=O)c1ccc(N)cc1",
+        "Teaching-grade 2-step synthesis of the ester-class local "
+        "anaesthetic that completes the seeded anaesthetic triad "
+        "(Benzocaine, Lidocaine, Procaine). PABA is first activated "
+        "as the acyl chloride with SOCl₂ — a textbook "
+        "carboxylic-acid-to-acyl-chloride activation that kicks out "
+        "SO₂ and HCl. The acyl chloride then undergoes a "
+        "Schotten-Baumann-style esterification with "
+        "2-(diethylamino)ethanol, delivering procaine directly. "
+        "Note the design contrast with lidocaine: procaine carries "
+        "an **ester** linker (hydrolysed in plasma by butyryl-"
+        "cholinesterase → short duration of action), while lidocaine's "
+        "**amide** linker + 2,6-xylidine flanking methyls block "
+        "esterase hydrolysis → long duration. Same pharmacophore, "
+        "very different PK.",
+        "Pharmaceutical (2-step)",
+        "Einhorn, A. (1905) Justus Liebigs Ann. Chem. 371:125-161.",
+        [
+            {"reaction_smiles": "Nc1ccc(C(=O)O)cc1.ClS(=O)Cl"
+                                ">>Nc1ccc(C(=O)Cl)cc1.O=S=O.[H]Cl",
+             "reagents": "SOCl₂ (1.2 eq.)",
+             "conditions": "neat or CH₂Cl₂, reflux, 2 h",
+             "yield_pct": 92.0,
+             "notes": "Classic carboxylic-acid → acyl chloride "
+                      "activation. The S centre is attacked by the "
+                      "carboxylate oxygen; a chloride ion is then "
+                      "delivered to the carbonyl carbon and the "
+                      "chlorosulphite leaving group collapses to "
+                      "SO₂ + Cl⁻. The aniline nitrogen is not "
+                      "protected because the carboxylic-acid OH "
+                      "is far more nucleophilic towards SOCl₂ — "
+                      "no side-reaction in practice."},
+            {"reaction_smiles": "Nc1ccc(C(=O)Cl)cc1.OCCN(CC)CC"
+                                ">>CCN(CC)CCOC(=O)c1ccc(N)cc1.[H]Cl",
+             "reagents": "HOCH₂CH₂NEt₂ (1.1 eq.), Et₃N (HCl scavenger)",
+             "conditions": "toluene, 0 °C → rt, 4 h",
+             "yield_pct": 85.0,
+             "notes": "Schotten-Baumann-style esterification: the "
+                      "primary alcohol of 2-(diethylamino)ethanol "
+                      "attacks the acyl chloride; chloride leaves; "
+                      "Et₃N mops up HCl. The tertiary-amine nitrogen "
+                      "of the aminoethanol is the clinically "
+                      "important protonation site — procaine is "
+                      "dispensed as the hydrochloride salt "
+                      "(formed in situ here, or by treatment with "
+                      "HCl/Et₂O). Keeping the reaction cold + "
+                      "anhydrous prevents hydrolysis of the "
+                      "acyl chloride back to PABA."},
+        ],
+    ),
+
+    (
         "Phenacetin → Acetaminophen (O-dealkylation)",
         "Acetaminophen",
         "CC(=O)Nc1ccc(O)cc1",

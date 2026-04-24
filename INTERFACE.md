@@ -84,7 +84,10 @@ for the project. Update it whenever the module layout changes.
 | `seed.py` | `seed_if_empty(cfg)` — chains to `seed_reactions_if_empty()`, `seed_mechanisms_if_empty()`, and `seed_pathways_if_empty()`. Additive backfill so existing DBs pick up new content on upgrade. |
 | `seed_reactions.py` | 26 textbook named reactions; 6 of them carry atom-mapped SMARTS (using `[CH3:N]`-style explicit-H notation) for 3D side-by-side rendering. |
 | `seed_molecules_extended.py` | Phase 6a extended seed: ~170 additional molecules across amino acids (complete 20), named reagents, drug library, biomolecules, dyes, PAHs, heterocycles, and a functional-group ladder. Additive by name. |
-| `seed_mechanisms.py` | Multi-step mechanisms for 13 reactions (SN1, SN2, E1, E2, Diels-Alder, Aldol, Grignard, Wittig, Michael + enzyme mechanisms: chymotrypsin catalytic triad, class-I aldolase Schiff-base aldol, HIV protease aspartic-protease peptide hydrolysis, **RNase A 2-step phosphoryl transfer** — both enzyme mechanisms exercise Phase 13c lone-pair dots + bond-midpoint arrows). Versioned via `SEED_VERSION` (bumped to 7 round 30). |
+| `seed_mechanisms.py` | **Facade** — owns the name-substring → builder `_MECH_MAP`, the `SEED_VERSION` sentinel (bumped to 11 round 62), and the `seed_mechanisms_if_empty(force)` seeder. The 20 builder functions themselves live in three themed sub-modules so no file exceeds the 500-line cap. |
+| `seed_mechanisms_classic.py` | 9 textbook mechanisms: SN1, SN2, E1, E2, Diels-Alder, Aldol condensation, Grignard addition, Wittig, Michael. Pure-arrow pedagogy, no Phase 13c decorations. |
+| `seed_mechanisms_enzyme.py` | 4 enzyme-active-site mechanisms: chymotrypsin (serine-protease catalytic triad), class-I aldolase (Schiff-base aldol), HIV protease (aspartic-protease peptide hydrolysis), RNase A (2-step phosphoryl transfer). HIV and RNase entries exercise the Phase 13c lone-pair dot + bond-midpoint arrow features. |
+| `seed_mechanisms_extra.py` | 7 Phase-31c expansion mechanisms (rounds 59-62): Fischer esterification (5-step acid catalysis), NaBH₄ reduction (1-step hydride transfer), nitration of benzene (3-step EAS through Wheland), Claisen condensation (4-step ester enolate), pinacol rearrangement (4-step with 1,2-methyl shift), **bromination of ethene** (3-step bromonium + anti addition, round 62), **Friedel-Crafts alkylation** (3-step EAS via methyl cation, round 62). |
 | `seed_pathways.py` | 12 seeded synthesis pathways: Wöhler urea, Aspirin (industrial + Kolbe-Schmitt), Paracetamol (industrial + Hoechst 3-step), BHC Ibuprofen 3-step, Caffeine from theobromine, Phenacetin→Paracetamol, Vanillin from eugenol, Aniline from benzene 2-step, 2-Methyl-2-butanol via Grignard, **Met-enkephalin via Fmoc SPPS 5-step (Phase 16a)**. |
 | `seed_energy_profiles.py` | 4 seeded reaction-coordinate energy profiles (SN2, SN1, E1, Diels-Alder) with textbook Ea / ΔH values. Versioned via `SEED_VERSION` so upgrades overwrite stale JSON. |
 | `seed_glossary.py` | Base glossary catalogue (~51 terms across bonding / stereochemistry / mechanism / reactions / synthesis / spectroscopy / lab-technique categories). Short markdown definitions with alias + see-also lists. Extends itself with `seed_glossary_extra.EXTRA_TERMS` on import. |
@@ -232,6 +235,45 @@ New sources (ChEMBL, ORD, ChEBI) just subclass `DataSource` and are registered i
   inner tab. Agent action `open_macromolecules_window(tab)` in
   `agent/actions_windows.py` exposes the same behaviour to the
   tutor panel and stdio bridge.
+- `windows/workbench_window.py` — **Phase 32b** detached Workbench
+  host. `WorkbenchWindow` is a `QMainWindow` that centres a
+  `WorkbenchWidget` when the user clicks *Detach as window* on
+  the Workbench toolbar. Emits `reattach_requested` / `closed_by_user`
+  signals that `MainWindow._reattach_workbench` catches to pull
+  the widget back into the tabbar. Geometry persists via
+  `QSettings["window/workbench/geometry"]`. Calls `takeCentralWidget()`
+  on close so Qt doesn't delete the widget Mother Hen still owns.
+- `panels/workbench_track_row.py` — **Phase 32c** per-track row
+  widget for the Workbench's right-side tracks list. `TrackRow`
+  carries a visibility checkbox, a bold name label (auto-adds
+  SMILES / PDB-ID subtitle from `Track.meta`), a kind-specific
+  style `QComboBox` (small-molecule vs protein choices), and a
+  ✕ remove button. Emits `visibility_toggled(name, bool)` /
+  `style_changed(name, style)` / `remove_clicked(name)` signals
+  the Workbench forwards to the Scene. `reflect(track)` re-syncs
+  controls after external scene mutations. Kept separate so
+  `workbench.py` stays under the 500-line cap and the row widget
+  can be reused by other Scene-aware panels.
+- `panels/workbench.py` — **Phase 32b / 32c** `WorkbenchWidget`.
+  Toolbar (Detach/Reattach/Fit-to-view/Toggle-bg/Clear/Snapshot-PNG
+  /Export-HTML) + `QWebEngineView` (3Dmol.js) + right-side tracks
+  list using `TrackRow` per row for inline visibility ☑︎ + style
+  combo + ✕ remove. Subscribes to `orgchem.scene.current_scene()`
+  via a thread-safe `Signal + Qt.QueuedConnection` bridge so
+  scene mutations from a script-worker QThread marshal onto the
+  main thread — **fix for round-67 SIGTRAP** reported when demo 02
+  mutated the scene off-main-thread.  `_schedule_rebuild` +
+  `_REBUILD_DEBOUNCE_MS = 50` coalesces a burst of scene events
+  into one HTML reload to stop the macOS Metal compositor from
+  thrashing WebGL. `grab_png(path)` uses `QWidget.grab()` so
+  snapshots work under offscreen Qt without requiring the widget
+  to be visible. Reparents cleanly between the main tabbar and
+  `WorkbenchWindow` — the Scene instance is persistent across
+  reparenting, so the Script Editor keeps driving the same view.
+  `_on_toggle_background` flips scene background dark ↔ light;
+  `_on_export_html_clicked` writes a standalone .html of the
+  current scene via a file dialog. `rebuild_count` class attr is
+  exposed for regression tests.
 - `widgets/smiles_input.py` — validated SMILES `QLineEdit` that emits canonical form.
 - `widgets/glossary_linker.py` — **Phase 11c** autolink helper:
   `autolink(text)` returns HTML where every recognised glossary
@@ -304,6 +346,15 @@ New sources (ChEMBL, ORD, ChEBI) just subclass `DataSource` and are registered i
     top-K spinners, two result tabs: *Single-step* (flat
     disconnection table) and *Multi-step* (tree view of the
     recursive precursor search). Tools menu entry *Retrosynthesis…*.
+  - `script_editor.py` — **Phase 32a** Python REPL + editor dialog.
+    Top pane: `QPlainTextEdit` with monospace font and a default
+    snippet. Bottom pane: dark output console with colour-coded
+    stdout / stderr / repr / traceback. Toolbar: Run (Ctrl+Enter),
+    Run-selection (Ctrl+Shift+Enter), Stop, Reset globals, Open…,
+    Save…. Singleton per app instance so `ScriptContext` globals
+    persist across re-opens. Wrapper runs snippets on a `_RunWorker`
+    QThread so long calls don't freeze the UI. Tools menu entry
+    *Script editor (Python)… (Ctrl+Shift+E)*.
   - `command_palette.py` — **Ctrl+K command palette** (Phase 11b
     follow-up, round 54). Single-keystroke jump-to-anything dialog:
     type a glossary term, reaction name, or molecule name and Enter
@@ -338,6 +389,7 @@ New sources (ChEMBL, ORD, ChEBI) just subclass `DataSource` and are registered i
 | `conversation.py` | `Conversation` — orchestrates the tool-use loop (user → model → actions → model → …). |
 | `headless.py` | `HeadlessApp` — launches the full app with `QT_QPA_PLATFORM=offscreen`; use from tests or external Python drivers. |
 | `bridge.py` | JSON-over-stdio bridge (`python main.py --agent-stdio`) so any external process (incl. a Claude Code session) can drive the app line-by-line. |
+| `script_context.py` | **Phase 32a** — persistent Python REPL context for the scripting workbench. `ScriptContext` owns a globals dict with pre-imported `app` (an `AppProxy` exposing every registered action as `app.<name>(…)` + `app.call('name', **kw)` + `app.list_actions()`), `chem` (RDKit), `orgchem`, and a `viewer` stub that raises `WorkbenchNotReadyError` pending Phase 32b. `run(source)` returns an `ExecResult` with captured stdout / stderr / last-expression repr / traceback. `reset()` flushes state. Also registers the `open_script_editor` agent action (main-thread-dispatched through `_gui_dispatch`). |
 | `llm/base.py` | `LLMBackend` abstract class + `ChatMessage` / `ToolCall` / `ToolResult` dataclasses. |
 | `llm/anthropic_backend.py` | Claude via the `anthropic` SDK. |
 | `llm/openai_backend.py` | OpenAI-compatible (works with Azure, DeepSeek, Groq, …). |
@@ -346,6 +398,12 @@ New sources (ChEMBL, ORD, ChEBI) just subclass `DataSource` and are registered i
 **Adding a new LLM-callable action**: decorate a function in
 `agent/library.py` (or any module you import) with `@action(category="…")`.
 The tutor panel and the stdio bridge pick it up automatically.
+
+### `scene/` — Phase 32b scene composer
+| File | Key symbols |
+|------|-------------|
+| `scene.py` | `Scene` class (observable scene graph), `Track` dataclass with `name` / `kind` (`molecule` / `protein` / `ligand`) / `data` / `source_format` (`mol` / `pdb`) / `style` / `colour` / `visible` / `opacity` / `meta`, `SceneEvent` enum (TRACK_ADDED, TRACK_REMOVED, TRACK_STYLE_CHANGED, TRACK_VISIBILITY_CHANGED, CLEARED, CAMERA_CHANGED). Public API: `add_molecule(smi_or_mol, *, track, style, colour)` → embeds 3D coords if absent; `add_protein(pdb_id_or_text, *, track, style, colour)` — 4-char alphanumeric string is treated as a PDB ID and fetched via `sources.pdb.fetch_pdb_text`; `remove(name)`, `clear()`, `set_visible(name, bool)`, `set_style(name, style=, colour=, opacity=)`, `snapshot(path)` (requires a Workbench listener with `grab_png`), `listen(fn)` with unsubscribe thunk. Process-wide singleton via `current_scene()` / `reset_current_scene()`. Zero Qt imports — fully headless-testable. |
+| `html.py` | `build_scene_html(scene, background)` — assembles a complete 3Dmol.js HTML page for every visible track. Reuses the bundled local 3Dmol.js asset (`gui/assets/3Dmol-min.js`) from `render/draw3d.py` when present; falls back to CDN. Protein tracks get an automatic HETATM stick overlay so bound ligands stay visible under cartoon styles. Empty scenes emit a placeholder label instead of a broken `zoomTo()`. |
 
 ### `tutorial/`
 | File | Key symbols |

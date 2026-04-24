@@ -1,5 +1,430 @@
 # Session Log — OrgChem Studio
 
+## 2026-04-23 — Round 69 (Phase 32c shipped — rich Workbench controls)
+
+### User directive
+*"Can you add more controls to the workbench viewer?  Whatever
+useful items you can think of, including the ability to toggle
+different tracks."*
+
+### What shipped
+- **`orgchem/gui/panels/workbench_track_row.py`** (new, 135
+  lines).  `TrackRow(QWidget)` is the per-row widget used inside
+  `WorkbenchWidget._tracks_list` via `QListWidget.setItemWidget`:
+  - **Visibility checkbox** (☑︎) — the requested toggle.  Wires
+    to `Scene.set_visible(name, bool)`.
+  - **Name + kind label**, auto-subtitled with the track's
+    SMILES (for molecules) or PDB ID (for proteins).
+  - **Style combo** — kind-aware choice sets so small molecules
+    don't see "cartoon" and proteins don't see "line".  Wires to
+    `Scene.set_style(name, style=…)`.
+  - **✕ remove button** — drops the track.
+  - `reflect(track)` hook keeps the row in sync when the scene
+    is mutated elsewhere (e.g. by the Script Editor while the
+    user has the Workbench focus).
+- **`WorkbenchWidget` toolbar** grew three scene-wide buttons:
+  - **Fit to view** — re-zooms after hide / show / add.
+  - **Toggle bg** — flips scene background between dark
+    (`#1e1e1e`) and light (`#ffffff`).  Useful for snapshot
+    contrast when preparing teaching figures.
+  - **Export HTML…** — saves a standalone `.html` copy of the
+    current scene (3Dmol.js inlined), shareable + works in any
+    browser with no server.
+- The scene rebuild now respects `self._background` so the
+  toggle-bg button actually propagates through to 3Dmol.js.
+- The tracks-list hint text was updated: *"Per-row: ☑︎ toggle
+  visibility, style combo restyles, ✕ removes."* — tells the
+  user what the inline controls do.
+
+### Tests
+- **`tests/test_workbench_controls.py`** (7 new pytest-qt
+  regression tests):
+  - Checkbox toggles `track.visible`.
+  - Style combo mutates `track.style`.
+  - Remove button drops the track.
+  - Toggle-bg flips between the two hex values.
+  - Export-HTML writes a file (uses `tmp_path` + monkeypatched
+    `QFileDialog` so no real file dialog pops).
+  - Fit-to-view schedules a rebuild.
+  - Row signals carry the correct track name when multiple
+    tracks are present (prevents off-by-one routing bugs).
+- Full suite: **877 passed, 0 skipped** (↑ from 870).
+
+### File layout
+`workbench.py` grew from 309 → 403 lines.  Row widget extracted
+to `workbench_track_row.py` (135 lines) to keep both files
+comfortably under the 500-line cap.
+
+### Deferred to future 32c iterations
+- Per-track colour swatch (CPK / chain / spectrum / residue).
+- Per-track opacity slider.
+- Drag-reorder for track list.
+- Scene-wide spin toggle + axis selector.
+
+### Next
+Round 70 can pick up the deferred chrome (colour swatch,
+opacity), resume the Phase 32d 15-demo march (still at 6/15),
+or pivot to a Phase-31 content item (pathways, proteins).
+
+---
+
+## 2026-04-23 — Round 68 hotfix (Workbench SIGTRAP on worker-thread scene mutations)
+
+### User report
+Running demo 02 (`02_scene_composer_basics.py`) from the Script
+Editor crashed the app with *"Compositor returned null texture"*
++ SIGTRAP on macOS 26.4.1 (MacBook Pro M1).  Full crash dump
+confirmed the trigger thread was `_RunWorker` — the QThread
+that executes script snippets.
+
+### Root cause
+`WorkbenchWidget` subscribed to `Scene.listen()` with a plain
+Python callback (`_on_scene_event`).  When a script called
+`viewer.add_molecule(...)` from inside the `_RunWorker` thread,
+the Scene's event-emit loop called the callback on that worker
+thread, which then called `QWebEngineView.setHtml()` and
+manipulated `QListWidget` items *off the main thread*.  Qt's
+GUI objects are main-thread-only; on macOS this is a hard trap
+in the Metal / Graphite compositor.  Same class of bug as the
+NSWindow crash fixed in rounds 55-57, but on a different code
+path (scene listeners rather than one-shot action calls).
+
+### Fix
+Two-layer defence in `orgchem/gui/panels/workbench.py`:
+1. **Thread-marshalling via Qt Signal + `Qt.QueuedConnection`.**
+   `WorkbenchWidget` now declares an internal
+   `_scene_event_queued = Signal(object, object)` connected to
+   `_handle_scene_event_main` with `Qt.QueuedConnection`.  The
+   Scene listener `_on_scene_event` just emits the signal — Qt
+   automatically posts the event onto the main-thread event
+   loop regardless of the emitting thread.  **This is the root
+   fix for the SIGTRAP.**
+2. **Debounced rebuilds.**  Even on the main thread, a burst of
+   scene events (`for _ in …: viewer.add_molecule(…)`) would
+   call `setHtml` N times, thrashing the WebGL compositor.
+   `_schedule_rebuild` coalesces events via a single-shot
+   `QTimer(50 ms)` so the whole burst triggers one HTML load.
+   Configurable via `_REBUILD_DEBOUNCE_MS`.
+
+### Smoke verification
+Booted the real app with `QT_QPA_PLATFORM=offscreen`, opened
+the Script Editor, pasted demo 02, clicked Run: status went to
+"ok", 6 tracks landed in the scene, `rebuild_count == 2` (one
+for initial prime, one coalesced for the whole burst — not 6).
+
+### Tests
+- **`tests/test_workbench_debounce.py`** (3 new tests):
+  - `test_rapid_adds_collapse_into_one_rebuild` — reproduces
+    the demo-02 pattern; asserts ≤ 2 rebuilds for 6 adds.
+  - `test_tracks_list_catches_up_after_queued_events` — no
+    events lost through the queued-connection bridge.
+  - `test_subsequent_burst_after_quiet_window_still_debounced`
+    — the debounce still works on the second burst.
+- Full suite: **870 passed, 0 skipped** (↑ from 867).
+
+### Carry-over for future rounds
+- Consider extending the same Signal-queue + debounce pattern
+  to any other panel that listens to cross-thread events (none
+  identified so far, but worth auditing when 32c adds richer
+  track-list chrome that may also subscribe).
+
+---
+
+## 2026-04-23 — Round 67 (Phase 32d — first 6 bundled script-library demos)
+
+### What shipped
+- **`data/script_library/`** — new directory, 6 demo scripts
+  that exercise the Scene + action-registry surface end-to-end:
+  1. `01_caffeine_tour.py` — descriptors + IR bands +
+     drug-likeness on a single compound.
+  2. `02_scene_composer_basics.py` — build a 6-hydrocarbon
+     Scene, toggle visibility, restyle tracks.
+  3. `03_nsaids_overlay.py` — 4 NSAIDs into one Scene +
+     drug-likeness table.
+  4. `04_mechanism_walkthrough.py` — enumerate every seeded
+     mechanism, bucket by category, open the Diels-Alder
+     player.
+  5. `05_lipid_mw_report.py` — fatty-acid catalogue table
+     sorted by chain length + unsaturation.
+  6. `06_retrosynthesis_demo.py` — apply Phase-8d retro
+     templates to aspirin, print every disconnection.
+- **`tests/test_script_library.py`** — headless smoke:
+  discover every `*.py` in `data/script_library/`, run it
+  through `ScriptContext`, assert `result.ok` and non-empty
+  stdout.  Parametrised over scripts, so adding a new demo
+  auto-extends the suite.  Plus a floor-guard that fails if
+  the library ever drops below 6 files.
+- **`tests/test_script_library_gui.py`** — **user directive
+  2026-04-23**: run the same demos through the real
+  `ScriptEditorDialog` + `_RunWorker` QThread via pytest-qt.
+  Construct the dialog, `setPlainText(source)`, call
+  `_run_all()`, wait (`qtbot.waitUntil`) for the status label
+  to flip to "ok" / "error", then assert the output pane
+  contains stdout + no traceback block.  Catches regressions
+  in the editor's threading / output-colour-coding / error-
+  propagation wiring that headless `ScriptContext` tests can't
+  see.
+
+### Test suite
+- **867 passed, 0 skipped** (↑ from 854).  13 new tests:
+  7 from `test_script_library.py` (6 demos + not-empty
+  guard), 6 from `test_script_library_gui.py`.  Total test
+  file count now 122.
+
+### Action surface gaps surfaced
+Demo 04 had to drop its first draft's per-step arrow walk-
+through because the registered actions only expose
+mechanism *summaries* (id + name + step count), not the
+full step data.  Candidate follow-up (32c or 32e): add a
+`get_mechanism_details(name_or_id)` action that returns
+the full step + arrow list as JSON, so LLM-generated
+scripts can inspect arrow-pushing programmatically.
+
+### Next
+Round 68 can go two ways: extend the script library toward
+the 15-target (add protein-ligand + energy-profile demos),
+or swing back to 32c (track-list chrome: style combo /
+colour swatch / opacity slider per track).  I'll pick
+whichever has higher ROI when the loop fires.
+
+---
+
+## 2026-04-23 — Round 66 (Phase 32b shipped — hybrid Workbench + Scene API)
+
+### What shipped
+- **`orgchem/scene/`** (new subpackage, zero Qt imports):
+  - `Scene` class — observable scene graph with a list of `Track`
+    dataclasses.  Public API: `add_molecule(smi_or_mol)`,
+    `add_protein(pdb_id_or_text)`, `remove(name)`, `clear()`,
+    `set_visible(name, bool)`, `set_style(name, …)`,
+    `snapshot(path)`, `listen(fn)` with unsubscribe.  Process-wide
+    singleton via `current_scene()` / `reset_current_scene()`.
+  - `Track` — name + kind (molecule / protein / ligand) + data +
+    source_format (mol / pdb) + style + colour + visibility +
+    opacity + meta.
+  - `SceneEvent` enum — TRACK_ADDED / REMOVED / STYLE_CHANGED /
+    VISIBILITY_CHANGED / CLEARED / CAMERA_CHANGED.
+  - `html.build_scene_html(scene)` — assembles a self-contained
+    3Dmol.js page from every visible track; reuses the bundled
+    local asset when present, CDN fallback.  Protein tracks get
+    an automatic HETATM overlay so bound ligands survive cartoon
+    rendering.  Empty scenes render a placeholder label instead
+    of a broken `zoomTo`.
+- **`gui/panels/workbench.py`** — `WorkbenchWidget`, standalone
+  `QWidget` that can parent into either the main tabbar or a
+  `WorkbenchWindow`.  Toolbar: Detach / Reattach / Clear /
+  Snapshot PNG.  Right-side track list with double-click-to-
+  remove.  Subscribes to `current_scene()` and re-renders the
+  entire HTML document on every event.  `grab_png(path)` uses
+  `QWidget.grab()` so snapshots work under offscreen Qt even
+  when the widget isn't visible.
+- **`gui/windows/workbench_window.py`** — `WorkbenchWindow`
+  hosts the widget when detached.  Geometry persists via
+  `QSettings["window/workbench/geometry"]`.  `takeCentralWidget()`
+  on close so Qt doesn't delete the reparented widget.
+- **`MainWindow` wiring**:
+  - "Workbench" tab inserted immediately after "Molecule
+    Workspace" (index 1).
+  - `_detach_workbench()` — pulls the widget out, creates a
+    `WorkbenchWindow`, reattaches the Reattach signal.
+  - `_reattach_workbench()` — tears down the window,
+    re-inserts the widget at tab index 1.
+  - `open_workbench()` — focuses the tab (or raises the
+    detached window).
+  - Window menu entry *Workbench… (Ctrl+Shift+B)*.
+- **`ScriptContext` graduation** — the `viewer` global is now
+  `current_scene()` instead of the Phase-32a stub.  Any script
+  line `viewer.add_molecule('CCO')` updates the visible
+  Workbench view instantly.  Scripts that run before the
+  Workbench opens still work — the Scene accumulates tracks,
+  which the widget picks up on first `setHtml()`.
+- **`open_workbench` agent action** (`scripting` category,
+  main-thread-dispatched) with Window-menu + Ctrl+Shift+B
+  binding.  GUI-audit map updated — 100 % coverage preserved.
+- **Piggy-backed round 65**: Procaine 2-step acyl-chloride
+  pathway seeded; +5 intermediate molecules (SOCl₂, 4-amino-
+  benzoyl chloride, SO₂, 2-(diethylamino)ethanol, Procaine);
+  completes the seeded-anaesthetic triad (Benzocaine +
+  Lidocaine + Procaine).  Phase 31d tally 14 → 15.
+
+### Test suite
+- **854 passed, 0 skipped** (↑ from 837).  17 new
+  `tests/test_scene.py` cases cover: add_molecule auto-names,
+  duplicate-name rejection, remove / clear / set_visible /
+  set_style, listener events + unsubscribe, process-wide
+  singleton, empty-scene HTML safety, hide hides from HTML,
+  protein HET overlay, SMILES rejection, RDKit-Mol acceptance,
+  PDB-ID heuristic, snapshot-without-view raises.
+- End-to-end HeadlessApp smoke verified: MainWindow boots with
+  Workbench tab, `open_workbench` action works, Scene survives
+  round-trip driving from `current_scene()`.
+- `test_viewer_is_a_real_scene_object` replaces the Phase-32a
+  stub test now that `viewer` is the real Scene.
+
+### Design calls still deferred to 32c
+- Arrow overlays for mechanism step-throughs.
+- Trajectory tracks + timeline scrubber.
+- Programmatic `rotate` / `zoom` / `spin` (mouse still works
+  natively in 3Dmol.js, so this isn't a blocker).
+- `highlight(track, atoms=[…])` for picking out residues.
+- Per-track style chrome in the tracks-list UI (combo box +
+  colour swatch + opacity slider).
+
+### Next
+Round 67 picks up one of: 32c track-list chrome + arrow overlays;
+32d script library (15 bundled demo scripts — this is the real
+dogfooding of the Scene + app.call surface); or a Phase-31
+content item to interleave content and code.
+
+---
+
+## 2026-04-23 — Round 64 (Phase 32a shipped — script editor + REPL)
+
+### What shipped
+User directive: *"Your suggestion and plan sound great — please
+implement."* Round 64 is the foundational slice of Phase 32.
+
+- **`orgchem/agent/script_context.py`** (zero Qt imports, fully
+  headless-testable):
+  - `ScriptContext` — persistent globals dict + `run(source)` that
+    captures stdout / stderr, returns a last-expression `repr` in
+    `eval`-mode for single expressions, falls back to `exec`-mode
+    for multi-statement snippets, and formats syntax errors
+    compactly.
+  - `AppProxy` — wraps the agent-action registry so scripts can
+    say `app.show_molecule('caffeine')` OR `app.call('show_molecule',
+    name_or_id='caffeine')`.  `app.list_actions()` returns every
+    registered name.  Unknown attribute access raises
+    `AttributeError` with a pointer at `list_actions()`.
+  - `_WorkbenchStub` / `WorkbenchNotReadyError` — placeholder
+    `viewer` global so scripts that try to use 32b features fail
+    with a helpful message instead of a confusing `NameError`.
+  - `open_script_editor` — `@action(category="scripting")` entry
+    point, main-thread-dispatched via `run_on_main_thread_sync`.
+- **`orgchem/gui/dialogs/script_editor.py`** — singleton
+  `ScriptEditorDialog`:
+  - Editor pane (monospace, 80-col-ish) pre-loaded with a friendly
+    snippet that prints `len(app.list_actions())`.
+  - Dark output pane with colour-coded stdout / stderr / repr /
+    traceback.
+  - Toolbar: Run (Ctrl+Enter), Run-selection (Ctrl+Shift+Enter),
+    Stop, Reset globals, Open…, Save….
+  - `_RunWorker` QThread runs the snippet off the main thread so
+    long calls (PDB fetch, conformer gen) don't freeze the UI.
+    Stop button terminates the worker; caveat reported to the user
+    that arbitrary Python can't be interrupted cleanly.
+- **Wiring**:
+  - Tools menu entry *Script editor (Python)… (Ctrl+Shift+E)* in
+    `main_window.py`; handler uses the singleton classmethod so
+    re-opening the dialog preserves the user's `ScriptContext`.
+  - `agent/__init__.py` imports `script_context` alongside the
+    other `actions_*` modules so `open_script_editor` is
+    discoverable by the tutor + stdio bridge from launch.
+  - GUI-audit map (`gui/audit.py`) gets the new action mapped to
+    its Tools-menu path → 100 % coverage preserved.
+- **Tests** (`tests/test_script_context.py`, 13 cases):
+  trivial expression → `repr`, `print` capture, state persistence
+  between runs, `reset()` flushes, syntax-error formatting,
+  runtime-error non-fatal, pre-imported globals (`app` / `chem`),
+  `viewer` stub raises `WorkbenchNotReadyError`, `AppProxy`
+  unknown-action raises `AttributeError`, `app.call('…')` routes
+  through the registry, stdout / stderr separation, `ExecResult.ok`
+  polarity.
+
+### Round 63 (piggy-backed — Phase 31f glossary)
+Added 8 teaching gap-closers to `seed_glossary_extra.py`:
+**hyperconjugation**, **inductive effect**, **leaving group**,
+**enantiomeric excess (ee)**, **keto-enol tautomerism**,
+**homolysis vs heterolysis**, **Walden inversion**, **anomer**.
+Glossary `SEED_VERSION` bumped 6 → 7 so existing DBs pick up the
+new rows on next launch.  Catalogue total now 77 entries.
+
+### Test suite
+- **837 passed, 0 skipped** across the full suite (↑ from 823).
+
+### Design calls deferred to 32b and beyond
+The three tensions flagged in the Phase-32 plan
+(single vs multi Workbench; every-click-logs-script; LLM script
+mode on-by-default vs toggle) were not yet resolved — 32a lands
+without a Workbench, so they bite on 32b when the scene API goes
+in.
+
+### Next
+32b (dynamic scene viewer + scene API) is the natural next slice.
+Scripts today can drive any seeded action + render RDKit objects;
+the Workbench promotes `viewer` from a stub to a real scene graph.
+
+---
+
+## 2026-04-23 — Round 62 (Phase 31c CLOSED — Bromination + Friedel-Crafts)
+
+### What shipped
+- **`_bromination_ethene()`** — 3-step anti addition of Br₂ to
+  ethene via a bromonium ion. Step 1: π bond attacks Br; Br–Br
+  heterolyses; the departing Br⁺ doesn't leave an open cation —
+  its lone pair bridges to make a 3-membered bromonium. Step 2:
+  Br⁻ does a backside SN2-like attack at one carbon, opening the
+  ring, giving the characteristic anti (trans) 1,2-dibromide.
+  Step 3: vicinal-dibromide product.
+- **`_friedel_crafts_alkylation()`** — 3-step EAS sibling of the
+  round-60 nitration mechanism. Step 1: AlCl₃ is the Lewis acid —
+  Cl lone pair → Al, then C–Cl heterolyses to give CH₃⁺ / AlCl₄⁻.
+  Step 2: benzene π attacks the methyl cation → Wheland (arenium)
+  intermediate. Step 3: AlCl₄⁻ removes H⁺ from the sp³ carbon,
+  rearomatisation releases toluene + HCl + regenerates AlCl₃.
+
+### Plumbing
+- Registered both in the expansion `BUILDERS` dict under their
+  seeded reaction names ("Bromination of ethene", "Friedel-Crafts
+  alkylation"). `SEED_VERSION` bumped 10 → **11** so existing
+  databases pick up the new JSON blobs on the next launch.
+- Atom indices and SMILES validate via RDKit at test time; all
+  arrows + lone-pair dots stay in range.
+
+### Refactor: split `seed_mechanisms.py` under the 500-line cap
+The seed file had grown to 1052 lines (~550 over the project
+cap). Split into three themed sub-modules while adding the new
+content:
+- `seed_mechanisms_classic.py` (357 lines) — 9 textbook mechs
+  (SN/E/DA/aldol/Grignard/Wittig/Michael).
+- `seed_mechanisms_enzyme.py` (234 lines) — 4 enzyme active-site
+  mechs (chymotrypsin, aldolase, HIV protease, RNase A).
+- `seed_mechanisms_extra.py` (416 lines) — 7 expansion mechs
+  (Fischer, NaBH₄, nitration, Claisen, pinacol, bromination, FC).
+- `seed_mechanisms.py` (88 lines) — facade: imports the three
+  `BUILDERS` dicts, owns `_MECH_MAP`, `SEED_VERSION`, and
+  `seed_mechanisms_if_empty(force)`. Re-exports `_hiv_protease`,
+  `_rnase_a`, `_chymotrypsin`, `_aldolase_class_I` so existing
+  tests that import private builders by name keep working.
+
+### INTERFACE.md
+Updated the `db/` section: the single `seed_mechanisms.py` row
+is now four rows covering the facade + the three themed
+sub-modules.
+
+### Phase 31c progress
+Mechanisms catalogue: 18 → **20 / 20 — closed**. Four rounds
+(59-62) shipped 7 mechanisms total (Fischer, NaBH₄, nitration,
+Claisen, pinacol, bromination, FC).
+
+### Test suite
+- **823 passed, 0 skipped** — no regressions. Added 6 new
+  round-62 regression tests in `tests/test_seed_mechanisms_round62.py`:
+  both new builders land in `_MECH_MAP`, total count pins at 20,
+  step counts + arrow patterns match the description, all
+  SMILES parse + indices stay in range, and `SEED_VERSION ≥ 11`.
+
+### Next
+With Phase 31c closed, remaining Phase 31 sub-goals are still
+worth attacking one round at a time: 31d synthesis pathways
+(14 → 25), 31e glossary terms (61 → 80), 31f tutorials
+(21 → 30), 31g macromolecule catalogues (25 / 31 / 33 → 40
+each), 31a molecules (~210 → 400), 31b reactions (35 → 50),
+and the Phase-25-era orphans (nomenclature quiz dialog,
+compute_rate_law).
+
+---
+
 ## 2026-04-23 — Round 61 (Phase 31c +2 mechanisms — Claisen + Pinacol)
 
 ### What shipped
