@@ -35,7 +35,13 @@ else:
               f"{b.get('mode', '?')})  — {b.get('group')}")
 
     # Medicinal chemistry: Lipinski / Veber / Ghose summary.
+    # `drug_likeness` returns top-level `qed` plus per-rule
+    # sub-dicts (lipinski / veber / ghose / pains) — each with
+    # its own `violations` list + `passes` bool.
     dl = app.drug_likeness(smiles=details["smiles"])
-    print(f"\nDrug-likeness: QED = {dl.get('qed_score', 0):.3f}, "
-          f"Lipinski violations = "
-          f"{dl.get('lipinski', {}).get('violations', '?')}")
+    lip = dl.get("lipinski", {})
+    veb = dl.get("veber", {})
+    print(f"\nDrug-likeness: QED = {dl.get('qed', 0):.3f}, "
+          f"Lipinski: {lip.get('n_violations', 0)} violation(s) "
+          f"({'pass' if lip.get('passes') else 'fail'}), "
+          f"Veber: {'pass' if veb.get('passes') else 'fail'}")

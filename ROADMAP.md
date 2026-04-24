@@ -2008,12 +2008,26 @@ reactions, 20 mechanisms, 25 synthesis pathways, 20 energy profiles,
       Buchwald-Hartwig catalytic cycle, Sonogashira, Sharpless
       epoxidation, CBS, Jacobsen, Stille, Birch, Mukaiyama aldol
       once the 20-target is well past.
-- [~] **31d. Synthesis pathways → 25.** First 2 shipped
-      (Benzocaine 3-step nitrotoluene route — KMnO₄ oxidation →
-      Béchamp reduction → Fischer esterification; Lidocaine
-      2-step — Schotten-Baumann α-chloroamide → SN2 with
-      diethylamine). Catalogue now **14**; 11 more industrial /
-      classical multi-step routes. Priority: taxol (abbreviated —
+- [x] **31d. Synthesis pathways → 25. COMPLETE (round 80).**
+      Full catalogue across rounds 41-80:
+      Benzocaine 3-step, Lidocaine 2-step, Procaine 2-step,
+      Sulfanilamide 3-step chlorosulfonation,
+      Phenolphthalein 1-step FC condensation,
+      Saccharin 3-step Remsen-Fahlberg,
+      Acetanilide 1-step acetylation,
+      L-DOPA 3-step Knowles Rh-DIPAMP asymmetric H₂,
+      Dopamine 1-step AADC decarboxylation,
+      Adipic acid 2-step DuPont KA-oil,
+      Nylon-6,6 2-step Carothers polycondensation,
+      **Nylon-6 3-step Beckmann / caprolactam** (round 80),
+      **Aspartame 2-step Z-peptide coupling** (round 80),
+      plus the earlier rounds Wöhler urea, Aspirin (×2),
+      Paracetamol (×2), BHC Ibuprofen, Caffeine, Phenacetin,
+      Vanillin, Aniline 2-step, 2-methyl-2-butanol Grignard,
+      Met-enkephalin Fmoc SPPS.  Catalogue now **25 / 25**.
+      Two nylon commodity chains (6 + 6,6) share cyclohexanone
+      as pedagogical branch point.  Follow-up priorities for
+      a future phase (32+): taxol (abbreviated —
       Baran-style endgame), morphine (Rice or Trost endgame),
       lysergic acid, reserpine (Woodward), cortisone fragment,
       longifolene core, oseltamivir (Shibasaki), sildenafil,
@@ -2021,37 +2035,90 @@ reactions, 20 mechanisms, 25 synthesis pathways, 20 energy profiles,
       penicillin V, progesterone (Djerassi endgame), glyphosate
       (industrial). Each with per-step SMILES, conditions, yields,
       notes + reagent annotations.
-- [~] **31e. Energy profiles → 20.** First 3 shipped (Sonogashira
-      catalytic cycle with OA as RDS, HWE via oxaphosphetane collapse,
-      Mitsunobu via oxyphosphonium SN2) — now **12 total**; 8 more
-      to come. Priority list: 11 more reaction-coordinate
+- [~] **31e. Energy profiles → 20.** Shipped across rounds 41-99:
+      Sonogashira catalytic cycle (OA as RDS), HWE via oxaphosphetane
+      collapse, Mitsunobu via oxyphosphonium SN2,
+      Claisen condensation (round 98) — "final deprotonation drives
+      the equilibrium",
+      **Fischer esterification (round 99)** — shallow 5-point
+      curve encoding the textbook **thermoneutral equilibrium**
+      (|ΔH| < 15 kJ/mol; K ≈ 3) that needs Le Chatelier drive
+      (excess ROH or Dean-Stark water removal) to push forward.
+      Pairs pedagogically with Claisen: one is driven by the
+      final step, the other only by Le Chatelier.
+      **Nitration of benzene (round 101)** — canonical 3-point
+      EAS saddle-dip-saddle: rate-limiting NO₂⁺ attack TS at
+      +90 kJ/mol, Wheland (arenium) intermediate in a shallow
+      +45 valley, low-barrier deprotonation, re-aromatised
+      product at −25. The σ-complex shape every EAS profile
+      inherits.
+      **NaBH₄ reduction of acetone (round 102)** — simplest
+      irreversible addition shape in the catalogue.  Single
+      rate-limiting 4-centre hydride-transfer TS at +55,
+      stabilised borate-alkoxide well at −80, trivial aqueous
+      workup, strongly exergonic product (ΔH ≈ −115 kJ/mol).
+      Teaching complement to Grignard addition (same shape
+      family, different nucleophile polarity).
+      **Bromination of ethene (round 103)** — canonical
+      bromonium-valley anti-addition shape.  RDS is step 1
+      (π-electrons attack Br-Br; Br⁻ kicked out) at +80 kJ/mol.
+      The 3-membered bromonium intermediate sits in a
+      resonance-stabilised valley above reactants but below
+      both TSs; that shape is *why* Br⁻ backside-SN2-opens the
+      bromonium instead of recombining — anti-addition
+      stereochemistry falls out.  Pairs with round-62 mechanism
+      JSON.
+      **Pinacol rearrangement (round 104)** — 1,2-methyl-shift
+      teaching shape.  7 points: ionisation TS (RDS +100) →
+      tertiary carbocation well (+40) → migration TS (+50;
+      below ionisation TS because migration is fast once
+      the cation exists) → oxocarbenium well (−20; below the
+      pre-shift carbocation because the O lone pair
+      stabilises) → deprotonation → ketone (−70).  The
+      "oxocarbenium lower than tert-C⁺" inequality is why
+      1,2-shifts run forward, not reverse.
+      Catalogue now **18 total**; 2 more to come. Priority list: 11 more reaction-coordinate
       diagrams. Priority: Diels-Alder endo/exo comparison, Wittig,
       Aldol (enolate vs enol), Claisen, Michael, Heck (β-hydride
       elimination as RDS), Buchwald-Hartwig (oxidative-addition
       RDS), SN2 on 1° / 2° / 3° halides (3-way comparison),
       retro-Diels-Alder. Each with proper Ea / ΔH / ΔG values from
       textbook references.
-- [~] **31f. Glossary → 80.** First 18 shipped. Round-44 batch:
-      kinetic vs thermodynamic control, Hammond postulate,
-      Markovnikov / Zaitsev, anti-periplanar, Baldwin's rules,
-      chemoselectivity, bioisostere. Round-46 batch (in
-      `seed_glossary_extra.py`): Saytzeff/Hofmann, Bürgi-Dunitz
-      angle, kinetic isotope effect, HOMO/LUMO, Alder endo rule,
-      gauche, A-value, pharmacophore, prodrug, J-coupling. Catalogue
-      now **61**; 19 more still to come, prioritising the
-      gaps tutors ran into this round: kinetic vs thermodynamic
-      control, Hammond postulate, isosteres, pharmacophore,
-      orthogonal protecting groups, chemoselectivity,
-      stereoselectivity, Baldwin's rules, Markovnikov / anti-
+- [x] **31f. Glossary → 80. COMPLETE (round 77).** Round-63
+      batch added hyperconjugation, inductive effect, leaving
+      group, enantiomeric excess (ee), keto-enol tautomerism,
+      homolysis vs heterolysis, Walden inversion, anomer.
+      Round-77 batch closed the target: **Activating &
+      deactivating groups** (with ortho/para vs meta EAS
+      directing), **Regioselectivity** (vs chemo/stereo),
+      **Constitutional isomer** (with 4 sub-type taxonomy).
+      Catalogue now **80 / 80**.  Glossary `SEED_VERSION` bumped
+      to 8 so existing DBs pick up the new rows on next launch.
+      Follow-up: continue-batching earlier round's backlog:
+      kinetic vs thermodynamic
       Markovnikov, Saytzeff / Hofmann elimination, anti-periplanar
       geometry, Diels-Alder endo rule, Woodward-Fieser rules,
       tautomerism vs resonance, conformational analysis terminology
       (gauche / anti / eclipsed / staggered), etc. Each gets an
       example_smiles → figure via the Phase 26a pipeline.
-- [~] **31g. Tutorials → 30.** First 2 shipped (beginner/06 Acid-
-      base chemistry & pKa; intermediate/07 Sugars and
-      carbohydrates) — curriculum now **21**; 9 more to come
-      across tiers:
+- [x] **31g. Tutorials → 30. COMPLETE (round 93).**
+      Final distribution: 8 beginner / 10 intermediate /
+      6 advanced / 6 graduate.  Rounds 82-93 shipped:
+      intermediate/08 Radicals, graduate/05 Catalysis,
+      intermediate/09 Polymers, beginner/07 Stereochem 101,
+      advanced/05 Green chemistry, intermediate/10
+      Protecting groups, beginner/08 Reading SMILES,
+      graduate/06 Biosynthesis, **advanced/06 Flow &
+      process chemistry** (round 93).  Pre-round-82 seeded
+      lessons (acid-base, sugars, nomenclature, structures,
+      atoms, welcome, pericyclic, organometallics,
+      retrosynthesis, spectroscopy, named reactions,
+      asymmetric, MO theory, total synthesis,
+      stereochemistry R/S, SN, E, aromaticity, carbonyl,
+      energetics) round out the 30.  Pre-empted priorities
+      (metal-catalysed C-H activation, flow-specific
+      Merck-Codexis deep dive) left for a future phase if
+      depth is ever needed.
       beginner (stereochemistry 101, acid-base practice,
       retrosynthesis primer), intermediate (pericyclic warm-up,
       organometallic coupling survey, total-synthesis walkthrough:
@@ -2095,11 +2162,19 @@ reactions, 20 mechanisms, 25 synthesis pathways, 20 energy profiles,
       locked NA (LNA) monomer, phosphorothioate linkage example,
       Z-DNA motif, cruciform / hairpin small examples, pre-miRNA
       example sequence.
-- [~] **31k. SAR series → 15.** First 2 shipped (β-blockers — 5
-      variants: propranolol / atenolol / metoprolol / bisoprolol /
-      carvedilol; ACE inhibitors — 5 variants: captopril /
-      enalaprilat / lisinopril / ramipril / benazepril) — catalogue
-      now **4**; 11 more medicinal-chem families to come:
+- [~] **31k. SAR series → 15.** Shipped across rounds 40-100:
+      β-blockers (5 variants), ACE inhibitors (5 variants),
+      SSRIs (round 96), **β-lactam penicillin series (round 100)** —
+      5 variants: penicillin G / ampicillin / amoxicillin /
+      methicillin / cloxacillin, MIC vs β-lactamase-stability
+      vs oral-bioavailability table. Three teaching points
+      encoded numerically: (a) α-amino side chains tune oral
+      bioavailability (Pen-G 20 % → ampicillin 40 % → amoxicillin
+      90 %), (b) steric shielding (2,6-di-OMe methicillin,
+      isoxazolyl cloxacillin) buys β-lactamase stability,
+      (c) shielding costs MIC (methicillin ~150× weaker than
+      Pen-G). Catalogue now **6**; 9 more medicinal-chem families
+      to come:
       β-lactam antibiotics, β-blockers, ACE inhibitors,
       benzodiazepines, phenothiazines, PDE5 inhibitors (sildenafil
       analogs), kinase inhibitors (imatinib / dasatinib analogs),
@@ -2258,19 +2333,20 @@ flow Qt-ward; scene mutations flow JS-ward).
         QWebChannel bridge).
       - Agent action `open_workbench(tab)` opens / focuses the
         window.
-- [x] **32c. Track-aware controls GUI.** *(shipped round 69 —
-      user directive "add more controls to the workbench viewer,
-      including the ability to toggle different tracks".)*
-      New `gui/panels/workbench_track_row.py::TrackRow` replaces
-      the plain list labels: each row carries a visibility
-      checkbox, a bold name label (auto-subtitled with SMILES /
-      PDB ID from `Track.meta`), a kind-specific style combo
-      (molecule vs protein choice sets), and a ✕ remove button.
-      `WorkbenchWidget` toolbar grew three scene-wide buttons:
-      **Fit-to-view**, **Toggle bg** (dark ↔ light), **Export
-      HTML…** (standalone shareable .html with 3Dmol.js inlined).
-      7 new pytest-qt regression tests.  Deferred to 32c+:
-      colour swatch, opacity slider, drag-reorder.
+- [x] **32c. Track-aware controls GUI.** *(shipped round 69;
+      round-85 polish closed the deferred chrome.)*
+      `gui/panels/workbench_track_row.py::TrackRow` per row:
+      visibility checkbox, bold name label (auto-subtitled with
+      SMILES / PDB ID), kind-specific style combo, **colour
+      combo + swatch preview with "custom…" → QColorDialog**
+      (round 85), **opacity slider 10-100 %** (round 85), ✕
+      remove button.  `WorkbenchWidget` toolbar: Fit-to-view,
+      Toggle bg (dark ↔ light), Clear, Snapshot PNG…, Export
+      HTML….  Round 85 also refactored `scene/html.py::_style_js`
+      to build the 3Dmol.js style dict programmatically and
+      inject `opacity` consistently across all style modes.
+      Deferred to a future round: drag-reorder for the tracks
+      list.
       each track with its own row: visibility checkbox, style
       combo, colour swatch, opacity slider, delete button, drag
       handle to reorder. Scene-wide controls: camera reset,
@@ -2279,15 +2355,22 @@ flow Qt-ward; scene mutations flow JS-ward).
       foregrounded. Every control emits its equivalent
       scene-API call to the editor's history log so the user
       can copy-paste "what just happened" back into a script.
-- [~] **32d. Script library — 6/15 demos shipped (round 67).**
+- [x] **32d. Script library — 15/15 COMPLETE (rounds 67, 70, 72, 73).**
       `data/script_library/` + `tests/test_script_library.py`
       (headless `ScriptContext` path) + `tests/test_script_library_gui.py`
       (real `ScriptEditorDialog` + `_RunWorker` QThread path via
       pytest-qt, per user directive 2026-04-23).  Shipped so far:
       **01_caffeine_tour**, **02_scene_composer_basics**,
       **03_nsaids_overlay**, **04_mechanism_walkthrough**,
-      **05_lipid_mw_report**, **06_retrosynthesis_demo**.
-      9 more to go toward the 15-target.  All under
+      **05_lipid_mw_report**, **06_retrosynthesis_demo**,
+      **07_aspirin_pathway**, **08_stereochem_tour**,
+      **09_energy_profile_diels_alder**, **10_huckel_benzene**,
+      **11_nsaid_sar**, **12_macromolecule_catalogue**,
+      **13_butane_dihedral**, **14_retrosynthesis_tree**,
+      **15_glossary_tour**.  Phase 32d target hit exactly.
+      Round 71 added ``_CONTENT_MARKERS`` per-demo so silent-zero
+      bugs fail loudly (proved with a negative-case test).
+      All under
       `data/script_library/`, listed alphabetically:
       1.  `01_caffeine_tour.py` — load caffeine, print full
           descriptor row, save 2D PNG + IR + ¹H NMR stick plots.
@@ -2337,19 +2420,28 @@ flow Qt-ward; scene mutations flow JS-ward).
       Surfaces via *Editor → File → Open example…* and via a
       headless-replay CLI so the whole library becomes part of
       the CI smoke-test.
-- [ ] **32e. LLM script generation.** Tutor panel gets a
-      "Reply with a script" toggle. When enabled, the backend
-      system prompt gains a paragraph describing
-      `ScriptContext` globals + the scene API + the `app.call`
-      contract, and instructs the model to reply with a fenced
-      ```python block. That block:
-      - drops straight into the editor pane,
-      - gets run on demand (not auto-executed),
-      - is saved alongside the conversation transcript for
-        reproducibility.
-      Orthogonal to existing tool-use: for one-shot questions
-      the LLM can still call actions directly and skip the
-      script surface.
+- [x] **32e. LLM script generation.** *(shipped round 74.)*
+      `agent/conversation.py::_SCRIPT_MODE_ADDENDUM` +
+      `build_script_mode_system_prompt()` append a Phase-32e
+      briefing to the base prompt: ScriptContext globals
+      (`app` / `chem` / `orgchem` / `viewer`), Scene API
+      (`add_molecule` / `add_protein` / `remove` / `clear`),
+      and the fenced ```python block contract.  Tutor panel
+      gains a **"Reply with a script"** checkbox that swaps
+      the live `Conversation.system_prompt` on toggle (or at
+      Connect time if pre-ticked).  When a reply contains
+      fenced ```python blocks, each gets a dark monospace
+      preview div + a **▶ Run in Script Editor** anchor
+      (`orgchem-script:<idx>` URL scheme).  Clicking the
+      anchor loads the block into the singleton
+      ScriptEditorDialog.  Blocks never auto-run.  12 new
+      tests (6 extractor unit tests + 3 system-prompt builder
+      tests + 3 pytest-qt integration tests).
+
+**Phase 32 — CLOSED.**  Scripting workbench + scene composer
+shipped across 32a (editor) · 32b (Workbench + Scene API) ·
+32c (track chrome) · 32d (15-demo library) · 32e (tutor
+script mode).  All five sub-phases ✅.
 
 ### Out of scope (deferred unless a later phase adds them)
 - Script package management / PyPI install — single-file
@@ -2369,6 +2461,78 @@ flow Qt-ward; scene mutations flow JS-ward).
   `gui/dialogs/script_editor.py` row.
 - GUI-audit pin (Phase 25a) adds `open_script_editor` +
   `open_workbench` actions; coverage must stay at 100 %.
+
+---
+
+## Phase 33 — Cross-surface full-text search *(NEW — 2026-04-23; started round 88)*
+
+Natural extension of the Phase-11b Ctrl+K command palette.
+Palette does **name-matching only** (jump to a known molecule /
+reaction / glossary term by typing its name); this phase adds
+**full-text search** over every text-bearing column in the
+seeded DB — descriptions, step notes, glossary definitions,
+mechanism-step prose.  A user asking *"where do we discuss
+Beckmann?"* should land on the Nylon-6 pathway step 2 +
+the adjacent prose without having to know the exact entry
+title.
+
+### Sub-phases
+
+- [x] **33a. Headless search core + agent action (round 88).**
+      - `orgchem/core/fulltext_search.py` — pure-Python linear
+        scan over Molecule / Reaction / SynthesisPathway +
+        SynthesisStep / GlossaryTerm tables + mechanism_json
+        step list.  `SearchResult` dataclass, `search(query,
+        kinds, limit)`.  Title-boost scoring + word-boundary
+        bonus + snippet excerpt.
+      - `orgchem/agent/actions_search.py` — `fulltext_search`
+        agent action with comma-separated kinds filter and
+        clean error-return for unknown kinds.
+      - 19 unit tests + integration test; GUI audit entry
+        provisionally maps to *View → Find… (Ctrl+F)* ahead of
+        33b.
+
+- [x] **33b. Ctrl+F Find dialog (shipped round 89).**  New
+      `gui/dialogs/fulltext_search.py::FulltextSearchDialog`
+      (singleton).  Live-updating query box with 100 ms debounce,
+      5-kind checkbox-filter row, results list rendering kind
+      badge + bold title + snippet as HTML per row.  Module-level
+      `dispatch_search_result(result, main_win)` routes all 5
+      kinds — molecule (bus.molecule_selected), reaction
+      (`reactions._display`), mechanism-step (same + fires
+      `open_mechanism` via the agent registry to pop the player
+      dialog), pathway (`synthesis._display`), glossary
+      (`glossary.focus_term`).  Wired into *View → Find…*
+      (Ctrl+F) in `MainWindow`.  10 new pytest-qt tests (empty
+      state, live-search, kind-filter restricts results,
+      zero-kinds helpful message, + 6 dispatch-routing unit
+      tests via a fake main-window).
+
+- [x] **33c. Surface-integrated search (shipped round 95).**
+      Added a `"Full text"` `QCheckBox` next to the existing
+      filter box on the **Reactions** tab
+      (`reaction_workspace.py`) and **Synthesis** tab
+      (`synthesis_workspace.py`).  When unchecked — legacy SQL
+      name / category substring filter (unchanged).  When
+      checked — `_on_filter` routes through
+      `core/fulltext_search.search()`:
+      - Reactions: `kinds=["reaction", "mechanism-step"]`,
+        collapsing step-note hits onto their parent reaction id
+        so a query like *"oxime"* or *"Wheland"* lands on the
+        mechanism-bearing reaction rather than repeated rows.
+      - Synthesis: `kinds=["pathway"]`, so pathway descriptions
+        + step reagents / conditions / notes are searched.
+      Both panel models gained a sibling `reload_ids(ids)`
+      method that preserves ranked order via a single
+      `WHERE id IN (…)` query.  Glossary tab was scoped out —
+      its `_TermListModel.reload()` already ILIKEs
+      `definition_md`, making a toggle redundant.
+      8 new pytest-qt tests
+      (`tests/test_fulltext_filter_toggle.py`): default
+      name-filter baseline, toggle-on finds step-note-only hits
+      ("Raney" → BHC Ibuprofen pathway), empty-query fallback,
+      ranked-order preservation in `reload_ids`.  Full-suite
+      regression: 958 passing.
 
 ---
 

@@ -231,6 +231,16 @@ class MainWindow(QMainWindow):
         a_palette.triggered.connect(self.open_command_palette)
         m_view.addAction(a_palette)
 
+        a_find = QAction("Find…", self)
+        a_find.setShortcut(QKeySequence("Ctrl+F"))
+        a_find.setToolTip(
+            "Full-text search every molecule / reaction / pathway "
+            "/ glossary term / mechanism step (Phase 33b).  "
+            "Matches titles AND descriptions, not just names."
+        )
+        a_find.triggered.connect(self.open_fulltext_search)
+        m_view.addAction(a_find)
+
         m_tools = mb.addMenu("&Tools")
         a_formula = QAction("Empirical / Molecular Formula Calculator…", self)
         a_formula.triggered.connect(self._on_formula_calc)
@@ -372,6 +382,20 @@ class MainWindow(QMainWindow):
         )
         dlg = CommandPaletteDialog(self)
         dlg.exec()
+        return dlg
+
+    def open_fulltext_search(self):
+        """Show the Ctrl+F full-text search dialog (Phase 33b).
+        Singleton — reopening the dialog brings the existing
+        window forward so the user can keep refining a query."""
+        from orgchem.gui.dialogs.fulltext_search import (
+            FulltextSearchDialog,
+        )
+        dlg = FulltextSearchDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+        dlg._query.setFocus()
         return dlg
 
     # ---------------- actions -----------------------------------------

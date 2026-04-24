@@ -27,36 +27,54 @@ def _style_js(track: Track) -> str:
     """3Dmol.js style selector block for a single track.
 
     Returned as a JS object literal passed to ``v.setStyle`` /
-    ``v.addStyle``.  Covers the style ✕ colour combinations we
-    support in 32b.
+    ``v.addStyle``.  Built programmatically (dict → ``json.dumps``)
+    so we can inject ``opacity`` + colour choices for every
+    style consistently — Phase 32c+ round 85.
     """
     style = track.style.lower()
     colour = track.colour.lower()
+    opacity = float(track.opacity)
 
-    # ---- protein styles -----------------------------------------
-    if style == "cartoon":
-        if colour == "chain":
-            return "{cartoon: {colorscheme: 'chainbow'}}"
-        if colour == "spectrum":
-            return "{cartoon: {color: 'spectrum'}}"
-        if colour == "residue":
-            return "{cartoon: {colorscheme: 'amino'}}"
-        return "{cartoon: {}}"
-    if style == "surface":
-        return "{surface: {opacity: 0.6}}"
-    if style == "trace":
-        return "{cartoon: {style: 'trace'}}"
-
-    # ---- small-molecule / ligand styles -------------------------
-    if style == "stick":
-        return "{stick: {radius: 0.15}}"
+    # Combined two-key style: ball-and-stick draws BOTH sticks and
+    # spheres, so we have to set both inner dicts consistently.
     if style == "ball-and-stick":
-        return "{stick: {radius: 0.12}, sphere: {scale: 0.25}}"
-    if style == "sphere":
-        return "{sphere: {scale: 0.35}}"
-    if style == "line":
-        return "{line: {}}"
-    return "{stick: {}}"
+        stick_inner = {"radius": 0.12}
+        sphere_inner = {"scale": 0.25}
+        if opacity < 1.0:
+            stick_inner["opacity"] = opacity
+            sphere_inner["opacity"] = opacity
+        return json.dumps({"stick": stick_inner, "sphere": sphere_inner})
+
+    # Map style name → (3Dmol.js key, default params).
+    if style in ("cartoon", "trace"):
+        key = "cartoon"
+        inner = {} if style == "cartoon" else {"style": "trace"}
+        # Protein-level colour variants.
+        if colour == "chain":
+            inner["colorscheme"] = "chainbow"
+        elif colour == "spectrum":
+            inner["color"] = "spectrum"
+        elif colour == "residue":
+            inner["colorscheme"] = "amino"
+        # "cpk" is the default — leave inner untouched.
+    elif style == "surface":
+        key = "surface"
+        # Surface gets a softer default (0.6) when no override —
+        # otherwise follow the track's opacity field exactly.
+        inner = {"opacity": opacity if opacity != 1.0 else 0.6}
+        return json.dumps({key: inner})
+    elif style == "stick":
+        key, inner = "stick", {"radius": 0.15}
+    elif style == "sphere":
+        key, inner = "sphere", {"scale": 0.35}
+    elif style == "line":
+        key, inner = "line", {}
+    else:
+        key, inner = "stick", {}
+
+    if opacity < 1.0:
+        inner["opacity"] = opacity
+    return json.dumps({key: inner})
 
 
 def _models_js_for_scene(tracks: List[Track]) -> str:

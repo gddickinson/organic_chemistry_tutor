@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 
 #: Bump whenever seed data changes. Existing rows with a lower embedded
 #: ``seed_version`` are overwritten on next app launch.
-SEED_VERSION = 3
+SEED_VERSION = 9
 
 
 # ------------------------------------------------------------------
@@ -263,6 +263,245 @@ def _hwe_profile() -> ReactionEnergyProfile:
     )
 
 
+def _claisen_profile() -> ReactionEnergyProfile:
+    """Claisen condensation (two esters + ethoxide): pedagogically
+    the classic case where the **final** step — deprotonation of
+    the doubly α-acidic β-ketoester proton (pKa ≈ 11) by alkoxide
+    (pKa ≈ 17) — drives an otherwise marginal equilibrium.
+    Without that last step, net ΔG is roughly zero; with it, the
+    stabilised β-ketoester enolate sits well downhill."""
+    return ReactionEnergyProfile(
+        title="Claisen condensation: ethyl acetate + NaOEt",
+        energy_unit="kJ/mol",
+        source="pedagogical estimate (Clayden 2e §26; Carey-Sundberg 5e §7)",
+        points=[
+            StationaryPoint(label="Reactants", energy=0.0,
+                            note="2 EtOAc + NaOEt"),
+            StationaryPoint(label="TS enolisation", energy=50.0,
+                            is_ts=True,
+                            note="α-H removal by EtO⁻; unfavourable"),
+            StationaryPoint(label="Ester enolate", energy=30.0,
+                            note="+ EtOH; endergonic intermediate"),
+            StationaryPoint(label="TS C–C addition", energy=70.0,
+                            is_ts=True,
+                            note="rate-limiting attack on 2nd ester C=O"),
+            StationaryPoint(label="Tetrahedral alkoxide", energy=10.0,
+                            note="sp³ at former carbonyl C"),
+            StationaryPoint(label="TS alkoxide collapse",
+                            energy=35.0, is_ts=True,
+                            note="EtO⁻ departs; C=O re-forms"),
+            StationaryPoint(label="Neutral β-ketoester",
+                            energy=-5.0,
+                            note="ΔG near zero — equilibrium would "
+                                 "sit here without step 4"),
+            StationaryPoint(label="TS final deprotonation",
+                            energy=15.0, is_ts=True,
+                            note="EtO⁻ removes α-H between two C=O "
+                                 "(pKa ≈ 11)"),
+            StationaryPoint(label="Products", energy=-40.0,
+                            note="doubly-stabilised β-ketoester "
+                                 "enolate + EtOH — the step that "
+                                 "DRIVES the Claisen"),
+        ],
+    )
+
+
+def _nabh4_profile() -> ReactionEnergyProfile:
+    """NaBH₄ reduction of a ketone (acetone → 2-propanol): the
+    simplest irreversible addition shape in the catalogue.
+    Hydride transfer from B–H to the carbonyl C is the only
+    TS; a stabilised alkoxide intermediate follows; aqueous
+    workup is a trivial proton grab.  The teaching point is
+    that the reaction is kinetically demanding (Ea ~55 kJ/mol)
+    but strongly exergonic downstream — the alkoxide sits
+    ~80 kJ/mol below the reactants because C–O(R) + B–H is
+    far more stable than C=O + B–H was."""
+    return ReactionEnergyProfile(
+        title="NaBH₄ reduction: acetone → 2-propanol",
+        energy_unit="kJ/mol",
+        source="pedagogical estimate (Clayden 2e §6; Brown 1972 "
+               "*Organic Syntheses via Boranes*)",
+        points=[
+            StationaryPoint(label="Reactants", energy=0.0,
+                            note="acetone + NaBH₄ in MeOH"),
+            StationaryPoint(label="TS hydride transfer",
+                            energy=55.0, is_ts=True,
+                            note="B–H···C=O alignment; 4-centre "
+                                 "TS with partial B-O bond"),
+            StationaryPoint(label="Borate alkoxide",
+                            energy=-80.0,
+                            note="R₂CHO-BH₃⁻ Na⁺; further hydride "
+                                 "transfers possible (NaBH₄ can do "
+                                 "4 reductions per equivalent)"),
+            StationaryPoint(label="TS workup", energy=-65.0,
+                            is_ts=True,
+                            note="aqueous proton grab; low barrier"),
+            StationaryPoint(label="Products", energy=-115.0,
+                            note="2-propanol + B(OH)₃ + NaOH"),
+        ],
+    )
+
+
+def _pinacol_profile() -> ReactionEnergyProfile:
+    """Pinacol rearrangement (pinacol → pinacolone, H⁺-cat.):
+    the textbook **1,2-methyl-shift** profile.  The pedagogical
+    point is that the migration TS is *lower* than the ionisation
+    TS (rate-determining), and the post-shift oxocarbenium is
+    *more* stable than the pre-shift tertiary carbocation because
+    the oxygen lone pair donates into the empty p-orbital.
+    The shape — "carbocation high, oxocarbenium low" — is why
+    1,2-shifts run forward to the ketone, not backward to the
+    diol."""
+    return ReactionEnergyProfile(
+        title="Pinacol rearrangement: pinacol → pinacolone (H⁺-cat.)",
+        energy_unit="kJ/mol",
+        source="pedagogical estimate (Clayden 2e §37; Carey-Sundberg "
+               "5e §10)",
+        points=[
+            StationaryPoint(label="Reactants", energy=0.0,
+                            note="pinacol + H⁺ (aqueous)"),
+            StationaryPoint(label="TS ionisation", energy=100.0,
+                            is_ts=True,
+                            note="rate-limiting; H₂O leaves as "
+                                 "C–O bond breaks"),
+            StationaryPoint(label="Tertiary carbocation",
+                            energy=40.0,
+                            note="R₃C⁺; β-hydroxyl still present"),
+            StationaryPoint(label="TS 1,2-methyl shift",
+                            energy=50.0, is_ts=True,
+                            note="migratory aptitude: alkyl > H; "
+                                 "hyperconjugation assists"),
+            StationaryPoint(label="Protonated ketone",
+                            energy=-20.0,
+                            note="oxocarbenium C=O⁺–H; O lone pair "
+                                 "stabilises the cation — more "
+                                 "stable than the tertiary C⁺"),
+            StationaryPoint(label="TS deprotonation",
+                            energy=-10.0, is_ts=True,
+                            note="water grabs sp² proton; fast"),
+            StationaryPoint(label="Products", energy=-70.0,
+                            note="pinacolone + H₃O⁺; overall "
+                                 "dehydration is exergonic"),
+        ],
+    )
+
+
+def _bromination_ethene_profile() -> ReactionEnergyProfile:
+    """Bromination of an alkene (ethene + Br₂ → 1,2-dibromoethane):
+    the canonical **bromonium-valley anti-addition** shape that
+    explains trans-diaxial stereochemistry.  Step 1 (π-electrons
+    attack Br–Br; Br⁻ kicked out) is rate-limiting.  The 3-membered
+    bromonium intermediate sits in a real, resonance-stabilised
+    valley — deeper than a classical carbocation would be — which
+    is *why* Br⁻ attacks from the opposite face (backside SN2-like
+    opening) instead of recombining with the now-adjacent bromonium.
+    The anti-addition outcome falls out of the shape.
+    Teaching complement to the Phase-14b halohydrin formation
+    glossary entry + Phase 31c round-62 mechanism JSON."""
+    return ReactionEnergyProfile(
+        title="Bromination: ethene + Br₂ → 1,2-dibromoethane",
+        energy_unit="kJ/mol",
+        source="pedagogical estimate (Clayden 2e §20; Carey-Sundberg "
+               "5e §4)",
+        points=[
+            StationaryPoint(label="Reactants", energy=0.0,
+                            note="ethene (π-HOMO) + Br₂ (σ*-LUMO)"),
+            StationaryPoint(label="TS bromonium",
+                            energy=80.0, is_ts=True,
+                            note="rate-limiting; π-attack + "
+                                 "Br-Br heterolysis concerted"),
+            StationaryPoint(label="Bromonium ion",
+                            energy=40.0,
+                            note="3-membered cyclic Br⁺; partial "
+                                 "positive charge on both carbons; "
+                                 "free Br⁻ outside"),
+            StationaryPoint(label="TS anti-attack",
+                            energy=50.0, is_ts=True,
+                            note="Br⁻ SN2-opens bromonium from "
+                                 "opposite face → trans-product"),
+            StationaryPoint(label="Products",
+                            energy=-100.0,
+                            note="anti-1,2-dibromoethane (meso for "
+                                 "substituted alkenes)"),
+        ],
+    )
+
+
+def _nitration_benzene_profile() -> ReactionEnergyProfile:
+    """Nitration of benzene by NO₂⁺ (from HNO₃ / H₂SO₄): the
+    canonical **electrophilic aromatic substitution** shape —
+    a high first barrier (electrophile attack = RDS) drops
+    into a shallow **Wheland (arenium) valley** that's
+    resonance-stabilised but still ~45 kJ/mol above the
+    reactants, then a *low* second barrier for deprotonation
+    (the solvent base grabs the sp³ proton) followed by a
+    strongly exothermic re-aromatisation to the product.
+    The shallow valley is the textbook point — the arenium
+    intermediate is real but fleeting, and the rate-limiting
+    step is always the first attack, not the second."""
+    return ReactionEnergyProfile(
+        title="Nitration of benzene: NO₂⁺ + C₆H₆",
+        energy_unit="kJ/mol",
+        source="pedagogical estimate (Clayden 2e §22; Carey-Sundberg 5e §11)",
+        points=[
+            StationaryPoint(label="Reactants", energy=0.0,
+                            note="benzene + NO₂⁺ (from HNO₃/H₂SO₄)"),
+            StationaryPoint(label="TS addition", energy=90.0,
+                            is_ts=True,
+                            note="rate-limiting NO₂⁺ attack; π-bond"
+                                 " commits to σ-bond formation"),
+            StationaryPoint(label="Wheland (arenium)",
+                            energy=45.0,
+                            note="sp³ C bearing NO₂ + H; positive "
+                                 "charge delocalised across 5 ring "
+                                 "carbons — resonance-stabilised "
+                                 "but non-aromatic"),
+            StationaryPoint(label="TS deprotonation",
+                            energy=55.0, is_ts=True,
+                            note="HSO₄⁻ removes sp³ proton; low "
+                                 "barrier — aromaticity restored "
+                                 "in the product"),
+            StationaryPoint(label="Products", energy=-25.0,
+                            note="nitrobenzene + H⁺ (→ H₂SO₄); "
+                                 "net exergonic by re-aromatisation"),
+        ],
+    )
+
+
+def _fischer_profile() -> ReactionEnergyProfile:
+    """Fischer esterification (carboxylic acid + alcohol, H⁺-cat.):
+    the textbook **thermoneutral equilibrium** — net ΔG ≈ 0, so
+    the reaction is driven by Le Chatelier (excess alcohol or
+    Dean-Stark water removal), not by thermodynamics.  Three
+    minima + two TSs capture the shape: reactants near zero,
+    tetrahedral intermediate ~20 kJ/mol uphill, products ~5
+    kJ/mol uphill — a shallow roller-coaster with K≈3 rather
+    than a deep well."""
+    return ReactionEnergyProfile(
+        title="Fischer esterification: RCOOH + R'OH (H⁺-catalysed)",
+        energy_unit="kJ/mol",
+        source="pedagogical estimate (Clayden 2e §12; March 7e §16-64)",
+        points=[
+            StationaryPoint(label="Reactants", energy=0.0,
+                            note="RCOOH + R'OH + H⁺ (cat.)"),
+            StationaryPoint(label="TS addition", energy=55.0,
+                            is_ts=True,
+                            note="rate-limiting R'OH attack on "
+                                 "protonated C=O"),
+            StationaryPoint(label="Tetrahedral intermediate",
+                            energy=20.0,
+                            note="protonated sp³-carbon with OR' + OH"),
+            StationaryPoint(label="TS collapse", energy=35.0,
+                            is_ts=True,
+                            note="H₂O leaves after proton shuffle"),
+            StationaryPoint(label="Products", energy=5.0,
+                            note="ester + H₂O — ΔG ≈ 0, so K ≈ 3; "
+                                 "drive with excess ROH or "
+                                 "Dean-Stark water removal"),
+        ],
+    )
+
+
 def _mitsunobu_profile() -> ReactionEnergyProfile:
     """Mitsunobu reaction: PPh₃ + DIAD activates the alcohol; SN2 on
     oxyphosphonium inverts configuration. Driving force is P=O
@@ -304,6 +543,12 @@ _PROFILE_MAP: Dict[str, Callable[[], ReactionEnergyProfile]] = {
     "Sonogashira coupling": _sonogashira_profile,
     "Horner-Wadsworth":     _hwe_profile,
     "Mitsunobu":            _mitsunobu_profile,
+    "Claisen condensation": _claisen_profile,
+    "Fischer esterification": _fischer_profile,
+    "Nitration of benzene": _nitration_benzene_profile,
+    "NaBH4 reduction": _nabh4_profile,
+    "Bromination of ethene": _bromination_ethene_profile,
+    "Pinacol rearrangement": _pinacol_profile,
 }
 
 

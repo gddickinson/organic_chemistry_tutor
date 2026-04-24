@@ -265,4 +265,88 @@ EXTRA_TERMS: List[Dict[str, Any]] = [
         "(preference for electronegative axial substituents at the "
         "anomeric C) is explained by n_O → σ*_{C-X} hyperconjugation, "
         "not by simple sterics."},
+    # ---- Round 77: EAS + selectivity (close Phase 31f at 80) ---
+    {"term": "Activating and deactivating groups",
+     "aliases": ["EAS directing effects", "ortho-para director",
+                 "meta director", "directing group",
+                 "-EDG", "-EWG"],
+     "category": "reactions",
+     "see_also": ["EAS", "Friedel-Crafts alkylation", "Nitration",
+                  "Inductive effect", "Resonance", "Hyperconjugation",
+                  "Hammett postulate"],
+     "definition_md":
+        "Substituents on an aromatic ring classified by how they "
+        "**bias electrophilic aromatic substitution** — both the "
+        "*rate* (activation vs deactivation) and the *regiochemistry* "
+        "(ortho/para vs meta).\n\n"
+        "**Activators** (π-donors): –NH₂, –NHR, –OH, –OR, –NHCOR, "
+        "–alkyl.  They raise the ring's HOMO, push electrons onto "
+        "ortho + para positions via resonance, and speed EAS up by "
+        "orders of magnitude.  Regio: **ortho/para directors**.\n\n"
+        "**Deactivators** (σ-withdrawers or π-acceptors): –NO₂, "
+        "–CN, –COR, –COOH, –SO₃H, –CF₃, –NR₃⁺.  They lower the "
+        "HOMO, make EAS slower, and *deactivate every position* — "
+        "but the ortho + para sites suffer the biggest energy "
+        "penalty (direct conjugation with the EWG), so attack "
+        "sneaks in **meta**.  Regio: **meta directors**.\n\n"
+        "Halogens (–F, –Cl, –Br, –I) are the famous exception: "
+        "σ-withdrawing (so slightly *deactivating*) but π-donating "
+        "by resonance with lone pairs (so still **ortho/para "
+        "directors**).  The Hammett σₚ constants quantify this: "
+        "positive σ = deactivating, negative σ = activating."},
+    {"term": "Regioselectivity",
+     "aliases": ["regioselective", "regiochemistry",
+                 "positional selectivity"],
+     "category": "reactions",
+     "see_also": ["Markovnikov's rule", "Saytzeff / Hofmann product",
+                  "Activating and deactivating groups",
+                  "Chemoselectivity", "Kinetic vs thermodynamic control"],
+     "definition_md":
+        "When a reaction could form **two or more constitutional "
+        "isomers** that differ in *where* the new bond lands, the "
+        "preference for one is its **regioselectivity**.  Distinct "
+        "from:\n\n"
+        "* **Chemoselectivity** — choice between different *functional "
+        "  groups* on the same molecule (e.g. a reducing agent that "
+        "  hits the ketone but leaves the ester alone).\n"
+        "* **Stereoselectivity** — choice between *stereoisomers* "
+        "  (R vs S, cis vs trans).\n\n"
+        "Canonical regiochemistry-driven rules in the seeded "
+        "content: Markovnikov (H adds to the carbon with more H's "
+        "already on it in alkene hydration), Saytzeff / Zaitsev "
+        "(most-substituted alkene in E1 / E2), ortho/para vs meta "
+        "directing in EAS, and the 1,2- vs 1,4-addition split in "
+        "conjugated dienes (Diels-Alder / Michael).  A reaction is "
+        "**regiospecific** only when a single regioisomer is "
+        "obtained mechanistically (e.g. Diels-Alder endo-orbital "
+        "alignment pinning ortho + para products)."},
+    {"term": "Constitutional isomer",
+     "aliases": ["structural isomer", "constitutional isomers"],
+     "category": "stereochemistry",
+     "see_also": ["Isomerism", "Stereoisomer", "Regiochemistry",
+                  "Tautomer", "Enantiomer", "Diastereomer"],
+     "definition_md":
+        "Molecules with the **same molecular formula but different "
+        "atom connectivity**.  The most fundamental flavour of "
+        "isomerism — everything else (stereoisomers, tautomers, "
+        "rotamers) assumes connectivity is already fixed.\n\n"
+        "Four sub-types to keep straight:\n\n"
+        "1. **Chain / skeletal isomers** — n-butane vs isobutane "
+        "   (C4H10): same atoms, different carbon skeleton.\n"
+        "2. **Positional isomers** — 1-propanol vs 2-propanol "
+        "   (C3H8O): same skeleton, functional group on a "
+        "   different carbon.\n"
+        "3. **Functional-group isomers** — ethanol vs dimethyl "
+        "   ether (C2H6O): different functional groups entirely.\n"
+        "4. **Tautomers** — keto vs enol "
+        "   (CH₃-CO-CH₃ ⇌ CH₂=C(OH)-CH₃): constitutional isomers "
+        "   that interconvert rapidly via a proton shift "
+        "   (distinguished from the others because they are in "
+        "   dynamic equilibrium at ambient conditions).\n\n"
+        "Contrast with **stereoisomers** (same connectivity, "
+        "different 3D arrangement — enantiomers + diastereomers). "
+        "Constitutional isomers usually have *different physical "
+        "properties* (bp, mp, logP, spectra); stereoisomers often "
+        "don't (with the notable exception of enantiomer optical "
+        "activity)."},
 ]

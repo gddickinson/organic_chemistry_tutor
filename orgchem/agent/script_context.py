@@ -25,10 +25,34 @@ from __future__ import annotations
 
 import io
 import logging
+import re
 import traceback
 from contextlib import redirect_stderr, redirect_stdout
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
+
+
+#: Phase 32e — regex for fenced ```python code blocks in markdown /
+#: LLM output.  Also catches the plain ``` variant so the tutor's
+#: "run this script" button works even if the LLM omitted the
+#: language tag.  The pattern is deliberately permissive; the
+#: Script Editor will surface any syntax errors when the user runs.
+_CODE_FENCE_RX = re.compile(
+    r"```(?:python|py)?\s*\n(.*?)\n?```",
+    flags=re.DOTALL | re.IGNORECASE,
+)
+
+
+def extract_python_blocks(text: str) -> List[str]:
+    """Return every fenced ```python (or bare ```) code block in
+    *text*, in document order.  Empty list when no block matches.
+
+    Used by the tutor panel (Phase 32e) to surface a *Run in
+    Script Editor* button per code block the LLM emits.
+    """
+    if not text:
+        return []
+    return [m.strip() for m in _CODE_FENCE_RX.findall(text)]
 
 log = logging.getLogger(__name__)
 

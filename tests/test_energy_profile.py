@@ -117,13 +117,180 @@ def app():
 def test_seeded_profiles_present(app):
     rows = app.call("list_energy_profiles")
     names = {r["name"] for r in rows}
-    assert len(rows) >= 9, f"expected ≥9 energy profiles, got {len(rows)}"
-    # All 9 mechanism-carrying reactions should have profiles
+    assert len(rows) >= 18, f"expected ≥18 energy profiles, got {len(rows)}"
+    # All mechanism-carrying reactions should have profiles
     for expected in ("SN2: methyl bromide", "SN1: tert-butyl",
                      "E1: tert-butyl", "E2: 2-bromobutane",
                      "Diels-Alder", "Aldol", "Grignard",
-                     "Wittig", "Michael"):
+                     "Wittig", "Michael",
+                     "Sonogashira", "Horner", "Mitsunobu",
+                     "Claisen condensation",
+                     "Fischer esterification",
+                     "Nitration of benzene",
+                     "NaBH4 reduction",
+                     "Bromination of ethene",
+                     "Pinacol rearrangement"):
         assert any(expected in n for n in names), f"missing profile for {expected!r}"
+
+
+def test_pinacol_profile_methyl_shift_downhill(app):
+    """Phase 31e round 104 — pinacol rearrangement must encode
+    the "migration goes downhill" teaching point: the TS for
+    the 1,2-methyl shift is lower than the TS for ionisation
+    (shift is fast once the carbocation exists), AND the
+    post-shift oxocarbenium minimum is strictly below the
+    pre-shift tertiary-carbocation minimum (the O lone pair
+    stabilises the oxocarbenium better than hyperconjugation
+    stabilises a tert-C⁺)."""
+    from orgchem.core.energy_profile import ReactionEnergyProfile
+    rows = app.call("list_energy_profiles")
+    pr = next(r for r in rows if "Pinacol rearrangement" in r["name"])
+    got = app.call("get_energy_profile", reaction_id=pr["id"])
+    prof = ReactionEnergyProfile.from_dict(got["profile"])
+    pts = prof.points
+    ts_pts = [p for p in pts if p.is_ts]
+    assert len(ts_pts) == 3, len(ts_pts)
+    # Ionisation TS (first) must be the highest of the three.
+    assert ts_pts[0].energy > ts_pts[1].energy
+    assert ts_pts[0].energy > ts_pts[2].energy
+    # The carbocation vs oxocarbenium stability inequality.
+    cation = next(p for p in pts if "carbocation" in p.label.lower())
+    oxo = next(p for p in pts if "Protonated ketone" in p.label)
+    assert oxo.energy < cation.energy, (
+        "Oxocarbenium (post-shift) should sit below the tertiary "
+        "carbocation (pre-shift) — that's why 1,2-shifts run "
+        "forward, not reverse")
+
+
+def test_bromination_profile_bromonium_valley(app):
+    """Phase 31e round 103 — bromination of an alkene must
+    encode the bromonium-valley shape that rationalises
+    anti-addition stereochemistry.  Bromonium intermediate
+    sits above reactants (endergonic — small valley) but
+    below the first (rate-limiting) TS; the second TS
+    (anti-SN2 attack) is lower than the first.  Product
+    strongly exergonic (new C-Br + C-Br bonds)."""
+    from orgchem.core.energy_profile import ReactionEnergyProfile
+    rows = app.call("list_energy_profiles")
+    br = next(r for r in rows if "Bromination of ethene" in r["name"])
+    got = app.call("get_energy_profile", reaction_id=br["id"])
+    prof = ReactionEnergyProfile.from_dict(got["profile"])
+    ts_points = [p for p in prof.points if p.is_ts]
+    min_points = [p for p in prof.points if not p.is_ts]
+    assert len(ts_points) == 2
+    assert len(min_points) == 3
+    # RDS is step 1 (bromonium formation) — first TS highest.
+    assert ts_points[0].energy > ts_points[1].energy
+    # Bromonium intermediate sits above reactants (endergonic
+    # relative to starting alkene + Br₂) — that's the "valley".
+    bromonium = min_points[1]
+    reactants = min_points[0]
+    assert bromonium.energy > reactants.energy
+    # But strictly below both TSs.
+    assert bromonium.energy < ts_points[0].energy
+    assert bromonium.energy < ts_points[1].energy
+    # Net exergonic — two C-Br bonds formed.
+    assert prof.delta_h is not None and prof.delta_h < -50
+
+
+def test_nabh4_profile_strongly_exergonic(app):
+    """Phase 31e round 102 — NaBH₄ reduction is a canonical
+    textbook example of an irreversible, highly-exergonic
+    1,2-hydride addition.  Assert a single rate-limiting TS
+    (the B-H···C=O 4-centre), a stabilised alkoxide well, and
+    a net ΔH well below −50 kJ/mol."""
+    from orgchem.core.energy_profile import ReactionEnergyProfile
+    rows = app.call("list_energy_profiles")
+    nb = next(r for r in rows if "NaBH4 reduction" in r["name"])
+    got = app.call("get_energy_profile", reaction_id=nb["id"])
+    prof = ReactionEnergyProfile.from_dict(got["profile"])
+    assert prof.delta_h is not None
+    assert prof.delta_h < -50, (
+        f"NaBH₄ reduction should be strongly exergonic; "
+        f"got ΔH = {prof.delta_h}")
+    # The first TS (hydride transfer) must be the only real
+    # barrier ABOVE the reactant baseline — workup is downhill.
+    first_ts = next(p for p in prof.points if p.is_ts)
+    assert first_ts.energy > 0
+    above_zero_ts = [p for p in prof.points if p.is_ts and p.energy > 0]
+    assert len(above_zero_ts) == 1, (
+        "Only the hydride-transfer TS should sit above the "
+        "reactant baseline; workup barrier is well below.")
+
+
+def test_nitration_profile_has_wheland_valley(app):
+    """Phase 31e round 101 — EAS nitration must encode the
+    textbook "shallow Wheland valley": first TS (RDS addition)
+    higher than the second TS (deprotonation), with the arenium
+    intermediate sitting ABOVE the reactant baseline but BELOW
+    both TSs.  Classic 3-point EAS saddle-dip-saddle shape."""
+    from orgchem.core.energy_profile import ReactionEnergyProfile
+    rows = app.call("list_energy_profiles")
+    ni = next(r for r in rows if "Nitration of benzene" in r["name"])
+    got = app.call("get_energy_profile", reaction_id=ni["id"])
+    prof = ReactionEnergyProfile.from_dict(got["profile"])
+    ts_points = [p for p in prof.points if p.is_ts]
+    min_points = [p for p in prof.points if not p.is_ts]
+    # 2 TSs + 3 minima (reactants, Wheland, products).
+    assert len(ts_points) == 2, len(ts_points)
+    assert len(min_points) == 3, len(min_points)
+    # First TS (attack) must be higher than second TS (deprotonation).
+    assert ts_points[0].energy > ts_points[1].energy, (
+        "First TS (rate-limiting NO₂⁺ addition) must exceed the "
+        "second TS (deprotonation) for the EAS teaching shape to "
+        "be correct")
+    # Wheland intermediate (middle minimum) sits above reactants but
+    # below both TSs.
+    wheland = min_points[1]
+    assert wheland.energy > min_points[0].energy  # above reactants
+    assert wheland.energy < ts_points[0].energy
+    assert wheland.energy < ts_points[1].energy
+
+
+def test_fischer_profile_is_thermoneutral(app):
+    """Phase 31e round 99 — Fischer esterification must encode
+    the textbook teaching point: ΔG ≈ 0 (K ≈ 3), not a deep
+    thermodynamic sink.  Without Le Chatelier drive (excess
+    alcohol / Dean-Stark) the reaction barely proceeds.  Assert
+    the product energy sits within ±15 kJ/mol of the reactant
+    baseline — much shallower than any other seeded profile."""
+    from orgchem.core.energy_profile import ReactionEnergyProfile
+    rows = app.call("list_energy_profiles")
+    fi = next(r for r in rows if "Fischer esterification" in r["name"])
+    got = app.call("get_energy_profile", reaction_id=fi["id"])
+    prof = ReactionEnergyProfile.from_dict(got["profile"])
+    assert prof.delta_h is not None
+    assert abs(prof.delta_h) < 15, (
+        "Fischer is near-thermoneutral; |ΔH| should be < 15 kJ/mol "
+        f"to visualise the 'need Le Chatelier drive' point, got {prof.delta_h}")
+
+
+def test_claisen_profile_driven_by_final_deprotonation(app):
+    """Phase 31e round 98 — Claisen condensation energy profile
+    must encode the textbook teaching point: the FINAL step
+    (deprotonation of the β-ketoester α-H) is what drives the
+    equilibrium.  Check that the penultimate minimum ("Neutral
+    β-ketoester") sits near zero and the final product sits
+    well below it."""
+    from orgchem.core.energy_profile import ReactionEnergyProfile
+    rows = app.call("list_energy_profiles")
+    cl = next(r for r in rows if "Claisen condensation" in r["name"])
+    got = app.call("get_energy_profile", reaction_id=cl["id"])
+    prof = ReactionEnergyProfile.from_dict(got["profile"])
+    # 4-step mechanism → 4 transition states.
+    ts_count = sum(1 for p in prof.points if p.is_ts)
+    assert ts_count == 4, f"expected 4 TS, got {ts_count}"
+    # Penultimate minimum is the neutral β-ketoester — should
+    # sit near thermoneutral (|ΔG| < 20 kJ/mol).
+    neutral = next(p for p in prof.points
+                   if "Neutral β-ketoester" in p.label)
+    assert abs(neutral.energy) < 20, neutral.energy
+    # Final product (enolate + EtOH) must be well downhill from
+    # that penultimate minimum — this IS the driving force.
+    final = prof.points[-1]
+    assert final.energy < neutral.energy - 20, (
+        "Final deprotonation should drop ≥20 kJ/mol below the "
+        "neutral β-ketoester intermediate")
 
 
 def test_sn1_profile_has_two_transition_states(app):

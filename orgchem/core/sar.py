@@ -297,6 +297,168 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
         ],
     ),
+
+    # ---- Phase 31k round 96 — SSRIs -------------------------------
+    SARSeries(
+        id="ssri-sert",
+        name="SSRI (serotonin-reuptake inhibitor) series",
+        target="Serotonin transporter (SERT) vs "
+               "norepinephrine (NET) / dopamine (DAT) transporters",
+        parent_scaffold_smiles="c1ccccc1CCCN",  # arylalkyl-amine motif
+        source="Owens, Morgan, Plott, Nemeroff 1997 *JPET* "
+               "283:1305-1322; Sanchez 2004 *Basic Clin. "
+               "Pharmacol. Toxicol.* 94:51-67",
+        activity_columns=["sert_ki_nM", "net_ki_nM",
+                          "sert_selectivity"],
+        variants=[
+            SARVariant(
+                name="Fluoxetine",
+                smiles="CNCCC(Oc1ccc(C(F)(F)F)cc1)c1ccccc1",
+                r_group_label="p-(trifluoromethyl)phenyl ether; "
+                              "N-methyl phenylpropylamine",
+                activity={"sert_ki_nM": 0.9, "net_ki_nM": 240.0,
+                          "sert_selectivity": 270.0},
+                notes="Prozac — first commercial SSRI (1987, Lilly). "
+                      "Racemate sold; long half-life (~2 days) and "
+                      "active metabolite norfluoxetine (~7-15 days).",
+            ),
+            SARVariant(
+                name="Sertraline",
+                smiles="CN[C@H]1CC[C@@H](c2ccc(Cl)c(Cl)c2)c2ccccc21",
+                r_group_label="3,4-dichlorophenyl; cis-(1S,4S) "
+                              "tetrahydronaphthylamine",
+                activity={"sert_ki_nM": 0.15, "net_ki_nM": 420.0,
+                          "sert_selectivity": 2800.0},
+                notes="Zoloft — most SERT-selective of the classic "
+                      "five. Cis-(1S,4S) diastereomer only; the trans "
+                      "and (1R,4R) isomers are ≥100× weaker.",
+            ),
+            SARVariant(
+                name="Paroxetine",
+                smiles="Fc1ccc([C@@H]2CCNC[C@H]2COc2ccc3OCOc3c2)cc1",
+                r_group_label="3S,4R trans-disubstituted piperidine "
+                              "+ p-fluorophenyl + methylenedioxyphenoxy",
+                activity={"sert_ki_nM": 0.13, "net_ki_nM": 40.0,
+                          "sert_selectivity": 310.0},
+                notes="Paxil — sub-nanomolar SERT Ki but also the "
+                      "most anticholinergic of the class (muscarinic "
+                      "off-target). Short half-life → notorious "
+                      "discontinuation syndrome.",
+            ),
+            SARVariant(
+                name="Citalopram",
+                smiles="CN(C)CCCC1(c2ccc(F)cc2)OCc2cc(C#N)ccc21",
+                r_group_label="racemic 1,3-dihydroisobenzofuran; "
+                              "p-fluorophenyl + aryl nitrile + "
+                              "N,N-dimethylaminopropyl",
+                activity={"sert_ki_nM": 1.1, "net_ki_nM": 4070.0,
+                          "sert_selectivity": 3700.0},
+                notes="Celexa — sold as racemate. The R-enantiomer "
+                      "actively antagonises SSRI effect at allosteric "
+                      "SERT site → motivation for the single-enantiomer "
+                      "escitalopram successor.",
+            ),
+            SARVariant(
+                name="Escitalopram",
+                smiles="CN(C)CCC[C@@]1(c2ccc(F)cc2)OCc2cc(C#N)ccc21",
+                r_group_label="(S)-(+)-citalopram single enantiomer",
+                activity={"sert_ki_nM": 0.7, "net_ki_nM": 7841.0,
+                          "sert_selectivity": 11200.0},
+                notes="Lexapro — textbook example of chiral-switch "
+                      "re-development. Removing the R-enantiomer "
+                      "~3× boosts SERT selectivity versus NET and "
+                      "reduces dose 50%.",
+            ),
+        ],
+    ),
+
+    # ---- Phase 31k round 100 — β-lactam antibiotics ---------------
+    SARSeries(
+        id="beta-lactams",
+        name="β-lactam penicillin series",
+        target="Bacterial D-Ala-D-Ala transpeptidase (PBP) — "
+               "opposed by S. aureus β-lactamase",
+        parent_scaffold_smiles="CC1(C)SC2CC(=O)N2C1C(=O)O",  # penam core
+        source="Fleming 1929 *Br. J. Exp. Pathol.* 10:226; "
+               "Abraham & Chain 1940 *Nature* 146:837; "
+               "Rolinson 1998 *J. Antimicrob. Chemother.* 41:589",
+        activity_columns=["mic_s_aureus_ug_ml",
+                          "beta_lactamase_stability",
+                          "oral_bioavail_pct"],
+        variants=[
+            SARVariant(
+                name="Penicillin G",
+                smiles="CC1(C)S[C@@H]2[C@H](NC(=O)Cc3ccccc3)"
+                       "C(=O)N2[C@H]1C(=O)O",
+                r_group_label="benzyl amide side chain",
+                activity={"mic_s_aureus_ug_ml": 0.02,
+                          "beta_lactamase_stability": 0.0,
+                          "oral_bioavail_pct": 20.0},
+                notes="Fleming's 1929 mould product, industrialised "
+                      "Oxford 1941 (Florey + Chain, Nobel 1945). "
+                      "Hydrolysed by gastric acid (→ low oral avail.) "
+                      "AND by penicillinase — hence IV/IM only against "
+                      "β-lactamase-positive S. aureus after 1948.",
+            ),
+            SARVariant(
+                name="Ampicillin",
+                smiles="CC1(C)S[C@@H]2[C@H](NC(=O)[C@H](N)c3ccccc3)"
+                       "C(=O)N2[C@H]1C(=O)O",
+                r_group_label="α-amino benzyl side chain",
+                activity={"mic_s_aureus_ug_ml": 0.05,
+                          "beta_lactamase_stability": 0.0,
+                          "oral_bioavail_pct": 40.0},
+                notes="Beecham 1961 — the α-amino protonates in acid "
+                      "→ cation that survives stomach pH. "
+                      "Broad-spectrum (Gram- coverage via porin "
+                      "transit) but still β-lactamase-labile.",
+            ),
+            SARVariant(
+                name="Amoxicillin",
+                smiles="CC1(C)S[C@@H]2[C@H](NC(=O)[C@H](N)"
+                       "c3ccc(O)cc3)C(=O)N2[C@H]1C(=O)O",
+                r_group_label="α-amino p-hydroxybenzyl side chain",
+                activity={"mic_s_aureus_ug_ml": 0.05,
+                          "beta_lactamase_stability": 0.0,
+                          "oral_bioavail_pct": 90.0},
+                notes="Beecham 1972 — p-OH boosts oral absorption "
+                      "from 40 → 90 % vs ampicillin. Still "
+                      "β-lactamase-labile → usually paired with "
+                      "clavulanic acid (Augmentin).",
+            ),
+            SARVariant(
+                name="Methicillin",
+                smiles="COc1cccc(OC)c1C(=O)N[C@H]1C(=O)N2"
+                       "[C@@H](C(=O)O)C(C)(C)S[C@H]12",
+                r_group_label="2,6-dimethoxybenzoyl side chain "
+                              "(sterically shielded)",
+                activity={"mic_s_aureus_ug_ml": 3.0,
+                          "beta_lactamase_stability": 1.0,
+                          "oral_bioavail_pct": 5.0},
+                notes="Beecham 1959 — the flanking 2,6-di-OMe "
+                      "blocks β-lactamase access to the C-N bond "
+                      "→ first penicillinase-stable penicillin. "
+                      "Intrinsically weaker (higher MIC), "
+                      "acid-labile (IV only). Later selected for "
+                      "MRSA resistance (~1960) which named the class.",
+            ),
+            SARVariant(
+                name="Cloxacillin",
+                smiles="Cc1onc(-c2ccccc2Cl)c1C(=O)N[C@H]1C(=O)N2"
+                       "[C@@H](C(=O)O)C(C)(C)S[C@H]12",
+                r_group_label="3-o-chlorophenyl-5-methyl-isoxazole-"
+                              "4-carboxamide (shielded + acid-stable)",
+                activity={"mic_s_aureus_ug_ml": 0.25,
+                          "beta_lactamase_stability": 1.0,
+                          "oral_bioavail_pct": 60.0},
+                notes="Beecham 1962 — isoxazolyl steric bulk "
+                      "blocks penicillinase, bulky enough to "
+                      "survive gastric acid + good oral absorption. "
+                      "Drug-of-choice pre-MRSA for staphylococcal "
+                      "skin infections.",
+            ),
+        ],
+    ),
 ]
 
 

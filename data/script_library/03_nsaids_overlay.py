@@ -17,19 +17,25 @@ nsaids = [
 ]
 
 print(f"{'Drug':12s} {'MW':>7s} {'logP':>6s} {'HBD':>4s} "
-      f"{'HBA':>4s} {'TPSA':>6s} {'QED':>6s}")
-print("-" * 50)
+      f"{'HBA':>4s} {'TPSA':>6s} {'QED':>6s} {'Lipinski':>9s}")
+print("-" * 60)
 
 for name, smi in nsaids:
     viewer.add_molecule(smi, track=name, style="stick")
     dl = app.drug_likeness(smiles=smi)
-    desc = dl.get("descriptors", {})
-    print(f"{name:12s} {desc.get('mol_weight', 0):7.1f} "
-          f"{desc.get('logp', 0):6.2f} "
-          f"{desc.get('h_bond_donors', 0):4d} "
-          f"{desc.get('h_bond_acceptors', 0):4d} "
-          f"{desc.get('tpsa', 0):6.1f} "
-          f"{dl.get('qed_score', 0):6.3f}")
+    # `drug_likeness` returns one sub-dict per rule-set:
+    # {lipinski, veber, ghose, pains, qed}.  Descriptors live
+    # inside `lipinski` (mw/logp/hbd/hba) and `veber` (tpsa/rotb).
+    lip = dl.get("lipinski", {})
+    veb = dl.get("veber", {})
+    print(f"{name:12s} "
+          f"{lip.get('mw', 0):7.1f} "
+          f"{lip.get('logp', 0):6.2f} "
+          f"{lip.get('hbd', 0):4d} "
+          f"{lip.get('hba', 0):4d} "
+          f"{veb.get('tpsa', 0):6.1f} "
+          f"{dl.get('qed', 0):6.3f} "
+          f"{'pass' if lip.get('passes') else 'fail':>9s}")
 
 print(f"\nScene now shows {len(viewer.tracks())} NSAIDs — rotate "
       "in the Workbench to compare scaffolds.")

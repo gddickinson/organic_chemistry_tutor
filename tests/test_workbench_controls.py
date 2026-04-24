@@ -135,6 +135,50 @@ def test_fit_to_view_schedules_rebuild(_app, qtbot):
     assert WorkbenchWidget.rebuild_count > baseline
 
 
+def test_track_row_colour_combo_updates_scene(_app, qtbot):
+    widget, scene = _make_widget(qtbot)
+    scene.add_molecule("CCO", track="eth")
+    qtbot.waitUntil(
+        lambda: widget._tracks_list.count() == 1, timeout=2_000)
+
+    row = _find_row(widget, "eth")
+    assert row is not None
+    row._colour.setCurrentText("red")       # triggers activated
+    row._on_colour_activated(row._colour.currentIndex())
+    assert scene.tracks()[0].colour == "red"
+
+
+def test_track_row_opacity_slider_updates_scene(_app, qtbot):
+    widget, scene = _make_widget(qtbot)
+    scene.add_molecule("CCO", track="eth")
+    qtbot.waitUntil(
+        lambda: widget._tracks_list.count() == 1, timeout=2_000)
+
+    row = _find_row(widget, "eth")
+    row._opacity.setValue(50)   # 50 %
+    assert abs(scene.tracks()[0].opacity - 0.5) < 1e-9
+
+
+def test_opacity_propagates_into_scene_html(_app, qtbot):
+    """End-to-end: an opacity change via the TrackRow slider must
+    land in the 3Dmol.js setStyle spec that the Workbench renders."""
+    from orgchem.scene.html import build_scene_html
+
+    widget, scene = _make_widget(qtbot)
+    scene.add_molecule("CCO", track="eth")
+    qtbot.waitUntil(
+        lambda: widget._tracks_list.count() == 1, timeout=2_000)
+    row = _find_row(widget, "eth")
+    assert row is not None
+    row._opacity.setValue(40)
+
+    html = build_scene_html(scene)
+    # Dict-style "opacity": 0.4 payload is what the JS `setStyle`
+    # call needs.  Matches regardless of whether json.dumps
+    # formats it as 0.4 or 0.400000...
+    assert '"opacity": 0.4' in html, html
+
+
 def test_track_row_signals_have_correct_track_name(_app, qtbot):
     """TrackRow emissions must carry the stable track name so the
     parent can route the mutation back to the Scene even if list

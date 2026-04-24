@@ -307,6 +307,8 @@ class WorkbenchWidget(QWidget):
             row = TrackRow(t, self._tracks_list)
             row.visibility_toggled.connect(self._on_row_visibility)
             row.style_changed.connect(self._on_row_style_changed)
+            row.colour_changed.connect(self._on_row_colour_changed)
+            row.opacity_changed.connect(self._on_row_opacity_changed)
             row.remove_clicked.connect(self._on_row_remove)
             item = QListWidgetItem(self._tracks_list)
             item.setData(Qt.UserRole, t.name)
@@ -325,6 +327,20 @@ class WorkbenchWidget(QWidget):
                               new_style: str) -> None:
         try:
             self._scene.set_style(track_name, style=new_style)
+        except KeyError:
+            pass
+
+    def _on_row_colour_changed(self, track_name: str,
+                               new_colour: str) -> None:
+        try:
+            self._scene.set_style(track_name, colour=new_colour)
+        except KeyError:
+            pass
+
+    def _on_row_opacity_changed(self, track_name: str,
+                                new_opacity: float) -> None:
+        try:
+            self._scene.set_style(track_name, opacity=new_opacity)
         except KeyError:
             pass
 

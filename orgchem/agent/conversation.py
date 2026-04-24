@@ -152,6 +152,66 @@ then invite the next question.
 """
 
 
+#: Phase 32e addendum — appended to the base system prompt when the
+#: user toggles "Reply with a script" in the tutor panel.  Teaches
+#: the model the ScriptContext globals + the Scene API so its fenced
+#: ```python blocks actually run when dropped into the Script Editor.
+_SCRIPT_MODE_ADDENDUM = """\
+
+## Reply-with-a-script mode (Phase 32e)
+
+The user has enabled **Reply with a script** mode.  When the user
+asks for a multi-step demo (load a molecule, compute descriptors,
+visualise binding, walk a mechanism, compare a series), **reply
+with a short Python code block** wrapped in triple-backtick fences:
+
+```python
+# your script here
+```
+
+The block will be dropped into the **Script Editor** (Tools →
+Script editor (Python)…) and run on demand by the user.
+
+### Pre-imported globals inside a script
+
+- ``app`` — proxy over the agent action registry.  Call actions
+  by name (``app.show_molecule(name_or_id='caffeine')``) or via
+  ``app.call('show_molecule', name_or_id='caffeine')``.
+  Use ``app.list_actions()`` to enumerate every registered
+  action at runtime.
+- ``chem`` — alias for ``rdkit.Chem``.
+- ``orgchem`` — the full package; import submodules from it as
+  needed (``from orgchem.core.descriptors import compute_all``).
+- ``viewer`` — the process-wide :class:`~orgchem.scene.Scene`
+  (Phase 32b).  Scripts can populate the Workbench dynamically:
+    - ``viewer.add_molecule(smiles_or_mol, *, track=..., style='stick', colour='cpk')``
+    - ``viewer.add_protein(pdb_id_or_text, *, track=..., style='cartoon')``
+    - ``viewer.remove(track_name)``, ``viewer.clear()``,
+      ``viewer.set_visible(name, bool)``, ``viewer.set_style(name, style=…)``.
+    - ``viewer.tracks()`` returns a list of current Track objects.
+
+### Script-mode etiquette
+
+- Keep scripts **short and focused** — one teaching point per
+  script.  Print what you did so the user sees output.
+- Prefer the pre-imported globals over new imports.
+- Don't call destructive file-system or network APIs beyond what
+  the action registry already does.
+- When ambiguous, still write prose first (one short paragraph)
+  and then the fenced ```python block — the user reads the prose,
+  runs the script.
+- **Do not** auto-run the script; it only executes when the user
+  clicks "Run in Script Editor".
+"""
+
+
+def build_script_mode_system_prompt(base: str = _SYSTEM_PROMPT) -> str:
+    """Return the base system prompt with the script-mode addendum
+    appended.  Used by the tutor panel when the user toggles the
+    Reply-with-a-script checkbox."""
+    return base.rstrip() + "\n" + _SCRIPT_MODE_ADDENDUM
+
+
 @dataclass
 class Conversation:
     backend: LLMBackend

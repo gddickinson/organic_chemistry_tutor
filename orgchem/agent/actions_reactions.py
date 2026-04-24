@@ -210,6 +210,49 @@ def list_mechanisms() -> List[Dict[str, Any]]:
 
 
 @action(category="mechanism")
+def get_mechanism_details(name_or_id: str) -> Dict[str, Any]:
+    """Return the **full mechanism JSON** for a reaction — every step's
+    title, description, SMILES, arrow list, lone-pair decorations.
+
+    Use this for programmatic / LLM-driven arrow-pushing workflows
+    where :func:`open_mechanism` (which just launches the GUI
+    player dialog and returns metadata) isn't enough.  Accepts a
+    database id (as string), a full reaction name, or a name
+    substring — same lookup rules as :func:`open_mechanism`.
+
+    Returns ``{error: "..."}`` if no matching reaction or if the
+    match has no stored ``mechanism_json``.
+    """
+    import json as _json
+    from orgchem.db.models import Reaction as DBRxn
+    from orgchem.db.session import session_scope
+    from sqlalchemy import select
+
+    with session_scope() as s:
+        if name_or_id.isdigit():
+            row = s.get(DBRxn, int(name_or_id))
+        else:
+            q = f"%{name_or_id}%"
+            stmt = select(DBRxn).where(DBRxn.name.ilike(q)).limit(1)
+            row = s.scalars(stmt).first()
+        if row is None:
+            return {"error": f"No reaction matching {name_or_id!r}"}
+        if not row.mechanism_json:
+            return {"error": f"{row.name!r} has no recorded mechanism"}
+        try:
+            mech = _json.loads(row.mechanism_json)
+        except Exception as e:
+            return {"error": f"Mechanism JSON invalid: {e}"}
+        return {
+            "id": row.id,
+            "name": row.name,
+            "category": row.category,
+            "description": row.description,
+            "mechanism": mech,
+        }
+
+
+@action(category="mechanism")
 def open_mechanism(name_or_id: str) -> Dict[str, Any]:
     """Open the mechanism player for a reaction (by name, id, or substring)."""
     from orgchem.agent.controller import main_window

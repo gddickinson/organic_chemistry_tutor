@@ -67,6 +67,10 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
     # ---- Mechanism ----------------------------------------------
     "list_mechanisms": "Reactions tab (has-mechanism rows marked)",
     "open_mechanism": "Reactions tab → Open mechanism…",
+    "get_mechanism_details":
+        "Reactions tab → Open mechanism… (same entry; this action "
+        "returns the full arrow JSON for script / tutor use, "
+        "no separate UI)",
     "export_mechanism_step": "Mechanism player → Save step…",
     "export_mechanism_composite": "Mechanism player → Save composite…",
 
@@ -270,6 +274,11 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
     "open_workbench":
         "Main tabbar → Workbench (or Window → Workbench… / "
         "Ctrl+Shift+B when detached)",
+
+    # ---- Full-text search (Phase 33a) ---------------------------
+    "fulltext_search":
+        "View → Find… (Ctrl+F) — Phase 33b dialog surfaces this "
+        "action as a live search box (round 89).",
 
     # ---- Periodic table (Phase 27) ------------------------------
     "list_elements": "Tools → Periodic table… (grid)",

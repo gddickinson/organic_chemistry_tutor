@@ -14,6 +14,11 @@ def test_library_seeded():
     ids = {s.id for s in SAR_LIBRARY}
     assert "nsaid-cox" in ids
     assert "statin-hmgcoa" in ids
+    # Phase 31k expansion.
+    assert "beta-blockers" in ids
+    assert "ace-inhibitors" in ids
+    assert "ssri-sert" in ids     # round 96
+    assert "beta-lactams" in ids  # round 100
 
 
 def test_get_series_returns_expected_fields():
@@ -47,6 +52,71 @@ def test_activity_values_merged_into_rows():
     asp = next(r for r in rows if r["name"] == "Aspirin")
     # Aspirin COX-2 IC50 in the seeded data is ~280 µM
     assert asp["cox2_ic50_uM"] > 100
+
+
+def test_ssri_series_landmarks():
+    """Phase 31k round 96 — SSRI SAR series content check.
+    Proves the chiral-switch story (citalopram racemate vs
+    single-enantiomer escitalopram) is encoded correctly in the
+    activity numbers, not just the notes."""
+    from orgchem.core.sar import get_series
+    s = get_series("ssri-sert")
+    assert s is not None
+    names = {v.name for v in s.variants}
+    for expected in ("Fluoxetine", "Sertraline", "Paroxetine",
+                     "Citalopram", "Escitalopram"):
+        assert expected in names
+    rows = s.compute_descriptors()
+    cit = next(r for r in rows if r["name"] == "Citalopram")
+    esc = next(r for r in rows if r["name"] == "Escitalopram")
+    # Escitalopram should be more SERT-selective than racemate.
+    assert esc["sert_selectivity"] > cit["sert_selectivity"]
+    # Sertraline is markedly more SERT-selective than paroxetine
+    # (the most classically anticholinergic SSRI) — a textbook
+    # chemistry-of-selectivity point.
+    sert = next(r for r in rows if r["name"] == "Sertraline")
+    par = next(r for r in rows if r["name"] == "Paroxetine")
+    assert sert["sert_selectivity"] > par["sert_selectivity"]
+    # Every variant should have a computed molecular weight
+    # matching the expected ~285-335 Da SSRI band.
+    for r in rows:
+        assert 280 < r["mw"] < 340, (r["name"], r["mw"])
+
+
+def test_beta_lactam_series_landmarks():
+    """Phase 31k round 100 — β-lactam penicillin series.
+    Encodes three textbook teaching points:
+    (a) adding α-amino (ampicillin) or α-amino-p-OH (amoxicillin)
+        tunes oral bioavailability without changing the β-lactamase
+        story;
+    (b) sterically shielded benzamides (methicillin, cloxacillin)
+        buy stability against penicillinase at the cost of MIC;
+    (c) methicillin loses oral absorption (the 2,6-di-OMe + acid
+        labile combination pushes bioavail to ~5 %).
+    """
+    from orgchem.core.sar import get_series
+    s = get_series("beta-lactams")
+    assert s is not None
+    names = {v.name for v in s.variants}
+    for expected in ("Penicillin G", "Ampicillin", "Amoxicillin",
+                     "Methicillin", "Cloxacillin"):
+        assert expected in names
+    rows = s.compute_descriptors()
+    pen = next(r for r in rows if r["name"] == "Penicillin G")
+    amox = next(r for r in rows if r["name"] == "Amoxicillin")
+    meth = next(r for r in rows if r["name"] == "Methicillin")
+    clox = next(r for r in rows if r["name"] == "Cloxacillin")
+    # Stability: methicillin + cloxacillin (both shielded) should
+    # score >0, while penicillin G + ampicillin + amoxicillin
+    # should score 0.
+    assert pen["beta_lactamase_stability"] == 0
+    assert meth["beta_lactamase_stability"] == 1
+    assert clox["beta_lactamase_stability"] == 1
+    # Amoxicillin (p-OH ampicillin) should have far better oral
+    # bioavailability than penicillin G.
+    assert amox["oral_bioavail_pct"] > pen["oral_bioavail_pct"] + 50
+    # Methicillin trades MIC for stability — poorer than Pen-G.
+    assert meth["mic_s_aureus_ug_ml"] > pen["mic_s_aureus_ug_ml"] * 10
 
 
 # ---- Renderer --------------------------------------------------------

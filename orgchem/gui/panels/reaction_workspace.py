@@ -11,6 +11,7 @@ from typing import Optional
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex, QUrl
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtWidgets import (
+    QCheckBox,
     QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QListView, QLineEdit, QLabel,
     QPushButton, QTextBrowser, QFileDialog, QMessageBox,
 )
@@ -32,6 +33,24 @@ class _RxnListModel(QAbstractListModel):
     def reload(self, query: str = "") -> None:
         self.beginResetModel()
         self._rows = list_reactions(query=query or None)
+        self.endResetModel()
+
+    def reload_ids(self, ids: list[int]) -> None:
+        """Phase 33c — load just the reactions in *ids*, preserving
+        that order.  Used by the full-text-filter path so the model
+        shows the ranked search hits verbatim."""
+        from orgchem.db.session import session_scope
+        from orgchem.db.models import Reaction as DBRxn
+        if not ids:
+            self.beginResetModel()
+            self._rows = []
+            self.endResetModel()
+            return
+        with session_scope() as s:
+            rows_by_id = {r.id: r for r in s.query(DBRxn)
+                          .filter(DBRxn.id.in_(ids)).all()}
+        self.beginResetModel()
+        self._rows = [rows_by_id[i] for i in ids if i in rows_by_id]
         self.endResetModel()
 
     def rowCount(self, parent=QModelIndex()) -> int:
@@ -74,6 +93,16 @@ class ReactionWorkspacePanel(QWidget):
         self.filter.textChanged.connect(self._on_filter)
         top.addWidget(QLabel("Filter:"))
         top.addWidget(self.filter)
+        # Phase 33c — full-text toggle: searches every description /
+        # mechanism-step note / reagent annotation rather than just
+        # the name / category columns.
+        self.fulltext_cb = QCheckBox("Full text")
+        self.fulltext_cb.setToolTip(
+            "Match across descriptions + mechanism-step notes "
+            "(Phase 33c), not just name / category.")
+        self.fulltext_cb.toggled.connect(
+            lambda _: self._on_filter(self.filter.text()))
+        top.addWidget(self.fulltext_cb)
         lv.addLayout(top)
         self.model = _RxnListModel()
         self.view = QListView()
@@ -161,9 +190,25 @@ class ReactionWorkspacePanel(QWidget):
 
     # ------------------------------------------------------------------
     def _reload(self) -> None:
-        self.model.reload(self.filter.text())
+        self._on_filter(self.filter.text())
 
     def _on_filter(self, text: str) -> None:
+        """Route to name-substring (default) or full-text (Phase
+        33c) filtering depending on the toggle state."""
+        q = (text or "").strip()
+        if q and self.fulltext_cb.isChecked():
+            from orgchem.core.fulltext_search import search
+            hits = search(q, kinds=["reaction", "mechanism-step"],
+                          limit=200)
+            # Collapse mechanism-step hits onto their parent reaction
+            # id, preserving ranked order.
+            seen: list[int] = []
+            for h in hits:
+                rid = h.key.get("reaction_id")
+                if rid is not None and rid not in seen:
+                    seen.append(int(rid))
+            self.model.reload_ids(seen)
+            return
         self.model.reload(text)
 
     def _on_clicked(self, idx) -> None:

@@ -12,16 +12,20 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtCore import Qt, QThread, QUrl, Signal
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QTextBrowser, QPlainTextEdit, QPushButton,
-    QComboBox, QLabel, QMessageBox,
+    QCheckBox, QComboBox, QLabel, QMessageBox,
 )
 
 from orgchem.config import AppConfig
 from orgchem.agent.llm.base import ChatMessage, available_backends
-from orgchem.agent.conversation import Conversation
+from orgchem.agent.conversation import (
+    Conversation,
+    build_script_mode_system_prompt,
+)
+from orgchem.agent.script_context import extract_python_blocks
 from orgchem.messaging.errors import NetworkError
 
 log = logging.getLogger(__name__)
@@ -51,11 +55,21 @@ class _ChatWorker(QThread):
 
 
 class TutorPanel(QWidget):
+    #: Internal scheme used for embedded "Run in Script Editor"
+    #: anchors in the transcript.  Format: ``orgchem-script:<idx>``
+    #: where ``<idx>`` is a key into ``self._script_blocks``.
+    _SCRIPT_URL_SCHEME = "orgchem-script"
+
     def __init__(self, cfg: AppConfig):
         super().__init__()
         self.cfg = cfg
         self._convo: Conversation | None = None
         self._worker: _ChatWorker | None = None
+        #: Phase 32e — maps ``orgchem-script:<idx>`` anchor → extracted
+        #: Python block.  Populated as the tutor emits replies; read by
+        #: :meth:`_on_anchor_clicked` when the user clicks the link.
+        self._script_blocks: dict[int, str] = {}
+        self._next_block_idx: int = 0
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -84,8 +98,31 @@ class TutorPanel(QWidget):
         # Initial populate once the widget is built.
         self._on_backend_changed(self.backend_cb.currentText())
 
+        # Phase 32e — script-mode toggle.  When checked, the tutor's
+        # system prompt is extended with the ScriptContext-globals
+        # briefing (see ``build_script_mode_system_prompt``) and any
+        # fenced ```python blocks in a reply gain a clickable
+        # "Run in Script Editor" link in the transcript.
+        script_row = QHBoxLayout()
+        self.script_mode_cb = QCheckBox("Reply with a script")
+        self.script_mode_cb.setToolTip(
+            "When enabled, the tutor writes fenced ```python blocks "
+            "that can be sent to the Script Editor (Tools → Script "
+            "editor… / Ctrl+Shift+E) for the user to run.  Blocks "
+            "never auto-execute."
+        )
+        self.script_mode_cb.toggled.connect(self._on_script_mode_toggled)
+        script_row.addWidget(self.script_mode_cb)
+        script_row.addStretch(1)
+        lay.addLayout(script_row)
+
         self.transcript = QTextBrowser()
-        self.transcript.setOpenExternalLinks(True)
+        # Our "Run in Script Editor" anchors use a custom scheme —
+        # take over URL handling so QTextBrowser doesn't try to
+        # open them in the system browser.
+        self.transcript.setOpenExternalLinks(False)
+        self.transcript.setOpenLinks(False)
+        self.transcript.anchorClicked.connect(self._on_anchor_clicked)
         lay.addWidget(self.transcript, 1)
 
         input_row = QHBoxLayout()
@@ -193,6 +230,10 @@ class TutorPanel(QWidget):
             QMessageBox.critical(self, "Backend init failed", str(e))
             return
         self._convo = Conversation(backend=backend)
+        # Phase 32e: if the user pre-ticked "Reply with a script"
+        # before connecting, apply the addendum now.
+        if self.script_mode_cb.isChecked():
+            self._convo.system_prompt = build_script_mode_system_prompt()
         extra = ""
         tool_note = ""
         if name == "ollama":
@@ -250,7 +291,97 @@ class TutorPanel(QWidget):
         self._append(f"<p><b style='color:#2a5885'>You:</b> {_esc(text)}</p>")
 
     def _append_assistant(self, text: str) -> None:
-        self._append(f"<p><b style='color:#2d7a2d'>Tutor:</b> {_esc(text)}</p>")
+        """Render a tutor reply.  Phase 32e: if the reply contains
+        fenced ```python blocks, each gets a trailing *Run in
+        Script Editor* anchor (``orgchem-script:<idx>``) that the
+        ``_on_anchor_clicked`` handler routes into the Script
+        Editor dialog."""
+        blocks = extract_python_blocks(text)
+        if not blocks:
+            self._append(
+                f"<p><b style='color:#2d7a2d'>Tutor:</b> {_esc(text)}</p>")
+            return
+
+        # Build a transcript entry that keeps the prose context but
+        # substitutes each ```python … ``` span with a monospace
+        # preview + a Run link.
+        from orgchem.agent.script_context import _CODE_FENCE_RX
+
+        parts: list[str] = []
+        cursor = 0
+        block_iter = iter(blocks)
+        for match in _CODE_FENCE_RX.finditer(text):
+            prose = text[cursor:match.start()]
+            if prose.strip():
+                parts.append(_esc(prose))
+            block = next(block_iter, "").strip()
+            idx = self._next_block_idx
+            self._next_block_idx += 1
+            self._script_blocks[idx] = block
+            preview = block if len(block) <= 500 else (
+                block[:500].rstrip() + "\n# … (truncated — full "
+                "block loads into the editor)")
+            parts.append(
+                "<div style='background:#111;color:#e8e8e8;"
+                "padding:8px;margin:6px 0;"
+                "font-family:Menlo,Consolas,monospace;"
+                "white-space:pre-wrap;border-left:3px solid #4a9;'>"
+                f"{_esc(preview)}</div>"
+                f"<p><a href='{self._SCRIPT_URL_SCHEME}:{idx}'>"
+                f"▶ Run in Script Editor</a></p>"
+            )
+            cursor = match.end()
+        tail = text[cursor:]
+        if tail.strip():
+            parts.append(_esc(tail))
+
+        self._append(
+            "<p><b style='color:#2d7a2d'>Tutor:</b> "
+            + "".join(parts) + "</p>"
+        )
+
+    def _on_script_mode_toggled(self, checked: bool) -> None:
+        """Keep the live conversation's system prompt in sync with the
+        script-mode checkbox.  Takes effect from the next turn; no
+        reconnect needed."""
+        if self._convo is None:
+            # Will be applied at Connect time via the same logic.
+            return
+        from orgchem.agent.conversation import _SYSTEM_PROMPT
+        if checked:
+            self._convo.system_prompt = build_script_mode_system_prompt()
+            self._append_system(
+                "<i>Script mode on — the tutor will reply with "
+                "Python blocks you can run.</i>"
+            )
+        else:
+            self._convo.system_prompt = _SYSTEM_PROMPT
+            self._append_system("<i>Script mode off.</i>")
+
+    def _on_anchor_clicked(self, url: QUrl) -> None:
+        """Route anchor clicks in the transcript.  The script-URL
+        scheme (``orgchem-script:<idx>``) loads the indexed block
+        into the Script Editor dialog; any other scheme falls
+        through to the default external-browser path."""
+        if url.scheme() != self._SCRIPT_URL_SCHEME:
+            # Delegate non-script URLs to the system browser.
+            from PySide6.QtGui import QDesktopServices
+            QDesktopServices.openUrl(url)
+            return
+        try:
+            idx = int(url.path() or url.toString().split(":", 1)[1])
+        except (ValueError, IndexError):
+            return
+        block = self._script_blocks.get(idx)
+        if not block:
+            return
+        # Singleton dialog — the user's prior globals persist.
+        from orgchem.gui.dialogs.script_editor import ScriptEditorDialog
+        dlg = ScriptEditorDialog.singleton(parent=self.window())
+        dlg._editor.setPlainText(block)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
 
     def _append_tool(self, name: str, args: Any) -> None:
         self._append(

@@ -1,5 +1,1624 @@
 # Session Log — OrgChem Studio
 
+## 2026-04-24 — Round 94 (Glossary-pollution cleanup)
+
+### Context
+Demo 15 in round 73 surfaced that the user's local DB had
+accumulated ~90 `Tutor-test-term-*` glossary rows from past
+test runs of the content-authoring actions (round 55).  A
+probe at the start of this round found the problem had grown
+to **165 glossary + 1 molecule** — roughly 67 % of the
+glossary table was pollution.
+
+### What shipped
+- **`orgchem/db/cleanup.py`** — new module with
+  `PurgeCounts` dataclass and
+  `purge_tutor_test_pollution(prefix="Tutor-test-")`.
+  Prefix-gated bulk DELETE across Molecule / Reaction /
+  GlossaryTerm / SynthesisPathway (+ cascade to
+  SynthesisStep) / Tutorial.  Safe + idempotent; real
+  seeded names can never collide with `Tutor-test-`.
+- **`tests/conftest.py`** — new session-teardown hook
+  (`pytest_sessionfinish`) that runs the purge once at the
+  end of every pytest run.  Prevents future pollution
+  accumulation.  Opt-out via
+  `ORGCHEM_KEEP_TEST_POLLUTION=1` env var for the rare
+  case a developer wants the rows for inspection.
+- **`scripts/cleanup_tutor_test_pollution.py`** —
+  standalone one-shot CLI wrapping the same helper so
+  users can purge a pre-existing polluted DB.  Run once
+  this session: cleaned **166 rows** (165 glossary + 1
+  molecule).
+- Local DB now at the expected post-seed baseline.
+
+### Tests
+- **`tests/test_cleanup_pollution.py`** — 5 regression
+  cases: real seeded rows survive the purge unscathed,
+  purge is idempotent (second call = 0 rows), inserting
+  a Tutor-test-* row and purging removes it, PurgeCounts
+  repr / total are clean, custom-prefix argument works.
+- Full suite: **950 passed, 0 skipped** (↑ from 945).
+
+### INTERFACE.md
+New `db/cleanup.py` row describes the prefix contract +
+idempotence + opt-out env var so the next dev who wonders
+"what's this purge doing?" has a one-line answer.
+
+### Design notes
+- **Why prefix, not a table flag**?  Adding an `is_test`
+  column to 5 tables + migrating the schema for a
+  housekeeping concern is overkill.  The existing
+  authoring-test naming convention (`Tutor-test-` +
+  UUID suffix) is stable across every test and
+  impossible to collide with real data — a prefix match
+  is enough.
+- **Why session-end not session-start**?  If tests fail
+  mid-session the user can inspect the data manually
+  before it's wiped.  End-of-session is the natural
+  rollback point.
+- **Why opt-out env var, not opt-in**?  The default
+  should clean up; leaving the opt-in path means 99 %
+  of users' local DBs keep filling.  The handful of
+  cases needing inspection set the env var.
+
+### Phase status after round 94
+Unchanged from round 93:
+- 31c / 31d / 31f / 31g ✅ closed
+- 31a / 31b / 31e long-running
+- Phase 32 closed round 74; Phase 33 at 33a+33b, 33c
+  (surface-integrated search) still open.
+
+### Next
+Round 95 candidates: Workbench drag-reorder (last
+Phase-32 deferred polish item), Phase 33c
+(surface-integrated search in Reactions / Synthesis /
+Glossary tabs reusing the round-88 core), a new feature
+phase 34 (user-flagged content only), or more Phase-31
+long-running content.
+
+---
+
+## 2026-04-24 — Round 93 (Phase 31g CLOSED at 30/30 — Flow chemistry capstone)
+
+### What shipped
+**`orgchem/tutorial/content/advanced/06_flow_process.md`** —
+the final tutorial that closes the 30-target.  Chosen as a
+natural capstone — flow chemistry is where every Anastas
+principle, every catalysis family, and every pathway-scale
+discussion converges.  Content:
+
+- **Two reactor types** — CSTR vs PFR with τ = V/Q
+  residence-time maths, plus "batch = CSTR-with-τ→∞" frame.
+- **Four "why flow wins" sections**:
+  1. **Heat transfer** — 1/r surface-to-volume argument;
+     nitration runaway risk as the seeded Reactions-tab
+     example saved by flow.
+  2. **Mixing** — 10 s batch vs 100 µs microreactor; opens
+     kinetics too fast for batch (organolithium,
+     fluorination).
+  3. **Reactive intermediates** — diazomethane / ozone /
+     high-P H₂ generated + consumed in-line without
+     storage.
+  4. **Process intensification** — T/P regimes impossible
+     in batch (superheated water, packed-bed high-T).
+- **Sitagliptin chemoenzymatic flow** (Codexis-Merck 2010)
+  as the industry flagship — transaminase + PLP + iPrNH₂
+  amine donor, E-factor halved vs prior Rh-asymmetric-H₂
+  batch route, cross-linked to round-92 biosynthesis
+  lesson's directed-evolution mention.
+- **Scale-up vs numbering-up** — 10× volume vs 10×
+  parallel tubes; why flow plants keep kinetics constant
+  from kilo → ton scale.
+- **PAT real-time analytics** — FT-IR / Raman / online
+  HPLC as continuous-stream-friendly QC.  FDA 2004 PAT
+  framework as regulatory driver.
+- **When batch still wins** — slow reactions, slurries,
+  reagent-addition campaigns, exploratory R&D.
+- **7-point decision checklist** (heat / time / reactive
+  intermediate / mixing / scale vision / solids /
+  regulatory).
+- 5 exercises cross-referring the seeded Nitration of
+  benzene, Nylon-6 Beckmann (zeolite flow variant),
+  Knowles L-DOPA H₂.
+
+### Curriculum
+Registered under the advanced tier.  `list_tutorials`
+now reports **30 lessons total** — exact match to the
+31g target.  Final tier distribution: **8 beginner /
+10 intermediate / 6 advanced / 6 graduate**.
+
+### Test suite
+- **945 passed, 0 skipped** (unchanged — pure content round).
+
+### Phase 31 status after round 93
+- 31c mechanisms 20/20 ✅
+- 31d pathways 25/25 ✅
+- 31f glossary 80/80 ✅
+- 31g tutorials **30/30 ✅ (this round)**
+- 31a/b/e — continuous-expansion items with no hard
+  target; left open for future rounds as organic content
+  accumulates.
+
+**Four Phase-31 sub-phases closed.**  Phase 32 (scripting
+workbench) was closed round 74.  Phase 33 (search) still has
+33c open but the user-facing Ctrl+F hits the main need.
+
+### Rounds 82-93 retrospective
+The twelve-round tutorial arc was the longest coherent
+content push across the project.  Rounds shipped
+intermediate radicals / polymer chemistry / protecting
+groups; graduate catalysis / biosynthesis; advanced green
+chemistry / flow + process; beginner stereochemistry / SMILES.
+Each lesson explicitly referenced already-seeded pathway +
+mechanism content so the curriculum is self-reinforcing
+rather than isolated reading — a student can walk from
+round-86's beginner stereochem intro into round-90's
+intermediate protecting-groups deep-dive and recognise the
+same Cbz chemistry in the aspartame pathway they ran
+through the Synthesis tab.
+
+### Next
+With Phase 31g closed, the autonomous loop has room for
+either a new feature phase (Phase 34?), the drag-reorder
+polish on the Workbench tracks list, glossary-pollution
+cleanup of the ~90 `Tutor-test-term-*` rows surfaced by
+demo 15 (round 73), or continued open-ended 31a/b/e
+expansion.
+
+---
+
+## 2026-04-24 — Round 92 (Phase 31g tutorial +1 — Biosynthesis)
+
+### What shipped
+**`orgchem/tutorial/content/graduate/06_biosynthesis.md`** —
+unifying chapter that pulls together every enzyme-mechanism
+and biosynthetic-alternative thread across the seeded content
+into one coherent "nature runs the same catalysis families
+chemists do" view.  Coverage:
+
+- **Catalysis-family → enzyme map** — each of the five
+  families from graduate/05 mapped to a seeded enzyme
+  mechanism: chymotrypsin = nucleophilic, class-I aldolase
+  = covalent intermediate, HIV protease = acid-base, RNase
+  A = general acid/base, AADC = PLP electron-sink cofactor.
+- **Primary vs secondary metabolism** — glycolysis/TCA/FAS
+  vs the natural-products universe.
+- **Four biosynthetic superfamilies**:
+  1. Shikimate pathway (with Draths-Frost biosynthetic
+     adipic as the Anastas principle-7 win).
+  2. Polyketides — iterative Claisen condensation (PKS /
+     FAS / chalcone synthase).
+  3. Terpenoids — C₅ isoprene building blocks + cyclase
+     carbocation cascades (all seeded Lipids-tab steroids).
+  4. Alkaloids + PLP decarboxylation — with AADC /
+     dopamine seeded mechanism as the archetype.
+- **Industrial-biosynthesis comparison table** —
+  aspartame (thermolysin), adipic (biosynthetic),
+  insulin (recombinant-only), plus 1,3-PDO / artemisinin
+  / farnesene as future-trending callouts.
+- **Chemistry-vs-biology decision matrix** — when each wins
+  and why; sitagliptin Merck-Codexis chemoenzymatic as the
+  modern best-of-both flagship.
+- **Retrobiosynthesis design questions** — three prompts
+  the student asks at every disconnection when analysing
+  a natural-product target.
+- **10-row cofactor cheat-sheet** — ATP / NAD(P)H / FAD /
+  biotin / CoA / PLP / THF / SAM / TPP / heme with
+  seeded-content cross-refs where applicable.
+- 5 exercises + 6 glossary cross-refs.
+
+### Curriculum
+Registered under the graduate level.  `list_tutorials`
+reports **29 lessons total**, graduate tier at 6 lessons.
+
+### Test suite
+- **945 passed, 0 skipped** (unchanged — pure content round).
+
+### Phase 31 status after round 92
+- 31c mechanisms 20/20 ✅
+- 31d pathways 25/25 ✅
+- 31f glossary 80/80 ✅
+- 31g tutorials **29 / 30** — **one more to close**
+
+### Next
+Round 93 closes Phase 31g at 30/30.  Candidate: advanced/
+06 Flow & process chemistry (ties industrial chemistry
++ Anastas principle 6 + sitagliptin chemoenzymatic flow
+example from the biosynthesis lesson), OR intermediate/11
+Carbonyl condensation depth-dive (consolidates aldol /
+Claisen / Michael mechanisms already seeded).  After
+that, only 31a/b/e are active — all continuous-expansion
+sub-items with no natural stopping points.
+
+---
+
+## 2026-04-24 — Round 91 (Phase 31g tutorial +1 — Reading SMILES)
+
+### What shipped
+**`orgchem/tutorial/content/beginner/08_reading_smiles.md`** —
+practical primer that closes a big on-ramp gap: SMILES
+strings appear in every seeded pathway / reaction / demo,
+but there was no lesson explaining the syntax.  Content:
+
+- **`CCO` as the 3-char worked example** — opens with the
+  three rules: letters are atoms, adjacency is bond,
+  hydrogens are implicit.
+- **Bonds table** — single / `=` / `#` / `:` with a
+  single-line molecule per row.
+- **Branches** — parentheses for branches; aspirin parsed
+  piece-by-piece (`CC(=O)O` acetyl ester + `c1ccccc1`
+  benzene + `C(=O)O` -COOH).
+- **Rings** — matching-digit ring-closure markers, `%nn`
+  for > 9.
+- **Aromatic lowercase** — benzene / pyridine / furan.
+- **Brackets** — when (non-organic-subset, charges,
+  isotopes, explicit H-counts) and how.
+- **Stereo brief** — `@` / `@@` / `/` / `\` with L- vs
+  D-alanine and cis/trans 2-butene, plus a pointer to
+  beginner / 07 + intermediate / 01 for the full CIP
+  treatment.
+- **Three seeded-SMILES walkthroughs**: caffeine
+  (`Cn1c(=O)c2c(ncn2C)n(C)c1=O` — fused 5/6 xanthine),
+  aspirin, benzocaine (4-aminoethylbenzoate).
+- **5-step reading recipe** a beginner can apply to any
+  new SMILES.
+- Section on **what SMILES doesn't say** — 3D conformation,
+  protonation state, tautomer.
+- 5 exercises drawing on the seeded catalogue (Procaine,
+  Acetanilide).
+
+### Curriculum
+Registered in `orgchem/tutorial/curriculum.py` under the
+beginner tier.  `list_tutorials` now reports **28 lessons
+total**, beginner tier at 8 lessons.
+
+### Test suite
+- **945 passed, 0 skipped** (unchanged — pure content round).
+
+### Phase 31 status after round 91
+- 31c mechanisms 20/20 ✅
+- 31d pathways 25/25 ✅
+- 31f glossary 80/80 ✅
+- 31g tutorials **28 / 30** — 2 more to target
+
+### Next
+Round 92: just 2 tutorials to close Phase 31g at 30/30.
+Candidates — graduate/06 Biosynthesis & natural products
+(ties AADC / thermolysin / biosource threads), advanced/06
+Flow + process chemistry, graduate/07 C-H activation,
+intermediate/11 Carbonyl depth-dive (aldol / Claisen /
+Michael consolidation).
+
+---
+
+## 2026-04-23 — Round 90 (Phase 31g tutorial +1 — Protecting groups)
+
+### What shipped
+**`orgchem/tutorial/content/intermediate/10_protecting_groups.md`** —
+intermediate tutorial tying together the Cbz / Fmoc / Boc
+threads from recent pathway seeds (L-DOPA round 78, Aspartame
+round 80, and the already-seeded Met-enkephalin Fmoc SPPS
+pathway).  Content:
+
+- **Why protect?** — framed by the Aspartame α vs β COOH
+  chemoselectivity problem (α-α is sweet, β-α is bitter,
+  one wrong amide bond kills the product).
+- **Three properties every PG needs** — selective install,
+  stable to the planned reaction, selective removal.
+- **Orthogonal protection** as the key design principle.
+- **Amine triad table** — Cbz / Boc / Fmoc install + deprotect
+  + stable-to + not-stable-to columns, with the orthogonality
+  map spelled out (Cbz ⊥ Boc via H₂/TFA, Fmoc ⊥ Boc via
+  base/acid; Fmoc/Cbz are partially orthogonal only).
+- **Mechanism walks** for each amine-PG deprotection:
+  - **Cbz** — Pd-surface hydrogenolysis via benzylic C-O,
+    carbamic-acid intermediate losing CO₂.
+  - **Fmoc** — E1cb with piperidine: acidic fluorenyl C-H
+    (pKa ~22, aromatic cyclopentadienyl stabilisation)
+    gives the carbanion that kicks out the carbamate;
+    dibenzofulvene + piperidine-adduct byproduct.
+  - **Boc** — SN1 via t-butyl cation; isobutylene +
+    carbamic-acid byproducts.
+- **Alcohol + COOH + carbonyl tables** — Ac / Bn / TBS /
+  MOM for alcohols; Me / Bn / tBu esters; acetal dioxolane
+  for carbonyls.
+- **SPPS as orthogonal exemplar** — Fmoc for iterated
+  chain-extension (base) + tBu for global cleavage (TFA);
+  seeded Met-enkephalin pathway as concrete reference.
+- **When to avoid protection** — Anastas principle 8
+  (green-chem round 87 cross-ref): thermolysin regiosel-
+  ective aspartame coupling, Suzuki aryl-ester spectator
+  tolerance, Knowles asymmetric H₂ hitting only C=C.
+- 5 exercises + 3 glossary cross-refs.
+
+### Curriculum
+Registered in `orgchem/tutorial/curriculum.py` under the
+intermediate level.  `list_tutorials` reports **27 lessons
+total**, intermediate tier at 10 lessons.
+
+### Test suite
+- **945 passed, 0 skipped** (unchanged — pure content round).
+
+### Phase 31 status after round 90
+- 31c mechanisms 20/20 ✅
+- 31d pathways 25/25 ✅
+- 31f glossary 80/80 ✅
+- 31g tutorials **27 / 30** — 3 more to target
+
+### Next
+Round 91: 3 tutorials to close 31g.  Candidates — graduate/
+06 Biosynthesis & natural products, advanced/06 Flow +
+process chemistry, beginner/08 Reading SMILES, intermediate/
+11 Carbonyl condensation depth-dive, graduate/07 C-H
+activation.  Alternatively a new feature or Phase 33c
+surface-integrated search.
+
+---
+
+## 2026-04-23 — Round 89 (Phase 33b — Ctrl+F search dialog)
+
+### What shipped
+Phase 33b completes the Ctrl+F find feature started round 88.
+
+- **`orgchem/gui/dialogs/fulltext_search.py`** —
+  `FulltextSearchDialog` (singleton per app instance so
+  reopening preserves the query state):
+  - `QLineEdit` live-updating query box, 100 ms debounce
+    timer coalesces keystroke bursts before rerunning
+    `search()`.
+  - 5-kind checkbox-filter row (all on by default); a
+    zero-kind state shows a helpful "Select at least one
+    kind" status message instead of silently no-op-ing.
+  - Results list rendered as HTML per row: kind badge
+    (coloured tag: blue molecule / orange reaction / red
+    mechanism-step / green pathway / purple glossary) +
+    bold title + greyed snippet.
+  - Double-click or return-key activation dispatches.
+- **`dispatch_search_result(result, main_win)`** — module-
+  level routing function handling all 5 kinds:
+  - molecule → `bus.molecule_selected.emit(id)`
+  - reaction → `reactions._display(id)`
+  - mechanism-step → `reactions._display(id)` **plus**
+    fire `invoke('open_mechanism', …)` to pop the player
+  - pathway → `synthesis._display(id)`
+  - glossary → `glossary.focus_term(term)`
+  - all kinds also switch the main tabbar to the right tab.
+- **`MainWindow`** wiring:
+  - View menu entry "Find… (Ctrl+F)".
+  - `open_fulltext_search()` helper — singleton show/raise/
+    activateWindow + auto-focuses the query line edit.
+
+### Tests
+- **`tests/test_fulltext_search_dialog.py`** — 10 new cases:
+  4 pytest-qt dialog tests (empty state, live-search
+  produces results, kind-filter restricts to one kind,
+  zero-kinds shows helpful message) + 6 dispatch-routing
+  unit tests via a fake minimal main-window that captures
+  calls to `.glossary.focus_term`, `.reactions._display`,
+  `.synthesis._display`, `.tabs.setCurrentIndex`.  One
+  test mocks `orgchem.messaging.bus.bus` to verify molecule
+  dispatch hits `molecule_selected.emit`.
+- **945 passed, 0 skipped** (↑ from 935).
+
+### Phase 33 status after round 89
+- 33a headless search core ✅
+- 33b Ctrl+F dialog ✅
+- 33c surface-integrated search (tab-local boxes reusing
+  the core) — still open, low-priority polish.
+
+### Next
+Round 90: candidates — close the last small Phase 32
+deferred item (drag-reorder for Workbench tracks list), or
+continue Phase 31g tutorial momentum (4 to 30-target), or
+start a new phase.  Tutorial momentum is probably best —
+the content ships faster than GUI chrome and keeps the
+beginner/intermediate coverage healthy.
+
+---
+
+## 2026-04-23 — Round 88 (Phase 33a — headless full-text search core)
+
+### What shipped
+New feature **Phase 33 — cross-surface full-text search**.
+Phase 11b's Ctrl+K palette matches by name only; this phase
+does the complementary full-text search over descriptions /
+definitions / step notes / mechanism prose.  Ships in two
+sub-phases for clean scope — round 88 is the headless core.
+
+- **`orgchem/core/fulltext_search.py`** — pure-Python linear
+  scan over the seeded DB.  Five corpus builders
+  (molecules / reactions / mechanism steps / pathways +
+  their steps / glossary) each yield `(kind, title, blob,
+  key)` tuples; the top-level `search(query, kinds, limit)`
+  scores every hit with title-boost × 3 + word-boundary
+  bonus, snippets out a context window around the first
+  match, and returns a sorted list of `SearchResult`.
+  `SEARCHABLE_KINDS` = the 5-tuple of kinds; `SearchResult.
+  key` carries dispatch info for routing double-clicks
+  back to the originating surface (molecule_id / term /
+  pathway_id / reaction_id + step_index).
+  **Design decision**: linear scan, no FTS5 index.  Corpus
+  is ~1 k rows × ~300 chars of text (~300 KB total); every
+  query takes a few ms without an index to maintain.
+- **`orgchem/agent/actions_search.py`** — `fulltext_search
+  (query, limit, kinds)` agent action wrapping the core.
+  Accepts comma-separated kinds CSV; returns JSON-
+  serialisable dicts including a clean error-return path
+  for unknown kinds.  Registered in `agent/__init__.py`.
+- **GUI audit** provisionally maps the action to
+  *View → Find… (Ctrl+F)* (the Phase-33b dialog slot);
+  100 % coverage preserved.  Agent action count 125 → 126.
+
+### Key design notes surfaced while writing tests
+- Mechanism steps **surface individually** as their own
+  searchable rows — so a query for "Beckmann" or "oxime"
+  lands on the Nylon-6 step 2 description directly,
+  not just on the whole pathway entry.  This is the
+  main win vs the Ctrl+K palette which only does name
+  matching.
+- **Test robustness lesson**: round 71's content markers
+  teach us to pick queries whose match location you
+  *know*.  My first draft of the test asserted "beckmann"
+  hits a mechanism-step; in fact Beckmann appears in the
+  pathway step notes only (no Reaction.mechanism_json
+  entry for it), so the test hit a pathway.  Swapped to
+  "enolate" which is genuinely in the Claisen + Aldol
+  mechanism-step descriptions.
+
+### Test suite
+- **`tests/test_fulltext_search.py`** — 19 new cases:
+  5 scoring / snippet unit tests + 14 DB-backed
+  integration tests (empty-query short-circuit, caffeine
+  lookup, mechanism-step hit on "enolate", pathway step
+  note hit on "DIPAMP", kinds-filter, unknown-kind
+  rejection, title-beats-body ranking, sort-by-score
+  invariant, limit respected, agent action JSON shape,
+  action kinds CSV, action error-return for bad kind,
+  public-API constant stability).
+- **935 passed, 0 skipped** (↑ from 916).
+
+### Next
+Round 89 ships **Phase 33b** — the Ctrl+F `FulltextSearchDialog`
+wrapped around this core.  Also extends
+`dispatch_palette_entry` to understand the new key types so
+a double-click on a mechanism-step result navigates straight
+to the player dialog at the right step.
+
+---
+
+## 2026-04-23 — Round 87 (Phase 31g tutorial +1 — Advanced green chemistry)
+
+### What shipped
+**`orgchem/tutorial/content/advanced/05_green_chemistry.md`** —
+uses Anastas's 12 Principles of Green Chemistry as an audit
+checklist and maps each principle onto already-seeded content.
+
+Six case studies:
+
+1. **Adipic acid N₂O footprint** — ~1 mol N₂O per mol product,
+   265× CO₂ GWP; pre-1997 emissions were 5-8 % of all
+   anthropogenic N₂O; Al₂O₃ / CuO catalytic abatement is
+   now standard.  Draths-Frost biosynthetic alternative via
+   cis,cis-muconic acid from engineered *E. coli*.
+2. **Nylon-6 (NH₄)₂SO₄ mountain** — 5 kg/kg caprolactam
+   waste from oleum Beckmann.  Sumitomo zeolite ZSM-5
+   vapour-phase Beckmann (2003) replaces oleum entirely;
+   ~20 % of global caprolactam now runs this way.
+3. **L-DOPA Knowles Nobel** — asymmetric H₂ vs classical
+   resolution: 2 g/mol H₂ atom-economy + no discarded
+   wrong-enantiomer.  Flags the step-3 HBr deprotection
+   as the weakness (2× CH₃Br per product).
+4. **Aspartame thermolysin shortcut** — Ajinomoto's enzymatic
+   α-regioselective route (15 000 t/yr) skips Cbz + DCC
+   entirely.  pH 7, room T, water.
+5. **Fischer esterification water-removal** — Dean-Stark,
+   molecular sieves, excess alcohol, vacuum — each rated
+   against principles 3, 5.  Solid-acid catalysts
+   (Amberlyst-15) as the principle-9 upgrade.
+6. **PLA — designed for degradation** — renewable feedstock
+   + safe products + degradable backbone.  Honest about
+   the real-world disposal gap (PLA in landfills ≈ PET).
+
+Plus:
+- **Metrics refresher** — atom economy + Sheldon E-factor
+  with industrial benchmarks (bulk 1-5, fine 5-50, pharma
+  25-100+).
+- **5-question auditing checklist** a student can apply to
+  any new route they see.
+- 5 exercises tying back to Tools → Green metrics… and the
+  Hammett dialog.
+
+### Curriculum
+Registered under the advanced level.  `list_tutorials`
+reports **26 lessons total**, advanced tier at 5 lessons.
+
+### Test suite
+- **916 passed, 0 skipped** (unchanged).
+
+### Phase 31 status after round 87
+- 31c mechanisms 20/20 ✅
+- 31d pathways 25/25 ✅
+- 31f glossary 80/80 ✅
+- 31g tutorials **26 / 30** — 4 more to target
+
+### Next
+Round 88: candidates — graduate C-H activation (metal-
+catalysed cross-couplings beyond Suzuki), advanced flow
+chemistry, beginner intro to SMILES parsing, graduate
+biosynthesis + natural-product total-synthesis (closing the
+endgame-focused graduate track).  Or pivot: a new feature
+phase 33 (Ctrl+F global search across the DB, or a quiz
+engine), or the drag-reorder polish on Workbench.
+
+---
+
+## 2026-04-23 — Round 86 (Phase 31g tutorial +1 — Beginner stereochem)
+
+### What shipped
+**`orgchem/tutorial/content/beginner/07_stereochemistry_intro.md`** —
+the missing on-ramp to the intermediate stereochemistry deep-dive
+that tutors noted earlier as a trouble spot.  The lesson
+deliberately works by *analogy + concrete consequences* first,
+saving the CIP machinery for intermediate/01.  Coverage:
+
+- **Thalidomide framing** — one compound, two enantiomers
+  (R-sedative vs S-teratogenic), ~10 000 affected babies
+  before 1961 withdrawal.  The strongest possible answer to
+  "why does this matter."
+- **Hand analogy** — non-superimposable mirror images,
+  naming "enantiomers."
+- **Stereocentre definition** — carbon with 4 different
+  substituents; ASCII schematic.
+- **Why your nose notices** — carvone (caraway vs spearmint)
+  and limonene (orange vs lemon) smell-contrast table as
+  receptor-pocket evidence students can understand.
+- **R/S thumbnail** — 4-step CIP procedure in one paragraph
+  with the pointer to intermediate/01 for tie-break details.
+- **cis/trans & E/Z** — π-bond rotation lock, old vs modern
+  labelling conventions.
+- **Meso + diastereomer preview** — 2ⁿ stereoisomers from n
+  centres, internal-symmetry cancellation, diastereomer =
+  non-mirror stereoisomer with real physical-property
+  differences.
+- **Practice SMILES table** — 5 sample compounds to paste
+  into Tools → Stereochemistry… including L- vs D-alanine,
+  E vs Z 2-butene, and D-glucose with all 4 centres.
+- **Three takeaways** + 9 glossary cross-refs via
+  `{term:…}` macro (enantiomer / diastereomer / stereocentre
+  / R/S / E/Z / meso / ee / anomer / Walden inversion).
+
+### Curriculum
+Registered in `orgchem/tutorial/curriculum.py` under the
+beginner level.  `list_tutorials` now reports **25 lessons**,
+beginner tier at 7.
+
+### Test suite
+- **916 passed, 0 skipped** (unchanged — pure content round).
+
+### Phase 31 status after round 86
+- 31c mechanisms 20/20 ✅
+- 31d pathways 25/25 ✅
+- 31f glossary 80/80 ✅
+- 31g tutorials **25 / 30** — 5 more to target
+- 31a/b/e long-running
+
+### Next
+Round 87: another tutorial lesson to keep momentum (5 to go —
+candidates: advanced flow chemistry, graduate C-H activation,
+advanced green chemistry case studies, intermediate
+stereospecific SPPS, or beginner intro to reading SMILES),
+the drag-reorder polish on Workbench tracks list, or a new
+Phase 33 feature.
+
+---
+
+## 2026-04-23 — Round 85 (Workbench colour + opacity chrome)
+
+### What shipped
+Closed the last deferred items from Phase 32c with two new
+per-track controls on `TrackRow`:
+
+- **Colour combo + swatch preview**.  Kind-aware choices —
+  molecules / ligands get CPK + common hues (white / grey /
+  red / blue / green / orange / magenta); proteins get the
+  cartoon-specific schemes (chain / spectrum / residue / cpk)
+  plus the same hues.  A "custom…" sentinel pops a
+  `QColorDialog` and inserts the picked hex code as a new
+  combo entry.  A small `_swatch` QLabel shows the current
+  hue at a glance (multi-colour schemes render as a neutral
+  grey placeholder).
+- **Opacity slider** (10-100 %).  Wired via a new
+  `opacity_changed(track, 0.0-1.0)` signal → `scene.set_style
+  (opacity=…)`.  Minimum clamped at 10 % so tracks can't go
+  fully invisible accidentally.
+
+`TrackRow.reflect()` now re-syncs both new controls after
+external scene mutations, so a script that calls
+`viewer.set_style(name, colour="red", opacity=0.3)` updates
+the UI on the next queued event.
+
+### HTML layer refactor
+`orgchem/scene/html.py::_style_js` rewritten to build the
+3Dmol.js style spec as a Python dict + `json.dumps` — no more
+hand-written literal strings.  This lets us inject `opacity`
+into every style key consistently (previously only the
+surface style had it, hard-coded to 0.6).  Ball-and-stick
+still gets two-key handling (stick + sphere) since it's the
+one combined style.  Protein colour schemes + cartoon-trace
+style flag handled via inner-dict keys.
+
+### Wiring
+`WorkbenchWidget` connects the two new TrackRow signals:
+- `colour_changed → self._on_row_colour_changed → scene.set_style(colour=…)`
+- `opacity_changed → self._on_row_opacity_changed → scene.set_style(opacity=…)`
+
+Same `KeyError`-swallow guard as the other row forwarders.
+
+### Tests
+- **`tests/test_workbench_controls.py`** gains 3 new cases:
+  - Colour combo → `scene.tracks()[0].colour` updates.
+  - Opacity slider → `scene.tracks()[0].opacity == 0.5` at 50 %.
+  - End-to-end: after an opacity drop to 40 %, the rebuilt
+    scene HTML contains the literal `"opacity": 0.4` in the
+    3Dmol.js setStyle spec.  Catches any future refactor that
+    breaks the scene → HTML plumbing.
+- **916 passed, 0 skipped** (↑ from 913).
+
+### File sizes
+- `workbench_track_row.py` 135 → 257 lines (under 500-line cap).
+- `workbench.py` 419 lines (unchanged from round 84).
+- `scene/html.py` 94 → 121 lines (still tiny).
+
+### Phase 32 status after round 85
+- 32a editor ✅
+- 32b Workbench ✅
+- **32c chrome ✅** (rich per-track controls + scene-wide
+  toolbar + round-85 colour / opacity polish)
+- 32d 15-demo library ✅
+- 32e tutor script mode ✅
+- Only deferred item: **drag-reorder** for tracks list — low
+  priority, purely ergonomic.
+
+### Next
+Round 86: candidates — one more Phase 31g tutorial, drag-
+reorder for tracks, or pivot to a new feature phase (33?).
+With Phases 32 and 3 of 7 Phase-31 sub-items all closed,
+the loop has room to start something new.
+
+---
+
+## 2026-04-23 — Round 84 (Phase 31g tutorial +1 — Intermediate polymers)
+
+### What shipped
+**`orgchem/tutorial/content/intermediate/09_polymers.md`** —
+polymer-chemistry lesson that bridges the radicals + catalysis
++ nylon pathway threads.  Content:
+
+- **Two mechanistic families** — step-growth (Carothers DP =
+  1/(1-p) with worked p vs DP numbers: 0.90→10, 0.99→100,
+  0.999→1000) vs chain-growth (radical / cationic / anionic
+  subclasses).
+- **Seeded-content anchors** — step-growth nylon-6 / nylon-6,6
+  / PET / polyurethane / polycarbonate table; chain-growth PE
+  / PP / PS / PVC / PTFE / PAN / PMMA table with initiators.
+- **Tacticity** — isotactic vs syndiotactic vs atactic, with
+  the classic atactic-PP-is-goo vs isotactic-PP-is-plastic
+  contrast and the Ziegler-Natta / metallocene Nobel thread.
+- **T_g + T_m** — glass transition vs crystalline melt, why
+  polystyrene is a hard glass at room T and polyisoprene is
+  a rubber.
+- **Why nylon-6,6 beats nylon-6** — alternating vs same-
+  direction amide dipoles, H-bond register, crystallinity
+  consequences, tyre-cord choice.
+- **Copolymer subclasses** — random (SBR), alternating
+  (styrene-maleic anhydride), block (SBS in sneakers),
+  graft (ABS in Lego).
+- **Sustainability** — PET methanolysis, PLA biodegradability
+  (ester backbone → hydrolysable), biosourced succinic acid.
+- 5 exercises + 3 glossary cross-refs via `{term:…}`.
+
+### Test suite
+- **913 passed, 0 skipped** (unchanged — pure content round).
+  `list_tutorials` now reports 24 lessons total.
+
+### Phase 31 status after round 84
+- 31c mechanisms 20/20 ✅
+- 31d pathways 25/25 ✅
+- 31f glossary 80/80 ✅
+- 31g tutorials **24 / 30** — 6 more to target
+- 31a/b/e long-running
+
+### Observed threading across rounds 82-84
+The three tutorials shipped as a coherent triptych:
+1. Round 82 — **how radicals work** (intermediate/08).
+2. Round 83 — **how catalysts enable reactions** (graduate/05,
+   homogeneous / heterogeneous / enzymatic / Lewis / Brønsted).
+3. Round 84 — **how all of that assembles polymers**
+   (intermediate/09, radicals feeding chain-growth; catalysts
+   feeding Ziegler-Natta; nylon pathways feeding step-growth).
+
+Polymer chemistry wasn't on the original ROADMAP priority list
+but naturally emerged as the capstone of the recent pathway +
+mechanism + catalysis work.
+
+### Next
+Round 85: another tutorial (candidates per ROADMAP 31g:
+beginner stereochemistry 101, advanced flow chemistry,
+graduate metal-catalysed C-H activation, or green chemistry
+case studies), or swing to Workbench chrome (colour swatch +
+opacity slider), or start a Phase 33 feature.
+
+---
+
+## 2026-04-23 — Round 83 (Phase 31g tutorial +1 — Graduate catalysis)
+
+### What shipped
+**`orgchem/tutorial/content/graduate/05_catalysis.md`** — a
+cross-cutting graduate-tier lesson that ties together the five
+catalysis families with concrete references to already-seeded
+content:
+
+1. **Homogeneous** — Knowles Rh-DIPAMP asymmetric hydrogenation
+   (L-DOPA pathway step 2, Nobel 2001), Suzuki / Buchwald /
+   Sonogashira cross-couplings, Mitsunobu.
+2. **Heterogeneous** — Pd-C hydrogenolysis of Cbz (Aspartame
+   step 2), Co/Mn naphthenate cyclohexane oxidation (Adipic-
+   acid step 1), vapour-phase Beckmann on zeolite ZSM-5
+   (Nylon-6 greener alternative).
+3. **Enzymatic** — each of the four seeded enzyme mechanisms
+   (chymotrypsin, Class-I aldolase, HIV protease, RNase A)
+   mapped to a distinct catalytic strategy + industrial
+   thermolysin (Ajinomoto aspartame) + AADC / PLP mechanism
+   (Dopamine activation).
+4. **Lewis-acid** — AlCl₄⁻ / AlCl₃ cycle in Friedel-Crafts
+   alkylation (3-step mechanism seeded), BF₃ + ZnCl₂
+   variants in Mukaiyama aldol / phenolphthalein.
+5. **Brønsted-acid** — Fischer esterification (5-step), pinacol
+   rearrangement (4-step), Beckmann rearrangement in the
+   Nylon-6 synthesis — all three show explicit proton-shuttle
+   turnover.
+
+Plus a **5-column comparison table** (phase / selectivity /
+recovery / TOF / Nobel anchor), a cross-cutting TS-stabilisation
+framing that unifies all five, and 4 exercises that push the
+student to reason about process-chemistry tradeoffs using the
+taxonomy. 7 glossary cross-references via the `{term:…}` macro.
+
+### Curriculum + smoke
+Registered in `orgchem/tutorial/curriculum.py` under the graduate
+level.  `list_tutorials` now reports **23 lessons total**,
+graduate tier at 5 lessons (from 4).
+
+### Test suite
+- **913 passed, 0 skipped** (unchanged — content-only round).
+  The existing tutorial-schema + tutorial-macros tests cover
+  the new lesson's registration + `{term:…}` expansion.
+
+### Phase 31 status after round 83
+- 31c mechanisms 20/20 ✅
+- 31d pathways 25/25 ✅
+- 31f glossary 80/80 ✅
+- 31g tutorials **23 / 30** — 7 more to the target
+
+### Next
+Round 84: another tutorial lesson (polymer chemistry? flow
+chemistry? metal-catalysed C-H activation?), or swing back
+to Workbench chrome (colour swatch + opacity slider for the
+last Phase-32c deferred items), or start a new feature
+phase (33?).
+
+---
+
+## 2026-04-23 — Round 82 (Phase 31g tutorial +1 — Radical chemistry)
+
+### What shipped
+- **`orgchem/tutorial/content/intermediate/08_radicals.md`** —
+  new markdown lesson filling the glaring radical-chemistry
+  gap in the curriculum (radicals weren't covered anywhere
+  across the 21 prior lessons).  Content:
+  1. Three hallmarks — fishhook arrows, chain mechanism,
+     non-polar character.
+  2. Chain stages walked end-to-end with Cl₂ + CH₄ → CH₃Cl +
+     HCl as the canonical worked example (the reaction is
+     already seeded as *Radical halogenation of methane*);
+     initiation / propagation (two atom-transfer steps) /
+     termination (with the ethane coupling product that's
+     the GC-trace fingerprint).
+  3. Radical stability 3° > 2° > 1° > methyl as the
+     hyperconjugation-driven analogue of carbocation
+     stability.
+  4. Cl• vs Br• selectivity framed through the Hammond
+     postulate — unselective Cl• with its strongly exothermic
+     steps (early TS, 1° ≈ 3°) vs selective Br• with its
+     weakly-exo steps (late TS, 3° 80× 1°).
+  5. Applications: radical polymerisation (industrial
+     polyethylene / polystyrene / PVC), autoxidation of
+     oils with antioxidant defences (vitamin E, BHT),
+     ozone-depletion catalytic cycles, biological radicals.
+  6. Three arrow-pushing practice prompts + explicit
+     cross-references to the *Homolysis vs heterolysis*,
+     *Hammond postulate*, *Curved arrow*, and *Carbocation*
+     glossary entries (via the `{term:…}` macro so clicks
+     route to the Glossary tab).
+- **Curriculum registration** in `orgchem/tutorial/curriculum.py`
+  under the `intermediate` level.  `list_tutorials` immediately
+  picks it up — verified via HeadlessApp (22 total, new entry
+  at `{level: intermediate, index: 7}`).
+
+### Test suite
+- **913 passed, 0 skipped** (unchanged — content-only round;
+  the existing `test_tutorial` and `test_tutorial_macros`
+  harnesses cover the registration + rendering path).
+
+### Phase 31 status after round 82
+- 31c mechanisms 20/20 ✅
+- 31d pathways 25/25 ✅
+- 31f glossary 80/80 ✅
+- 31g tutorials **22 / 30** — in progress
+- 31a/b/e long-running
+
+### Next
+Round 83: another tutorial lesson (beginner → *Stereochemistry
+101* or graduate → *Catalysis (homogeneous / heterogeneous /
+enzyme)*), or pivot back to Workbench chrome (colour swatch +
+opacity slider for 32c+), or start on a Phase 33 feature.
+
+---
+
+## 2026-04-23 — Round 81 (get_mechanism_details + demo 04 arrow walk)
+
+### What shipped
+Closed the round-67 action-surface gap: scripts / LLMs could
+list mechanisms and open the player dialog, but couldn't
+programmatically read the per-step **arrow data**.
+
+- **`get_mechanism_details(name_or_id)`** in
+  `orgchem/agent/actions_reactions.py`.  Returns the full
+  mechanism JSON — id, name, category, description, and a
+  `mechanism` sub-dict containing every step's title /
+  description / SMILES / arrows / lone_pairs.  Accepts a
+  numeric id (string form) or a name substring, same lookup
+  rules as `open_mechanism`.  Clean error-return shape for
+  unknown names or reactions without stored JSON.
+- **Demo 04 enriched** — `04_mechanism_walkthrough.py` now
+  drills into the Diels-Alder entry after enumerating the
+  catalogue: prints the SMILES, every arrow (atom-to-atom or
+  bond-midpoint) with its kind + label, and every lone-pair
+  dot.  Teaching payoff: the student sees the real 3-arrow
+  pericyclic electron flow (atom0→atom5 new bond, atom4→atom3
+  new bond, atom2→atom1 π shift) instead of just a step
+  count.
+- **GUI audit** updated: `get_mechanism_details` maps to the
+  existing "Reactions tab → Open mechanism…" path because
+  the action is a pure-data reader of the same content the
+  dialog already displays.  100% coverage preserved.
+- **Agent action count** now 125 (↑ 124).
+
+### Tests
+- **`tests/test_get_mechanism_details.py`** (5 new cases):
+  full JSON shape, error path for unknown names, id-as-string
+  lookup, Phase-13c bond-midpoint + lone-pair exposure for
+  HIV protease, and a contrast test pinning the shape
+  difference vs `open_mechanism` (steps=int summary vs
+  mechanism.steps=list of dicts).
+- Demo 04's `_CONTENT_MARKERS` extended with
+  `"full arrow walkthrough"`, `"arrows"`, `"curly"` so the
+  smoke test would catch any regression that silently drops
+  the arrow drill-down.
+- **913 passed, 0 skipped** (↑ from 908); first-pass green.
+
+### Next
+Options for round 82: Workbench per-track colour swatch +
+opacity slider (32c+ polish), another Phase-31e tutorial
+lesson (21 → 22), a new feature phase (33?), or the
+`Tutor-test-term-*` glossary cleanup that demo 15
+surfaced.
+
+---
+
+## 2026-04-23 — Round 80 (Phase 31d CLOSED at 25/25)
+
+### What shipped
+Closed Phase 31d synthesis-pathway target with the final
+two seeds.  Chosen as cohesive pedagogical pairs to the
+existing catalogue:
+
+- **Nylon-6 — Beckmann / caprolactam route (3-step)**.
+  Pairs with round-79 Nylon-6,6 to give the student both
+  big polyamide commodity chains side-by-side (same C₆
+  cyclohexanone branch point).  Three steps:
+  1. Oxime formation: cyclohexanone + NH₂OH →
+     cyclohexanone oxime (buffered at pH 5-6; acid
+     catalyses dehydration but suppresses NH₂OH
+     nucleophilicity if too strong).
+  2. **Beckmann rearrangement** with conc. H₂SO₄ / oleum
+     → ε-caprolactam.  Description spells out the core
+     pedagogical payload: the C-C bond *anti* to the
+     oxime -OH migrates to N concerted with water
+     departure; stereospecific; (NH₄)₂SO₄ coproduction
+     flagged as a plant-scale sustainability concern
+     addressed by vapour-phase zeolite catalysts.
+  3. Ring-opening polycondensation: trace water + 260 °C
+     → nylon-6 linear polyamide.  Model-dimer SMILES
+     shows one complete -HN-(CH₂)₅-CO- repeat × 2.
+     Property contrast with nylon-6,6 called out (same
+     direction vs alternating amide dipoles).
+
+- **Aspartame — Z-protected peptide coupling (2-step)**.
+  Pairs with round-76 Saccharin in the artificial-sweetener
+  neighbourhood (nice teaching contrast — saccharin is a
+  heterocyclic sulfimide that's ~300× sucrose, aspartame
+  is a dipeptide that's ~200×).  Two steps:
+  1. DCC/HOBt coupling of Z-L-Asp (α-NH₂ protected) with
+     L-Phe-OMe → Z-aspartame.  Description spells out why
+     the α-α regiochemistry wins (β-carboxyl is sterically
+     hindered + less activated under DCC) and mentions
+     the industrial thermolysin route that sidesteps
+     protection entirely via enzyme regioselectivity.
+  2. Z hydrogenolysis (H₂ / Pd-C) — benzylic C-O cleavage,
+     spontaneous carbamic-acid decarboxylation to give
+     free amine + toluene + CO₂.  Describes Fmoc as the
+     base-labile alternative when acid/H₂-sensitive side
+     chains are present.
+
+### Fragment-consistency additions
+10 new intermediates in `seed_intermediates.py`:
+hydroxylamine, cyclohexanone oxime, ε-caprolactam, sulfuric
+acid, nylon-6 model dimer, L-aspartic acid, Z-L-aspartic
+acid, L-Phe-OMe, Z-aspartame, aspartame.  All SMILES pre-
+validated; audit passed first try.
+
+### Test suite
+- **908 passed, 0 skipped** — full suite green on first
+  pass.  Content-only round, no new tests (the
+  fragment-consistency + pathway-schema harness already
+  covers additions).
+
+### Phase 31 status after round 80
+- 31c mechanisms 20/20 ✅
+- 31d pathways **25 / 25 ✅ (this round)**
+- 31f glossary 80/80 ✅
+
+**Three sub-phases now fully closed.**  Phase 31 remaining
+work is all long-running / scope-uncapped:
+- 31a molecules 210 → 400 (continuous expansion)
+- 31b reactions 35 → 50 (continuous expansion)
+- 31e tutorials 21 → 30 (markdown authoring)
+- 31g macromolecule catalogues (25/31/33 → 40 each)
+
+### Next
+Round 81+: likely pivot to tutorial authoring (21 → 30)
+or a new feature phase (33?).  Alternatively close the
+cleanup items surfaced earlier: the `Tutor-test-term-*`
+glossary pollution, the `get_mechanism_details` action
+gap for richer arrow-pushing demos, or the per-track
+colour swatch / opacity slider in the Workbench.
+
+---
+
+## 2026-04-23 — Round 79 (Phase 31d +2 pathways — Adipic acid + Nylon-6,6)
+
+### What shipped
+Educationally cohesive pair — adipic acid is the industrial
+monomer feedstock that the second pathway turns into polymer.
+Phase 31d 21 → 23/25.
+
+- **Adipic acid — DuPont cyclohexane route (2-step)**.
+  Step 1: air oxidation of cyclohexane with Co / Mn
+  naphthenate (150 °C, 15 atm, held at ~8 % conversion) →
+  **KA oil** (1:1 cyclohexan*ol* + cyclohexan*one*).  The
+  low-conversion kinetic quench is the industrial trick —
+  otherwise KA oil over-oxidises faster than cyclohexane
+  itself.
+  Step 2: 50 % aq. HNO₃ / V₂O₅-Cu cleaves the C-C bond →
+  adipic acid.  Description flags the N₂O byproduct
+  (~1 mol / mol adipic) as one of the largest industrial
+  sources of this potent greenhouse gas, with modern plant-
+  scale thermal-catalytic abatement.
+- **Nylon-6,6 — Carothers polycondensation (2-step)**.
+  Step 1: adipic acid + HMDA (1,6-diaminohexane) in MeOH
+  →  1:1 **AH salt** (diammonium dicarboxylate).  Making the
+  salt first gives the exact stoichiometry Carothers's
+  equation demands for high-MW polymer.  Step 2: melt the
+  dry salt at 270 °C under N₂ → vacuum → step-growth
+  polyamide formation.  Product SMILES is a 2-amide
+  **model dimer** (HMDA-AA-HMDA) — one repeat unit of the
+  actual polymer.  Description embeds Carothers's
+  DP = 1/(1-p) equation with worked numbers: 99 % → DP 100,
+  99.5 % → DP 200.
+
+### Fragment-consistency additions
+12 new intermediates / reagents in `seed_intermediates.py`:
+cyclohexane, O₂, cyclohexanol, cyclohexanone, nitric acid,
+adipic acid, N₂O, HMDA, nylon-6,6 salt, nylon-6,6 model
+dimer, **plus** the dicationic HMDA-diammonium and the
+dianionic adipate fragments (pre-emptively split, per the
+round-76 salt-splitting gotcha).  Pre-emptive salt splitting
+worked — the audit passed on first pass this round with no
+iteration.
+
+### Test suite
+- **908 passed, 0 skipped** (content-only round).
+
+### Phase 31 status after round 79
+- 31c mechanisms 20/20 ✅
+- 31d pathways **23 / 25** — 2 more to the target
+- 31f glossary 80/80 ✅
+- 31a/b/e/g — longer-running
+
+### Next
+Round 80 can close Phase 31d at 25/25 with 2 more pathways
+— candidates: adipic acid → caprolactam route for nylon 6
+(to pair with the nylon 6,6 just landed, showing the two
+big nylon commodity chains side-by-side), or an ambitious
+big-endgame like morphine / oseltamivir / atorvastatin
+assembly.  Alternatively pivot to Phase 31e tutorials
+(21 → 30) for a different kind of progress.
+
+---
+
+## 2026-04-23 — Round 78 (Phase 31d +2 pathways — L-DOPA + Dopamine)
+
+### What shipped
+Two seeded pathways, advancing Phase 31d 19 → 21/25.  The
+pair tells a cohesive Parkinson's / neurotransmitter story.
+
+- **L-DOPA — Knowles Rh-DIPAMP asymmetric route (3-step)**:
+  1. Erlenmeyer condensation: veratraldehyde + N-acetylglycine
+     → (Z)-2-acetamido-3-(3,4-dimethoxyphenyl)acrylic acid
+     via the 5-ring azlactone intermediate.
+  2. Asymmetric hydrogenation with [Rh((R,R)-DIPAMP)]⁺ →
+     (S)-N-acetyl-3,4-dimethoxyphenylalanine in ≥ 95 % ee.
+     **The milestone that won the 2001 Nobel** — first
+     industrial-scale asymmetric catalytic H₂; ton-scale,
+     chiral-at-P bisphosphine replacing a resolution.
+  3. HBr / AcOH simultaneously demethylates both methyl aryl
+     ethers (SN2 at methyl → CH₃Br byproduct) and hydrolyses
+     the acetamide → L-DOPA directly.  The zwitterionic
+     amino-acid α-stereocentre is protected against
+     epimerisation.
+- **Dopamine — decarboxylation of L-DOPA (1-step)**.
+  The AADC (aromatic-L-amino-acid decarboxylase) step that
+  activates L-DOPA *in vivo* inside the CNS — which is
+  why L-DOPA is dispensed rather than dopamine itself
+  (dopamine can't cross the blood-brain barrier; L-DOPA
+  rides LAT1 and is decarboxylated on arrival).
+  Description walks the PLP cofactor mechanism: imine
+  formation, electron-sink stabilisation in the quinonoid
+  intermediate, stereospecific reprotonation that destroys
+  the α-stereocentre.
+
+### Fragment-consistency additions
+10 new intermediates / reagents in `seed_intermediates.py`:
+Veratraldehyde, N-Acetylglycine, (Z)-dehydroamino-acid,
+N-Acetyl-(S)-3,4-dimethoxyphenylalanine, L-DOPA, Dopamine,
+Hydrogen gas, Hydrogen bromide, Methyl bromide,
+Carbon dioxide.  All pre-validated via RDKit; the audit
+passed first try (no salt-splitting gotchas this round
+since no ionic reagents in use).
+
+### Test suite
+- **908 passed, 0 skipped** — full suite green on first try.
+
+### Phase 31 status after round 78
+- 31c mechanisms 20/20 ✅
+- 31d pathways **21 / 25** — 4 more to target
+- 31f glossary 80/80 ✅
+- 31a/b/e/g — longer-running
+
+### Next
+Round 79: candidates for the final 4 pathways toward the
+25-target: nylon-salt condensation (hexamethylenediamine +
+adipic acid → nylon 6,6 monomer), adipic acid from
+cyclohexane KA-oil (DuPont industrial route), caffeine
+from theobromine (already seeded!) — skip, penicillin V
+via the classical Sheehan route, or one big endgame
+(taxol / morphine / oseltamivir).  Or diversify: ship a
+tutorial markdown lesson (21 → 22) for Phase 31e.
+
+---
+
+## 2026-04-23 — Round 77 (Phase 31f glossary CLOSED at 80/80)
+
+### What shipped
+Three glossary terms that close Phase 31f at the 80-target:
+
+- **Activating and deactivating groups** *(reactions)* —
+  EAS bias: π-donor activators (–NH₂, –OR, –alkyl) raise the
+  ring HOMO and direct ortho/para; π-acceptor deactivators
+  (–NO₂, –CN, –COR, –SO₃H) lower the HOMO and direct meta
+  (because ortho/para suffer direct-conjugation penalty).
+  Halogens called out as the σ-withdrawing-but-π-donating
+  exception.  Links to the Hammett σ scale already seeded
+  via Phase 17e.
+- **Regioselectivity** *(reactions)* — distinguishes
+  regioselectivity (choice between positional isomers) from
+  chemoselectivity (functional-group choice) and
+  stereoselectivity (stereoisomer choice).  Canonical
+  examples drawn from existing content: Markovnikov,
+  Zaitsev, ortho/para vs meta, 1,2- vs 1,4-addition.
+  Defines *regiospecific* as the limiting case.
+- **Constitutional isomer** *(stereochemistry)* — a
+  taxonomy: chain / positional / functional-group /
+  tautomeric sub-types, each with a canonical textbook
+  pair (n-butane vs isobutane, propanols, ethanol vs
+  dimethyl ether, keto/enol).  Contrast with stereoisomers
+  (same connectivity, different 3D).
+
+### Plumbing
+- Glossary `SEED_VERSION` bumped 7 → 8.  Existing local DBs
+  will silently pick up the three new rows on next launch
+  via the additive-seed path.
+- Content-only change; no test additions needed — the
+  existing `test_seed_glossary` schema checks + the
+  `_discover_scripts` demo-library sweep both still pass.
+
+### Phase 31 status after round 77
+- 31c mechanisms 20/20 ✅ (round 62)
+- 31d pathways 19/25 — in progress
+- 31f glossary **80/80 ✅ (this round)**
+- 31a molecules 210 → 400 — long-running
+- 31b reactions 35 → 50 — long-running
+- 31e tutorials 21 → 30 — in progress
+- 31g macromolecule catalogues — rounds 41-43
+
+Two sub-phases (c + f) now fully closed.
+
+### Test suite
+- **908 passed, 0 skipped** (unchanged — pure content round).
+
+### Next
+Round 78: pick between Phase 31d pathway expansion
+(19 → 25) or Phase 31e tutorial expansion (21 → 30).
+Tutorials are markdown authoring — a shift in gear from
+the recent chemistry-seed rounds.
+
+---
+
+## 2026-04-23 — Round 76 (Phase 31d +2 pathways — Saccharin + Acetanilide)
+
+### What shipped
+Two more seeded syntheses, advancing Phase 31d 17 → 19/25:
+
+- **Saccharin — 3-step Remsen-Fahlberg route**: toluene →
+  2-methylbenzenesulfonyl chloride (ClSO₃H, EAS) → 2-methyl-
+  benzenesulfonamide (NH₃) → saccharin (KMnO₄ CH₃ → COOH
+  oxidation with spontaneous intramolecular sulfimide
+  closure).  Historically the first artificial sweetener
+  (Remsen & Fahlberg 1879, serendipitous taste-test of a
+  spill that night).  Each step's notes call out the
+  pedagogical hooks: ortho+para selectivity of the EAS,
+  why the ortho isomer is kept (only it cyclises), and the
+  unusual 5-ring sulfimide lactam formed by dehydration
+  between the new -COOH and the -SO₂NH₂.
+- **Acetanilide — 1-step acetylation**: aniline + acetic
+  anhydride → acetanilide + acetic acid.  Single-step N-
+  acylation.  The pathway description ties this back to
+  two already-seeded routes (phenacetin, sulfanilamide) for
+  which acetanilide is a starting material, so the student
+  sees the precursor chain.  Also notes its historical role
+  as an antipyretic (1886-1940s), displaced by acetaminophen
+  (its less-toxic hepatic O-dealkyl metabolite).
+
+### Fragment-consistency additions
+Added 10 new intermediates / reagents / products to
+`seed_intermediates.py`:
+Toluene, 2-Methylbenzenesulfonyl chloride,
+2-Methylbenzenesulfonamide, Potassium permanganate,
+**Permanganate ion + Potassium cation** (separate entries —
+the audit canonicalises the `.`-salt SMILES and wants each
+fragment present as its own DB row), Manganese dioxide,
+Hydroxide ion, Saccharin, Acetic anhydride.
+
+### Gotcha (caught on first pytest pass)
+The fragment-consistency audit split `[K+].O=[Mn](=O)(=O)[O-]`
+into three fragments (KMnO₄ itself, the permanganate anion,
+and the K⁺ counter-ion), and the first two bullet weren't in
+the DB until I added them.  Typical pattern for any
+ionic-salt reagent — noted the rule so future pathway
+additions get it right first time.
+
+### Test suite
+- **908 passed, 0 skipped** (unchanged — content-only seeds).
+  Full suite green on the second pass after adding the two
+  missing salt-ion intermediates.
+
+### Phase 31d tally
+17 → **19 / 25** after round 76.  6 more to hit 25.
+Priority candidates: L-DOPA 3-step from vanillin, Dopamine
+from 3,4-dimethoxyphenethylamine, Nylon-6,6 salt condensation,
+Adipic acid from cyclohexane KA-oil, Caffeine synthesis (Fischer
+or Trauber route), MDMA/amphetamine (if appropriate),
+or the big total-synthesis endgames (taxol, morphine, oseltamivir).
+
+### Next
+Round 77 can ship +2 more pathways or switch to glossary
+(77 → 80) or tutorials (21 → 30) to diversify the content
+progress.
+
+---
+
+## 2026-04-23 — Round 75 (Phase 31d +2 pathways — Sulfanilamide + Phenolphthalein)
+
+### What shipped
+Pivoted to Phase 31 content expansion after closing Phase 32.
+Two seeded pathways added to `orgchem/db/seed_pathways.py`:
+
+- **Sulfanilamide — 3-step chlorosulfonation route**
+  (historically the first clinically useful sulfa drug; Domagk
+  Nobel 1939).  Starts from acetanilide (amine pre-masked so it
+  doesn't compete at the electrophilic sulfur step):
+  1. Chlorosulfonation with ClSO₃H — para-selective EAS driven
+     by the acetamido activating group → 4-acetamido-
+     benzenesulfonyl chloride.
+  2. Ammonolysis (aq. NH₃) of the sulfonyl chloride → sulfonamide;
+     HCl byproduct scavenged by excess NH₃.
+  3. Acid-catalysed hydrolysis (10% HCl, reflux) deprotects the
+     acetamide — sulfonamide is hydrolytically stable, so
+     selectivity is trivial.  Product: sulfanilamide
+     (4-aminobenzenesulfonamide).
+- **Phenolphthalein — Friedel-Crafts condensation** (Baeyer 1871
+  dye/indicator, 1-step net from phthalic anhydride + 2 phenols
+  under conc. H₂SO₄ or ZnCl₂).  Description walks the student
+  through the three mechanistic events inside the flask —
+  phenol acylation, lactonisation, second phenol addition —
+  even though the overall stoichiometry is one step.  Teaching
+  callout on the closed-lactone ↔ open-quinoid dianion
+  equilibrium that makes it an acid-base indicator.
+
+### Fragment-consistency additions
+Added 9 new intermediates / reagents / products to
+`seed_intermediates.py` so the Phase-6f.4 audit stays green:
+Acetanilide, Chlorosulfonic acid,
+4-Acetamidobenzenesulfonyl chloride, Ammonia,
+4-Acetamidobenzenesulfonamide, Sulfanilamide;
+Phthalic anhydride, Phenol, Phenolphthalein.
+All SMILES pre-validated through RDKit before commit.
+
+### Test suite
+- **908 passed, 0 skipped** (unchanged — these are content-only
+  seeds, so the existing fragment-consistency + pathway
+  schema tests cover them without a per-pathway smoke).
+- Full pytest pass on first try; no iteration needed.
+
+### Phase 31d tally
+14 → **17 / 25** after round 75.  Remaining priority targets
+(unchanged): taxol endgame, morphine, lysergic acid, reserpine,
+cortisone, oseltamivir, sildenafil, atorvastatin assembly,
+cephalosporin, penicillin V, progesterone, glyphosate, plus
+smaller wins like saccharin, novocaine-family variants,
+L-DOPA, dopamine-from-catechol, nylon fragments.
+
+### Next
+Round 76 can keep momentum with +2 more pathways (sulfa-drug
+extensions like sulfadiazine; or saccharin 3-step; or nylon-
+salt condensation) — OR swing to a different Phase 31 sub-item
+(glossary 77 → 80, tutorials 21 → 30).
+
+---
+
+## 2026-04-23 — Round 74 (Phase 32e shipped — Phase 32 CLOSED)
+
+### What shipped
+Final Phase-32 sub-item: tutor ↔ Script Editor handoff.
+
+- **`orgchem/agent/conversation.py`** —
+  `_SCRIPT_MODE_ADDENDUM` describes the ScriptContext
+  globals, Scene API, and the fenced ```python block
+  contract; `build_script_mode_system_prompt(base)` appends
+  it to any base prompt.  The LLM is told *not* to auto-
+  execute — blocks only run when the user clicks the button.
+- **`orgchem/agent/script_context.py`** —
+  `extract_python_blocks(text)` + `_CODE_FENCE_RX` regex
+  pulls fenced ```python / ```py / bare ``` blocks out of
+  mixed prose/markdown.  Shared between the tutor panel and
+  future bridges (e.g. stdio protocol could scan for scripts).
+- **`orgchem/gui/panels/tutor_panel.py`** —
+  - New **Reply with a script** checkbox.  Toggling it
+    swaps `Conversation.system_prompt` between the base
+    prompt and the extended one (takes effect from the
+    next turn — no reconnect).  Works whether toggled
+    before or after Connect.
+  - `_append_assistant(text)` rewritten to detect code
+    blocks.  Each match produces a dark monospace preview
+    div (truncated at 500 chars with a "… (truncated)"
+    tail) plus a ▶ **Run in Script Editor** anchor with
+    the custom URL scheme `orgchem-script:<idx>`.  Blocks
+    are stashed in `self._script_blocks` keyed by idx.
+  - `_on_anchor_clicked(url)` routes the custom scheme to
+    `ScriptEditorDialog.singleton()`, loads the block,
+    raises the dialog.  Non-`orgchem-script` links still
+    open in the system browser.
+  - `QTextBrowser` configured with `setOpenLinks(False)`
+    so our scheme stays in-app.
+
+### Tests
+- **`tests/test_tutor_script_mode.py`** — 12 cases across
+  three layers:
+  - **Headless extractor** (6 cases) — `extract_python_blocks`
+    handles ```python / ```py / bare ``` fences, multiple
+    blocks in one message, mixed prose, and rejects
+    inline-backtick fragments that aren't real fences.
+  - **Prompt builder** (3 cases) — addendum appended, every
+    pre-imported global named in the briefing
+    (app / chem / orgchem / viewer), custom base prompt
+    supported.
+  - **GUI integration** (3 pytest-qt cases) — toggle swaps
+    the live Conversation prompt both ways; fenced reply
+    renders a preview + anchor; anchor click loads the
+    block into the singleton ScriptEditorDialog.
+- **908 passed, 0 skipped** (↑ from 896).
+
+### Phase 32 — fully closed ✅
+- 32a script editor + REPL dialog ✅ (round 64)
+- 32b hybrid-placement Workbench + Scene API ✅ (round 66)
+- 32c per-track controls + scene chrome ✅ (round 69)
+- 32d 15/15 bundled demo library ✅ (rounds 67/70/72/73)
+- 32e tutor Reply-with-a-script mode ✅ (this round)
+
+The full scripting stack is now end-to-end:
+*user prompts tutor → tutor emits fenced `python block →
+user clicks ▶ → block lands in Script Editor → user clicks
+Run → `app.*` calls drive the app and `viewer.*` calls drive
+the Workbench scene.*  The same `viewer` Scene is shared
+between scripts and the UI, so mutations from a script show
+up live in the Workbench panel.
+
+### Next
+With Phase 32 closed, future rounds can swing back to Phase
+31 content expansion (more glossary terms, pathways,
+tutorials, macromolecule entries) or start on a new feature
+phase (33?).  Candidate follow-ups surfaced during Phase-32
+work:
+- Cleanup of the ~90 `Tutor-test-term-*` pollution in the
+  local glossary DB (from earlier authoring-action tests).
+- `get_mechanism_details(name_or_id)` action so LLM-
+  generated scripts can walk arrow-pushing data.
+- Per-track colour swatch + opacity slider in the Workbench
+  tracks list (32c+ polish).
+
+---
+
+## 2026-04-23 — Round 73 (Phase 32d CLOSED at 15/15)
+
+### What shipped
+Final three demo scripts, completing the Phase 32d library:
+
+- **`13_butane_dihedral.py`** — runs the pre-wired butane
+  dihedral scan (36-frame C–C–C–C rotation via Phase 10a
+  `run_dihedral_scan_demo`), saves the standalone 3Dmol.js
+  player HTML to `/tmp/butane_dihedral.html`, and loads a
+  static butane ball-and-stick into the Workbench as a
+  reference.  Teaching tag-line on anti (180° minimum),
+  gauche (±60°, ~3.8 kJ/mol), and eclipsed (0°, maximum).
+- **`14_retrosynthesis_tree.py`** — recursive retro on methyl
+  4-phenylbenzoate with `max_depth=3`.  Finds 4 paths that
+  interleave Fischer ester and Suzuki biaryl disconnections
+  in different orders.  Prints the full indented tree with
+  each node's template label + SMILES.  Good canonical
+  example for a student learning "disconnection order
+  matters".
+- **`15_glossary_tour.py`** — catalogue tour: buckets all
+  170 seeded glossary terms by category, shows counts + the
+  first 3 per category, then pulls a full markdown `define()`
+  payload for "Bürgi-Dunitz angle" to demonstrate how the
+  tutor surfaces cross-reference content programmatically.
+
+### Gotcha mid-round
+First draft of demo 14 put the target compound's human name
+only in a comment, and the round-71 marker guard caught the
+gap immediately (`'methyl 4-phenyl'` missing from stdout).
+Fixed by moving the name into the printed output.  This is
+the smoke-test hardening earning its keep in real time.
+
+### Test suite
+- **896 passed, 0 skipped** (↑ from 890).  6 new auto-enrolled
+  smokes (3 headless + 3 GUI-path pytest-qt) via the
+  `_discover_scripts()` parametrisation.
+
+### Phase 32 status after round 73
+- 32a Script editor + REPL dialog: ✅
+- 32b Hybrid-placement Workbench + Scene API: ✅
+- 32c Track-aware controls (checkbox / style / remove + scene
+  chrome): ✅
+- 32d Script library 15/15: ✅ **this round**
+- 32e LLM script generation mode: remaining
+
+### Observations surfaced but not fixed
+Demo 15 revealed the local `orgchem.sqlite` has accumulated
+~90 `Tutor-test-term-*` glossary rows from prior test runs
+of the authoring action.  Not a regression of round-73 work,
+but worth a future cleanup round — either make the test
+terms use a distinctive prefix that `list_glossary` filters,
+or seed them into a separate in-memory DB.
+
+### Next
+Only 32e remains for Phase 32: the tutor "Reply with a script"
+mode.  After that, pivot to Phase 31 content expansion —
+more glossary terms (current 77 → 80 target), synthesis
+pathways (15 → 25), tutorials (21 → 30), etc.
+
+---
+
+## 2026-04-23 — Round 72 (Phase 32d +3 demos — Hückel / SAR / macromolecule)
+
+### What shipped
+Three more demo scripts under `data/script_library/`, moving
+the library from 9/15 to **12/15**:
+
+- **`10_huckel_benzene.py`** — `huckel_mos("c1ccccc1")` returns
+  the π-system MO energies in units of β.  Demo prints each ψ
+  with its energy + occupation, marks HOMO/LUMO, and computes
+  the HOMO→LUMO gap in kJ/mol (with |β| ≈ 270 kJ/mol reference).
+  Output reproduces the textbook degenerate ±β pattern:
+  ψ1 (+2β) / ψ2,3 (+β) / ψ4,5 (−β) / ψ6 (−2β), π-electron
+  stabilisation = 8β.
+- **`11_nsaid_sar.py`** — pulls the seeded NSAID / COX SAR
+  series, tabulates per-variant MW / logP / QED /
+  COX-1 IC50 / COX-2 IC50 / selectivity, and classifies each
+  as non-selective / preferential / coxib-like.  Teaching
+  takeaway: aspirin COX-2 sel 0.006 (strongly COX-1-selective),
+  ibuprofen/naproxen near 0.6 (non-selective), acetaminophen 4.0
+  (preferentially COX-2).  Gotcha fixed mid-round: the
+  `SARSeries` action returns variants under `rows`, not
+  `variants` — first draft showed 0 variants before the
+  `_CONTENT_MARKERS` guard caught it and I swapped the key.
+- **`12_macromolecule_catalogue.py`** — Counter-based audit of
+  the Phase-29 catalogues.  Breaks down 25 carbs (18 mono /
+  5 di / 2 poly), 31 lipids (13 FA / 8 sterols / 3 PL / 3
+  vitamins / 2 sphingolipids / 2 TG), 33 NAs (9 bases /
+  9 nucleotides / 8 nucleosides / 5 PDB motifs / 2 oligos).
+  Calls out the 5 PDB motifs (1BNA / 1RNA / 143D / 1EHZ /
+  1HMH) so a user asking "what can I fetch?" sees the list.
+
+### Test suite
+- **890 passed, 0 skipped** (↑ from 884).  +3 headless demo
+  smokes + +3 pytest-qt GUI-path smokes, auto-enrolled via the
+  `_discover_scripts()` parametrisation.
+- Round-71 `_CONTENT_MARKERS` extended with landmark values
+  for 10-12: benzene's "π atoms: 6", "HOMO", "LUMO", textbook
+  ±2β values, SAR "Ibuprofen" + real MW 206., macromolecule
+  "monosaccharide" / "fatty-acid" / "PDB-motif" category
+  headings.  The marker coverage guard already enforces that
+  every demo ships with its own landmarks.
+
+### Next
+With 12/15 landed, 3 remain for the 15-target: a protein-
+ligand tour (likely skipped or mocked due to network
+dependency), a conformer trajectory demo (uses
+`run_dihedral_scan_demo` + Workbench animation), and a
+retro-tree walk (`find_multi_step_retrosynthesis`).  Can
+interleave with Phase 32c chrome (colour swatch + opacity
+slider) or content-phase work (more glossary terms,
+pathways).
+
+---
+
+## 2026-04-23 — Round 71 (demo audit + strengthened smoke tests)
+
+### What shipped
+Follow-up to the user's round-70 report that demo 03 printed an
+all-zero table: audited every bundled demo for the same class of
+silent-output bug + strengthened the smoke tests to catch it
+automatically going forward.
+
+**Demo fixes surfaced by the audit:**
+- **Demo 05 (lipid report)** — filename promised *MW report* but
+  the table only printed chain length / unsaturations / mp.
+  Added real molecular-weight computation via
+  `rdkit.Chem.Descriptors.MolWt` on each lipid's SMILES; MW now
+  ranges C8 (144.2 Da) → C22-DHA (328.5 Da) + PGE2/TXA2 at
+  352.5 Da.  Bonus: demo now shows both the ``app.<action>``
+  path AND direct RDKit use for teaching value.
+- **Demo 06 (retrosynthesis)** — was printing ``via ?:`` because
+  the proposal dict carries `label` / `template_id` /
+  `forward_reaction`, not a `template` key.  Rewrote the output
+  loop to use the real keys; now shows
+  *"1. Ester ⇒ Carboxylic acid + Alcohol ... [forward: Fischer
+  esterification]"* for the aspirin disconnection.
+
+**Strengthened smoke tests (`tests/test_script_library.py`):**
+- New `_CONTENT_MARKERS` dict — per-demo list of 2-6 substrings
+  that MUST appear in stdout.  Spot-checks landmark values:
+  caffeine MW 194.19, aspirin 180.x + naproxen 230.x + celecoxib
+  381.x (catches silent-zero directly), Diels-Alder Ea 115 /
+  ΔH -165, lipid MW 144.x, *"Ester ⇒ Carboxylic acid"* label,
+  *"exothermic"* verdict.  Parametrised test asserts every
+  marker appears.
+- New `test_every_demo_has_content_markers` — coverage guard
+  that every discovered script has markers defined.  Forces
+  any future demo to come with its own landmark values.
+- **Proof**: intentionally broke demo 03 again (swapped `'mw'`
+  for `'not_a_key'`); the strengthened test failed with
+  *"03_nsaids_overlay.py is missing content markers
+  ['180.', '206.', '230.', '381.'] — a silent-output
+  regression?"*  The silent-zero class of bug now fails CI
+  loudly.  Restored the file after the negative-case proof.
+
+### Test suite
+- **884 passed, 0 skipped** (↑ from 883).  The +1 is the new
+  marker-coverage guard; the existing 9 demo-smoke cases now
+  carry much stronger assertions.
+
+### Carry-over for future rounds
+- 6 more demos toward the 15-target (protein+ligand,
+  conformer trajectory, Huckel MO, macromolecule catalogue,
+  SAR matrix, retro-tree).
+- Phase 32c chrome: colour swatch + opacity slider per track,
+  drag-reorder for tracks list.
+- New `get_mechanism_details(name_or_id)` agent action so a
+  future demo can walk curly arrows programmatically.
+
+---
+
+## 2026-04-23 — Round 70 (Phase 32d +3 demos — pathway / stereo / energy)
+
+### What shipped
+Three new demo scripts under `data/script_library/`, moving the
+library from 6/15 to **9/15** toward the Phase-32d target:
+
+- **`07_aspirin_pathway.py`** — pulls the seeded Aspirin
+  pathway, iterates each step's reaction SMILES, and prints
+  per-step + overall atom economy via `pathway_green_metrics`.
+  Teaching takeaway: the 1-step Hoffmann/Bayer route at 75% AE.
+- **`08_stereochem_tour.py`** — walks L-alanine through
+  `assign_stereodescriptors` → `enantiomer_of`, prints a round-
+  trip check that every R/S descriptor flipped, then drops both
+  enantiomers into the Workbench as side-by-side tracks so the
+  student can rotate and compare.
+- **`09_energy_profile_diels_alder.py`** — enumerates all 12
+  seeded energy profiles, drills into the Diels-Alder entry,
+  marks TS points with ‡, and computes Ea forward / reverse /
+  ΔH from the stationary-point list.  Output for the DA route:
+  Ea forward 115, Ea reverse 280, ΔH -165 kJ/mol (exothermic).
+
+### Gotchas fixed mid-round
+- First draft of demo 09 filtered TS points by the wrong field
+  name (`kind` vs the actual `is_ts: bool`) — caught because
+  Ea values never printed.  Fix is local to the demo.
+- `get_energy_profile` takes `reaction_id` but `list_energy_profiles`
+  returns items keyed on `id`, not `reaction_id` — demo 09
+  passes `reaction_id=target["id"]`.  Noted for any future
+  LLM-generated script: always re-check the column name when
+  hopping between list + detail endpoints.
+
+### Test suite
+- **883 passed, 0 skipped** (↑ from 877).
+- The Phase-32d parametrised smoke auto-picked up all three new
+  demos — 3 new headless cases + 3 new GUI-path cases via
+  pytest-qt with zero test-file edits.  That's the dividend of
+  the `_discover_scripts()` design from round 67.
+
+### User-reported bug — demos 01 & 03 all-zero drug-likeness (fixed round 70 hotfix)
+User: *"please check script 3 — the table it creates is full of
+zeros instead of actual values."*  Root cause: both demos read
+``drug_likeness()`` output under made-up keys (``descriptors``,
+``mol_weight``, ``qed_score``, ``h_bond_donors``).  The action
+actually returns `{lipinski, veber, ghose, pains, qed}` with
+descriptors inside `lipinski` (mw/logp/hbd/hba) and `veber`
+(tpsa/rotb).  Fixed by rewriting both demos to read from the
+right sub-dicts.  Aspirin now reports MW 180.2 / logP 1.31 /
+QED 0.55 instead of the all-zero table.  Tests still green —
+the smoke tests only asserted the demo ran + emitted *some*
+stdout, not that specific values appeared.  Filed a follow-up
+to tighten the smoke test to spot-check a known descriptor
+value so this class of silent-zero bug gets caught
+automatically next time.
+
+### Still to go
+- 6 more demos toward 15/15 (protein+ligand, trajectory, Huckel
+  MO, macromolecule iteration, SAR matrix, retro-tree).
+- Phase 32c chrome follow-ups: colour swatch, opacity slider,
+  drag-reorder for tracks list.
+- A `get_mechanism_details(name_or_id)` action that returns full
+  step + arrow JSON so demo 04 can do real arrow-pushing tours.
+- Strengthen script-library smoke tests so "silent zero" output
+  bugs (wrong key names) fail loudly (check at least one
+  well-known numeric value per demo instead of just
+  `stdout.strip() != ""`).
+
+---
+
 ## 2026-04-23 — Round 69 (Phase 32c shipped — rich Workbench controls)
 
 ### User directive
@@ -4363,3 +5982,674 @@ a common look. Fatty acids / triglycerides / phospholipids /
 cholesterol on the lipid side; canonical B-form DNA dodecamer,
 G-quadruplex, tRNA-Phe on the NA side. NA tab reuses the Phase 24k
 NA-ligand contact analyser for loaded ligands.
+
+## 2026-04-24 — Autonomous loop round 95 — Phase 33c CLOSE — surface-integrated full-text filter
+
+### Goal
+Close Phase 33c — the last open sub-phase of the cross-surface
+full-text search initiative started in round 88. Phases 33a
+(core + agent action) and 33b (Ctrl+F dialog) shipped in earlier
+rounds; 33c integrates the same ranked search into the tab-local
+filter boxes on **Reactions** and **Synthesis**, so "filter by
+name" and "find by any text" are one keystroke apart without a
+second dialog.
+
+### Scope decision
+- Reactions tab — yes. Name filter misses mechanism-step notes
+  (e.g. *"Wheland"*, *"oxime"*, *"bromonium"*), so a toggle adds
+  real value.
+- Synthesis tab — yes. Name filter misses step reagents /
+  conditions / notes (e.g. *"Raney Ni"* in BHC Ibuprofen,
+  *"DIPAMP"* in L-DOPA Knowles), so again — real value.
+- Glossary tab — **scoped out**. Its `_TermListModel.reload()`
+  already does `GlossaryTerm.definition_md.ilike('%q%')`, so a
+  toggle would be redundant and might confuse users.
+
+### Ship list
+1. `orgchem/gui/panels/reaction_workspace.py`
+   - `_RxnListModel.reload_ids(ids)` — preserves ranked order
+     via `WHERE id IN (…)`. Holds the native `list_reactions`
+     ORM-row shape so the existing `data()` override keeps
+     working.
+   - `QCheckBox("Full text")` beside the filter line-edit; its
+     `toggled` re-runs `_on_filter(self.filter.text())`.
+   - `_on_filter` routes to `core.fulltext_search.search(q,
+     kinds=["reaction", "mechanism-step"], limit=200)` when the
+     checkbox is checked and the query is non-empty. Step-note
+     hits collapse onto parent reaction IDs (ranked-order
+     dedupe) so the list shows one row per reaction.
+2. `orgchem/gui/panels/synthesis_workspace.py`
+   - `_PathwayListModel.reload_ids(ids)` — same pattern, but
+     detaches rows into the existing `{id, name, target,
+     category}` dict shape that `reload()` already uses (so
+     `data()` + `role=DisplayRole` keep rendering the
+     "name → target" two-line layout).
+   - `QCheckBox("Full text")` + `_on_filter` branch, routing
+     to `kinds=["pathway"]`.
+3. `tests/test_fulltext_filter_toggle.py` (new) — 8 pytest-qt
+   tests. Highlights:
+   - `test_reactions_fulltext_toggle_finds_description_hits`:
+     "oxime" baseline count vs toggle-on count.
+   - `test_synthesis_fulltext_finds_step_note_hit`: *"Raney"*
+     has 0 name/target/category hits (verified via DB query)
+     but full-text surfaces the BHC Ibuprofen pathway through
+     step-2 reagents "H₂, Raney Ni". This is the pure
+     step-note-only scenario 33c was built to solve.
+   - `test_reactions_model_reload_ids_preserves_order` +
+     synthesis twin: hand-picked ID permutations round-trip
+     through `reload_ids` in order.
+   - Empty-query fallback + empty-IDs clear-list guards.
+
+### False start worth recording
+First draft of the Synthesis test used "DIPAMP" as the
+step-note-only term, expecting the name-filter to return 0
+rows. That failed — the L-DOPA pathway's full name is
+*"L-DOPA — Knowles Rh-DIPAMP asymmetric route (3-step)"*, so
+the substring ILIKE picks it up directly. Swapped to "Raney"
+which is genuinely step-note-only (verified by direct DB
+query: 0 name/target/category hits, 1 full-text pathway hit).
+Lesson: when writing "X is only in step notes, not in the
+name" assertions, sanity-check with a direct SQL `ilike`
+before codifying.
+
+### Result
+- **958 tests pass** (was 950; +8 new). No regressions.
+- Reactions tab gets step-note search for free (a user typing
+  *"Wheland"* now lands on Nitration of benzene even though no
+  reaction name contains that word).
+- Synthesis tab gets reagent/condition search (a user typing
+  *"Raney"* now lands on BHC Ibuprofen; *"DIPAMP"* lands on
+  L-DOPA Knowles).
+- Phase 33 now 100% complete (a / b / c all shipped). The
+  Ctrl+F modal from 33b and the in-tab toggle from 33c share
+  one search core, one ranking algorithm, and one set of
+  `kinds` — no code duplication.
+
+### Next pick
+Phase 33 is closed. Candidate pickups: Phase 34 (scope open —
+possibly a thin retrosynthesis panel wired to the Phase 8d
+engine + agent action), or continue Phase 31 sub-phases
+(31e intermediate-tier tutorial gap-fills, 31h extra
+carbohydrates, 31i fatty-acid / prostaglandin expansion).
+
+## 2026-04-24 — Autonomous loop round 96 — Phase 31k +1 SAR series (SSRIs)
+
+### Goal
+Continue Phase 31k — medicinal-chemistry SAR series expansion
+toward 15.  Current state: 4 series (nsaid-cox, statin-hmgcoa,
+beta-blockers, ace-inhibitors).  Target for this round: +1
+series with 5 textbook-grade variants + activity data tied to
+a published review.
+
+### Pick rationale
+**SSRIs.**  Reasons:
+- Classic pharmacology class every medicinal-chem student
+  learns.  Familiar drug names (Prozac, Zoloft, Paxil, Celexa,
+  Lexapro) anchor unfamiliar SMILES.
+- Clean SAR story in the existing `activity_columns` shape
+  (`sert_ki_nM`, `net_ki_nM`, `sert_selectivity`) — no dialog
+  changes needed.
+- Includes the **chiral-switch** case study: citalopram (racemate)
+  vs escitalopram (S-enantiomer only) — going from racemate to
+  single enantiomer gives ~3× boost in SERT/NET selectivity and
+  halves the clinical dose.  This is one of the textbook "why
+  chirality matters" examples.
+- Spans 30 years of med-chem (fluoxetine 1987 → escitalopram 2002).
+
+### Ship list
+1. `orgchem/core/sar.py`
+   - New `SARSeries(id="ssri-sert")` with 5 variants:
+     Fluoxetine / Sertraline / Paroxetine / Citalopram /
+     Escitalopram.
+   - Activity numbers (Ki at SERT + NET, selectivity ratio)
+     pulled from Owens, Morgan, Plott, Nemeroff 1997 *JPET*
+     283:1305-1322 and Sanchez 2004 *Basic Clin. Pharmacol.
+     Toxicol.* 94:51-67.
+   - Each variant's `notes` field carries the clinical /
+     structural flavour (fluoxetine long half-life, sertraline
+     cis-(1S,4S) geometry, paroxetine anticholinergic
+     off-target, citalopram→escitalopram chiral switch).
+   - Dialectical SMILES encoding: sertraline + paroxetine with
+     correct CIP descriptors, escitalopram S-enantiomer vs
+     citalopram racemate (no @@/@).
+2. `tests/test_sar.py`
+   - `test_library_seeded` updated with `"ssri-sert" in ids`.
+   - New `test_ssri_series_landmarks`: verifies 5 variants
+     present, escitalopram > citalopram in selectivity
+     (chiral-switch numeric), sertraline > paroxetine in
+     selectivity (textbook pairing), every variant's computed
+     MW falls in 280-340 Da band.
+
+### Correction worth recording
+First draft of the landmark test claimed *"sertraline is the
+most SERT-selective after escitalopram"*.  That's wrong —
+citalopram's 3700× NET:SERT beats sertraline's 2800× in the
+Owens 1997 data set.  Corrected the assertion to a pairing
+that *is* true in the seeded numbers (sertraline > paroxetine)
+before committing.  Lesson for future SAR seeds: when writing
+"X is most Y of the class" assertions, rank the full column
+against the literature before codifying the ordering.
+
+### Result
+- **959 tests pass** (was 958; +1 new — `test_ssri_series_landmarks`).
+- SAR catalogue now **5 / 15** series (30 variants total).
+- Existing SAR dialog (`Tools → Medicinal chemistry…`) picks
+  up the new series automatically via `list_sar_series` — no
+  UI changes needed, the dialog already enumerates
+  `SAR_LIBRARY`.
+
+### Next pick
+Phase 31k has 10 more series to reach 15.  Near-term
+candidates: β-lactam antibiotics (penicillin G / amoxicillin /
+methicillin / cloxacillin / cephalexin — steric-shielding-of-
+β-lactamase story), PDE5 inhibitors (sildenafil / vardenafil /
+tadalafil / avanafil — ring-fusion story), benzodiazepines
+(diazepam / lorazepam / alprazolam / clonazepam / midazolam —
+GABA-A subunit selectivity story).  Or switch sub-phases —
+31e energy profiles (12 → 20) or 31l proteins (9 → 15) are
+also live.
+
+## 2026-04-24 — Autonomous loop round 97 — Housekeeping round 2 (pollution prefix broadening)
+
+### Goal
+Mid-round discovery: while inventorying reactions for a Phase
+31e energy-profile pick, a DB listing surfaced **58 polluted
+`Tutor-test ester hydrolysis {uuid}` Reaction rows** that the
+round-94 cleanup missed.  Root cause: the round-94 prefix was
+`"Tutor-test-"` (hyphen-terminated) but the one offending test —
+`test_authoring_actions.py::test_add_reaction_accepts_valid_rxn`
+— used `f"Tutor-test ester hydrolysis {uuid}"` with a **space**
+instead of a dash.  Every other authoring test used the canonical
+hyphen convention, so only the Reaction table accumulated.
+
+### Ship list
+1. `tests/test_authoring_actions.py` — normalised the outlier
+   to `f"Tutor-test-ester-hydrolysis-{_u()}"` so the pattern
+   matches the other authoring tests.
+2. `orgchem/db/cleanup.py` — broadened `TEST_NAME_PREFIX` from
+   `"Tutor-test-"` to `"Tutor-test"` (no trailing separator).
+   Still tight enough that real seeded content can't collide
+   (no real catalogue entry begins with the literal "Tutor-test"),
+   but loose enough to catch historical / future tests that pick
+   any punctuation after the prefix.  Docstring updated to record
+   the context.
+3. `scripts/cleanup_tutor_test_pollution.py` — added a
+   `sys.path.insert` prepend at the top so the one-shot CLI runs
+   with `python scripts/cleanup_tutor_test_pollution.py` from
+   the repo root, without the user needing to set PYTHONPATH.
+   Original version only worked if the repo was already on
+   sys.path — which is why I first had to re-run it with
+   `PYTHONPATH=. python …`.
+4. `tests/test_cleanup_pollution.py` — new test
+   `test_purge_catches_space_suffix_reaction`.  Inserts a
+   reaction with name `f"Tutor-test space-suffixed rxn {uuid}"`
+   (space in the third position) and confirms the default
+   prefix catches it.  Regression lock so future refactors
+   don't silently re-narrow the pattern.
+
+### Result
+- **960 tests pass** (was 959; +1 new regression).  Existing
+  space-pattern authoring test now follows the dash convention
+  so it no longer generates pollution in the first place.
+- 58 polluted `Tutor-test ester hydrolysis` reactions purged
+  from the user's live DB.
+- Round-94 cleanup thesis re-validated: prefix-gated deletion
+  is safe even when broadened slightly — every real seeded
+  name has already been audited against the `Tutor-test`
+  substring.
+
+### Lessons
+- When writing prefix-based safety gates, prefer the widest
+  prefix you can justify as safe.  `Tutor-test-` (hyphen)
+  seemed tight and safe; turned out to be too narrow.
+  `Tutor-test` (no separator) is equally safe and ~50× better
+  at catching variants.
+- "Add a regression test for the bug you just found" — the new
+  space-suffix test locks in the fix against future narrowing.
+
+### Next pick
+Back to Phase 31 content expansion.  Candidates:
+- 31e: +1 energy profile (12 → 13).  Missing from the priority
+  list: Claisen, Heck, Buchwald-Hartwig catalytic cycle, SN2
+  1° vs 2° vs 3° comparison, retro-Diels-Alder.
+- 31k: +1 SAR series (5 → 6).  β-lactam antibiotics or PDE5
+  inhibitors are top of the queue.
+- 31b: +1 named reaction (35 → 50).  Heck, Negishi, Stille are
+  textbook gaps.
+
+## 2026-04-24 — Autonomous loop round 98 — Phase 31e +1 energy profile (Claisen)
+
+### Goal
+Continue Phase 31e — textbook reaction-coordinate diagrams.
+Current: 12 profiles.  Target this round: +1 profile that
+teaches a concept other profiles don't already cover.
+
+### Pick rationale
+**Claisen condensation.**  Reasons:
+- Already has a mechanism row (seeded round 61), so the pair
+  (mechanism + energy profile) closes the pedagogical loop.
+- The "final deprotonation drives the equilibrium" story is a
+  genuinely distinct textbook point — unlike SN1/SN2/E1/E2/DA
+  which just show basic barrier shapes.  The Claisen profile
+  has a characteristic SHAPE: the 3rd intermediate (neutral
+  β-ketoester + alkoxide) sits near thermoneutral, and then
+  the 4th step plunges to a well-stabilised enolate.  That
+  shape is the lesson.
+- Numbers are well-constrained by pKa arithmetic: α-H between
+  two carbonyls (pKa ≈ 11) vs alkoxide base (pKa ≈ 17)
+  → ΔpKa ≈ 6 → strongly favourable.
+
+### Ship list
+1. `orgchem/db/seed_energy_profiles.py`
+   - `_claisen_profile()` builder: 9 stationary points, 4 TSs,
+     5 minima; shape encodes the RDS (TS C–C addition, 70 kJ/mol)
+     and the driving-force step (final TS 15 kJ/mol over a
+     neutral intermediate at −5, crashing to −40).
+   - Added to `_PROFILE_MAP` keyed by substring "Claisen
+     condensation".
+   - `SEED_VERSION` bumped 3 → 4 so existing DBs pick up the
+     new profile — seeder also rewrites the 12 existing profiles
+     with the current payloads (fine; they're idempotent in
+     content).
+2. `tests/test_energy_profile.py`
+   - `test_seeded_profiles_present` — expected count lifted
+     from 9 to 13; name-substring list updated to include
+     Sonogashira / HWE / Mitsunobu / Claisen.
+   - New `test_claisen_profile_driven_by_final_deprotonation`
+     that asserts 4 TSs present, the "Neutral β-ketoester"
+     penultimate minimum sits within 20 kJ/mol of zero, and
+     the final product sits ≥ 20 kJ/mol below it.  Locks in
+     the teaching-point geometry against future numeric
+     tweaks.
+
+### Result
+- **961 tests pass** (was 960; +1 new).
+- Energy-profile catalogue now **13/20**.
+- Seeder emitted `Seeded 13 energy profiles (version 4)` on
+  the next launch — proving the SEED_VERSION bump refreshes
+  the cache.
+- Claisen reaction now shows the *Energy profile…* button on
+  the Reactions tab (Phase 13d wiring — Phase 31e extends
+  reach without UI changes).
+
+### Next pick
+Phase 31e has 7 more profiles to reach 20.  Top candidates:
+- Heck reaction (β-hydride elimination as RDS) — strong
+  teaching complement to Sonogashira.
+- Buchwald-Hartwig amination catalytic cycle.
+- SN2 on 1° vs 2° vs 3° halides — 3-profile comparison panel.
+- Retro-Diels-Alder (same shape as DA but inverted sign).
+- Fischer esterification (already has mechanism; acid-catalysed
+  equilibrium example).
+
+## 2026-04-24 — Autonomous loop round 99 — Phase 31e +1 energy profile (Fischer esterification)
+
+### Goal
+Continue Phase 31e — one more energy profile.  Candidate
+short-list from round 98: Heck, Fischer, Buchwald-Hartwig,
+retro-DA.  Pick one whose teaching point is genuinely distinct
+from what's already shipped.
+
+### Pick rationale
+**Fischer esterification.**  Reasons:
+- Already has a mechanism row (seeded round 59), so (mechanism
+  + profile) pair completes the teaching surface.
+- The **thermoneutral equilibrium** teaching point is genuinely
+  distinct — every other seeded profile is net exergonic by
+  tens-to-hundreds of kJ/mol.  Fischer is the one that needs
+  Le Chatelier to run.  Having it in the catalogue makes the
+  "profile shapes you see in textbooks" collection more honest.
+- Pairs with the round-98 Claisen pedagogically: one is driven
+  by the final step (α-C–H deprotonation between two C=O),
+  the other by concentration / water removal alone.
+- Heck is tempting but requires seeding the reaction row first
+  (currently absent from the DB) — leave for a round that
+  bundles the reaction + mechanism + profile triple.
+
+### Ship list
+1. `orgchem/db/seed_energy_profiles.py`
+   - `_fischer_profile()` — 5 points (3 minima + 2 TSs).  RDS
+     is addition of R'OH to the protonated C=O (TS at +55
+     kJ/mol).  Product energy at +5 kJ/mol gives the shallow
+     shape.
+   - Added to `_PROFILE_MAP` keyed by the substring "Fischer
+     esterification" (matches Reaction row id=8 in the
+     seeded DB).
+   - SEED_VERSION 4 → 5 so existing DBs refresh.  On re-launch
+     the seeder emits "Seeded 14 energy profiles (version 5)".
+2. `tests/test_energy_profile.py`
+   - `test_seeded_profiles_present` — expected count 13 → 14;
+     name-substring list extended with "Fischer esterification".
+   - New `test_fischer_profile_is_thermoneutral` — asserts
+     |ΔH| < 15 kJ/mol.  This inequality is genuinely unique to
+     Fischer across the catalogue: every other seeded profile
+     fails it (they're all properly exergonic).  Locking in this
+     shape guards against accidentally "exothermicising" the
+     Fischer payload during future numeric tweaks — which would
+     erase the teaching point.
+
+### Result
+- **962 tests pass** (was 961; +1 new).
+- Energy-profile catalogue now **14/20**.  Six more to reach
+  the phase target.
+
+### Next pick
+Phase 31e has 6 more profiles to reach 20.  Best candidates:
+- Heck reaction — needs reaction-row seed first, so bundle
+  with a +1 to Phase 31b.
+- SN2 1° vs 2° vs 3° halide rates — but not a single profile;
+  a 3-panel comparison would need either a new renderer or 3
+  separate profiles (interesting; defer until the comparison
+  view exists).
+- Retro-Diels-Alder — mirror of the DA profile.
+- NaBH4 reduction (acetone) — already has mechanism; single-TS
+  hydride transfer; straightforward.
+- Nitration of benzene — already has 3-step EAS mechanism.
+
+## 2026-04-24 — Autonomous loop round 100 — MILESTONE — β-lactam SAR series
+
+### Goal
+Round 100 — a round-number milestone.  Chose to diversify
+from Phase 31e (two consecutive energy-profile rounds) into
+Phase 31k SAR series to keep the content mix varied.
+
+### Pick rationale
+**β-lactam penicillin series.**  Reasons:
+- Canonical medicinal-chem SAR arc: every student learns the
+  penicillin → ampicillin → amoxicillin → methicillin →
+  cloxacillin sequence as the progression through Beecham's
+  1960s semi-synthetic mod program.
+- Three distinct teaching points can be locked in with clean
+  numeric inequalities:
+    1. α-amino side chain boosts oral absorption
+       (Pen-G 20 → ampicillin 40 → amoxicillin 90 %).
+    2. 2,6-disubstituted / bulky heterocyclic side chains buy
+       β-lactamase stability (methicillin, cloxacillin score 1;
+       the others score 0).
+    3. Steric shielding costs intrinsic MIC potency (methicillin
+       MIC ≥ 150× weaker than Pen-G against S. aureus).
+- Numbers drawn from Rolinson 1998 J. Antimicrob. Chemother.
+  review + standard pharmacology texts.
+
+### Ship list
+1. `orgchem/core/sar.py` — new `SARSeries(id="beta-lactams")`.
+   - Parent scaffold: `CC1(C)SC2CC(=O)N2C1C(=O)O` (penam core).
+   - Activity columns: `mic_s_aureus_ug_ml`,
+     `beta_lactamase_stability` (0/1 flag),
+     `oral_bioavail_pct`.
+   - 5 variants with full SMILES (canonicalised stereo),
+     r-group labels, and discursive `notes` fields capturing
+     the clinical / historical story.
+2. `tests/test_sar.py`
+   - `test_library_seeded` — `assert "beta-lactams" in ids`.
+   - New `test_beta_lactam_series_landmarks` — verifies all
+     5 variants present and encodes the three teaching-point
+     inequalities as hard assertions.  Future tweaks to the
+     numeric values can't silently erase the pedagogical
+     shape of the series.
+
+### Result
+- **963 tests pass** (was 962; +1 new landmark test).
+- SAR catalogue now **6/15**.
+- Dialog (`Tools → Medicinal chemistry… → SAR`) picks up the
+  new series via the existing `list_sar_series` registry —
+  no UI changes needed.
+
+### Round-100 retrospective
+Rounds 88-100 (13 rounds) shipped Phase 33a/b/c (cross-surface
+full-text search end-to-end), round-94 + round-97 pollution
+cleanup (165 glossary + 58 reactions purged; prefix-gated
+helper + regression suite added), and Phase 31 content
+expansion:
+- 31e energy profiles: 12 → 14 (+Claisen, +Fischer).
+- 31k SAR series: 4 → 6 (+SSRIs, +β-lactams).
+- Test suite: 945 → 963 passing (+18 regressions).
+
+### Next pick
+Continue the content cadence.  Candidates, roughly ranked:
+- 31e: one more energy profile (NaBH4 or nitration of
+  benzene — both mechanism-only rows).
+- 31k: PDE5 inhibitors or benzodiazepines SAR series.
+- 31l: +1 seeded protein (9 → 15 target; 6 more needed).
+- 31b: Heck reaction row + mechanism + profile bundled
+  together would move 31b / 31c / 31e all by +1.
+
+## 2026-04-24 — Autonomous loop round 101 — Phase 31e +1 energy profile (nitration of benzene)
+
+### Goal
+Continue Phase 31e — one more energy profile.  Target this
+round: a reaction whose **shape** is teaching-distinct from
+what's already shipped.
+
+### Pick rationale
+**Nitration of benzene (EAS).**  Reasons:
+- Already has a 3-step mechanism row (round 60).  (mechanism
+  + profile) pair completes the teaching surface.
+- Every electrophilic aromatic substitution shares the same
+  3-point saddle-dip-saddle shape (attack TS → Wheland valley
+  → deprotonation TS → aromatic product).  Seeding nitration
+  first buys the canonical EAS shape into the catalogue; later
+  EAS reactions (Friedel-Crafts alkylation, bromination of
+  arenes, sulfonation) can reuse this curve as a pedagogical
+  anchor.
+- Distinct from every existing profile: SN1/E1 have TWO TSs
+  but the intermediate is a carbocation (much higher), while
+  Wheland is a resonance-stabilised σ-complex (shallower
+  valley).  The shape IS different.
+
+### Ship list
+1. `orgchem/db/seed_energy_profiles.py`
+   - `_nitration_benzene_profile()` — 5 points (3 minima +
+     2 TSs).  Reactants 0; TS attack +90 (RDS); Wheland +45
+     (shallow valley above reactants but below both TSs);
+     TS deprotonation +55; products −25 (re-aromatisation).
+   - Registered under substring "Nitration of benzene"
+     matching Reaction.id=14.
+   - SEED_VERSION 5 → 6 to refresh existing DBs.
+2. `tests/test_energy_profile.py`
+   - `test_seeded_profiles_present` — expected count 14 → 15;
+     name-substring list extended with "Nitration of benzene".
+   - New `test_nitration_profile_has_wheland_valley` —
+     asserts: exactly 2 TSs + 3 minima, first TS energy >
+     second TS energy (rate-limiting attack, not
+     deprotonation), Wheland intermediate sits strictly above
+     reactants AND strictly below both TSs.  Three inequalities
+     lock the canonical EAS shape.
+
+### Result
+- **964 tests pass** (was 963; +1 new).
+- Energy-profile catalogue now **15/20**.
+- The seeder re-ran all 15 profiles at version 6 on the next
+  launch (log line: "Seeded 15 energy profiles (version 6)").
+- Teaching surface for nitration now complete: atom-mapped
+  SMARTS + 3-step mechanism JSON with Wheland intermediate +
+  2D scheme + energy profile.
+
+### Next pick
+Phase 31e has 5 more profiles to reach 20.  Strong
+candidates:
+- NaBH4 reduction of acetone (single-TS hydride transfer;
+  already mechanism-only; simplest possible profile shape).
+- Bromination of ethene (anti addition; mechanism already
+  shipped round 62).
+- Friedel-Crafts alkylation (reuses the EAS shape seeded
+  this round — test that the renderer handles two similarly-
+  shaped profiles cleanly).
+- Or pivot: Phase 31k SAR +1 (PDE5 inhibitors), Phase 31l
+  proteins +1 (haemoglobin 1HHO).
+
+## 2026-04-24 — Autonomous loop round 102 — Phase 31e +1 energy profile (NaBH₄ reduction)
+
+### Goal
+Continue Phase 31e.  Catalogue at 15/20; aim for the simplest
+teaching-distinct addition next — a 1,2-hydride delivery.
+
+### Pick rationale
+**NaBH₄ reduction of acetone.**  Reasons:
+- Mechanism row already shipped (round 60).
+- Cleanest "simple addition" teaching shape in the catalogue.
+  Pairs with Grignard for comparison: same addition family,
+  but Grignard's organometallic alkoxide sits much deeper
+  (−85 vs −80 here) because Mg chelates the oxide, whereas
+  BH₃ only caps it weakly.  Teaching point: the thermodynamic
+  sink isn't just about the C–C/C–H bond formed, it's about
+  the counter-ion stabilisation of the intermediate.
+- Fast to ship: 5 points (3 minima + 2 TSs), small enough
+  that the landmark test can verify the *whole* shape
+  inequality rather than just one feature.
+
+### Ship list
+1. `orgchem/db/seed_energy_profiles.py`
+   - `_nabh4_profile()` — 5 stationary points.  Points:
+     Reactants 0 → TS hydride +55 (RDS; 4-centre B-H···C=O)
+     → borate alkoxide −80 → TS workup −65 (downhill) →
+     Products −115 (2-propanol + B(OH)₃).
+   - Registered under name substring "NaBH4 reduction"
+     matching Reaction.id=16.
+   - SEED_VERSION 6 → 7.
+2. `tests/test_energy_profile.py`
+   - `test_seeded_profiles_present` expected count 15 → 16;
+     name-substring list extended.
+   - New `test_nabh4_profile_strongly_exergonic` — asserts
+     ΔH < −50 kJ/mol, plus the stronger invariant that
+     exactly one TS sits above the reactant baseline (the
+     workup TS dips below).  This second clause locks in
+     the "irreversible hydride delivery" shape — any future
+     numeric tweak that raises the workup TS above 0 would
+     erase the teaching point.
+
+### Result
+- **965 tests pass** (was 964; +1 new).
+- Energy-profile catalogue now **16/20**.  Four more to go
+  for the phase target.
+- Seeder re-ran all 16 profiles at version 7 on next launch.
+- Teaching surface for NaBH₄ now complete: reaction SMILES
+  + 2-step mechanism + 2D scheme + energy profile.
+
+### Next pick
+Phase 31e has 4 more profiles to reach 20.  Strong candidates:
+- Bromination of ethene (mechanism already seeded round 62).
+  Teaching point: bromonium-ion valley + anti-addition
+  stereochemistry.
+- Friedel-Crafts alkylation (mechanism already seeded
+  round 62).  Would pair with nitration to show the EAS
+  shape reused with a different electrophile.
+- Retro-Diels-Alder — mirror profile of DA.
+- Chymotrypsin catalytic triad — enzyme-mechanism energy
+  profile; distinct Michaelis-complex well shape.
+
+## 2026-04-24 — Autonomous loop round 103 — Phase 31e +1 energy profile (bromination of ethene)
+
+### Goal
+Continue Phase 31e.  Catalogue at 16/20; aim for another
+distinctly-shaped teaching profile.
+
+### Pick rationale
+**Bromination of ethene.**  Reasons:
+- Mechanism row already shipped round 62 (3-step bromonium
+  anti-addition).
+- The bromonium-valley shape is what makes anti-addition
+  stereochemistry *inevitable* — the shape IS the lesson.
+  Grad-chem texts walk students through this specific curve
+  to explain trans-dibromide geometry, so it's pedagogically
+  heavy.
+- Distinct from every other 2-TS profile in the catalogue:
+  SN1 carbocation sits much higher, E1 ditto, EAS Wheland
+  sits on a different substrate class.  Bromonium is its
+  own thing.
+
+### Ship list
+1. `orgchem/db/seed_energy_profiles.py`
+   - `_bromination_ethene_profile()` — 5 points.
+     Reactants 0 → TS bromonium formation +80 (RDS) →
+     bromonium ion +40 → TS anti-SN2 opening +50 →
+     anti-1,2-dibromide −100.
+   - Registered under substring "Bromination of ethene"
+     matching Reaction.id=5.
+   - SEED_VERSION 7 → 8.
+2. `tests/test_energy_profile.py`
+   - `test_seeded_profiles_present` expected 16 → 17.
+   - New `test_bromination_profile_bromonium_valley` locks
+     four invariants: exactly 2 TSs + 3 minima, first TS
+     higher than second TS (RDS is bromonium formation),
+     bromonium strictly above reactants (true valley, not
+     stability trough) but strictly below both TSs,
+     net ΔH < −50 kJ/mol.
+
+### Result
+- **966 tests pass** (was 965; +1 new).
+- Energy-profile catalogue now **17/20**.  Three more to
+  reach the phase target.
+- Teaching surface for bromination now complete: atom-mapped
+  SMARTS + 3-step mechanism JSON + 2D scheme + energy profile.
+
+### Next pick
+Phase 31e has 3 more profiles to reach 20.  Candidates:
+- Friedel-Crafts alkylation (mechanism seeded round 62).
+  Would be the second EAS profile — interesting test of
+  whether the renderer handles two σ-complex curves.
+- Pinacol rearrangement (mechanism seeded round 61, 4-step
+  with 1,2-methyl shift — distinctive shape).
+- Retro-Diels-Alder (mirror of DA profile).
+- Chymotrypsin catalytic triad (enzyme mechanism; would
+  be the first enzyme-reaction energy profile in the
+  catalogue — distinct Michaelis-complex well shape).
+
+## 2026-04-24 — Autonomous loop round 104 — Phase 31e +1 energy profile (pinacol rearrangement)
+
+### Goal
+Continue Phase 31e.  Catalogue at 17/20; aim for another
+distinctive teaching shape.
+
+### Pick rationale
+**Pinacol rearrangement.**  Reasons:
+- Mechanism row already shipped (round 61) — 4-step with
+  explicit 1,2-methyl shift.
+- The profile shape carries a genuinely unique teaching
+  point: "oxocarbenium is MORE stable than a tertiary
+  carbocation".  Students usually think tert-C⁺ is close
+  to the stability ceiling; pinacol shows them that an
+  O lone-pair donor does one better.
+- 3 TSs + 4 minima = 7 points — the largest profile in
+  the catalogue, and a nice test of the renderer's
+  multi-TS layout.
+- Pairs with the Phase-33a full-text search story: a user
+  typing *"1,2-shift"* or *"migratory aptitude"* should
+  now hit both the mechanism and the energy profile.
+
+### Ship list
+1. `orgchem/db/seed_energy_profiles.py`
+   - `_pinacol_profile()` — 7 points.  Reactants 0;
+     TS ionisation +100 (RDS); tertiary carbocation +40;
+     TS 1,2-methyl shift +50 (lower than ionisation);
+     protonated ketone / oxocarbenium −20 (below the
+     carbocation); TS deprotonation −10; products −70.
+   - Registered under substring "Pinacol rearrangement"
+     matching Reaction.id=25.
+   - SEED_VERSION 8 → 9.
+2. `tests/test_energy_profile.py`
+   - `test_seeded_profiles_present` expected 17 → 18.
+   - New `test_pinacol_profile_methyl_shift_downhill`
+     locks three invariants:
+       - Exactly 3 TSs present.
+       - Ionisation TS (first) strictly exceeds BOTH the
+         migration TS and the deprotonation TS.
+       - Oxocarbenium minimum strictly below the tertiary
+         carbocation minimum.
+     That third inequality is the one that matters
+     pedagogically; the other two are guard-rails.
+
+### Result
+- **967 tests pass** (was 966; +1 new).
+- Energy-profile catalogue now **18/20**.  Two more to
+  reach the phase target.
+
+### Next pick
+Phase 31e has 2 more to reach 20.  Candidates:
+- Friedel-Crafts alkylation — second EAS profile; would
+  test whether the renderer lays out two σ-complex curves
+  side-by-side cleanly.
+- Retro-Diels-Alder — mirror of DA; could be ~3 points.
+- Chymotrypsin catalytic triad — first enzyme-reaction
+  profile in the catalogue; distinct Michaelis-complex
+  well shape.

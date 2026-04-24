@@ -86,7 +86,7 @@ def test_add_reaction_accepts_valid_rxn(app):
     from orgchem.agent.actions import invoke
     res = invoke(
         "add_reaction",
-        rxn_name=f"Tutor-test ester hydrolysis {_u()}",
+        rxn_name=f"Tutor-test-ester-hydrolysis-{_u()}",
         reaction_smiles="CC(=O)OC.O>>CC(=O)O.CO",
         description="Acid-catalysed ester hydrolysis. Tests the "
                     "tutor-authoring path.",

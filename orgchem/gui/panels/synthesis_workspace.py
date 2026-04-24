@@ -12,6 +12,7 @@ import logging
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtWidgets import (
+    QCheckBox,
     QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QListView, QLineEdit, QLabel,
     QPushButton, QScrollArea, QFileDialog, QMessageBox,
 )
@@ -27,6 +28,27 @@ class _PathwayListModel(QAbstractListModel):
     def __init__(self):
         super().__init__()
         self._rows: list = []
+
+    def reload_ids(self, ids: list[int]) -> None:
+        """Phase 33c — load just the pathways in *ids*, preserving
+        order.  Used by the full-text-filter path."""
+        self.beginResetModel()
+        if not ids:
+            self._rows = []
+            self.endResetModel()
+            return
+        with session_scope() as s:
+            rows = (s.query(SynthesisPathway)
+                    .filter(SynthesisPathway.id.in_(ids)).all())
+            rows_by_id = {r.id: r for r in rows}
+            self._rows = [
+                {"id": rows_by_id[i].id,
+                 "name": rows_by_id[i].name,
+                 "target": rows_by_id[i].target_name,
+                 "category": rows_by_id[i].category or ""}
+                for i in ids if i in rows_by_id
+            ]
+        self.endResetModel()
 
     def reload(self, query: str = "") -> None:
         self.beginResetModel()
@@ -85,6 +107,13 @@ class SynthesisWorkspacePanel(QWidget):
         self.filter.textChanged.connect(self._on_filter)
         top.addWidget(QLabel("Filter:"))
         top.addWidget(self.filter)
+        self.fulltext_cb = QCheckBox("Full text")
+        self.fulltext_cb.setToolTip(
+            "Match across descriptions + step notes / reagents "
+            "/ conditions (Phase 33c), not just name / target.")
+        self.fulltext_cb.toggled.connect(
+            lambda _: self._on_filter(self.filter.text()))
+        top.addWidget(self.fulltext_cb)
         lv.addLayout(top)
         self.model = _PathwayListModel()
         self.view = QListView()
@@ -126,9 +155,18 @@ class SynthesisWorkspacePanel(QWidget):
     # --------------------------------------------------------------
 
     def _reload(self) -> None:
-        self.model.reload(self.filter.text())
+        self._on_filter(self.filter.text())
 
     def _on_filter(self, text: str) -> None:
+        """Phase 33c — name-substring (default) or full-text."""
+        q = (text or "").strip()
+        if q and self.fulltext_cb.isChecked():
+            from orgchem.core.fulltext_search import search
+            hits = search(q, kinds=["pathway"], limit=200)
+            ids = [h.key.get("pathway_id") for h in hits
+                   if h.key.get("pathway_id") is not None]
+            self.model.reload_ids(ids)
+            return
         self.model.reload(text)
 
     def _on_clicked(self, idx) -> None:

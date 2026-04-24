@@ -62,6 +62,7 @@ for the project. Update it whenever the module layout changes.
 | `plip_bridge.py` | Optional PLIP adapter — `plip_available()`, `capabilities()`, `analyse_binding_plip(protein, ligand_name, require_plip=False)` → `PLIPResult(report, engine)`. Prefers the PLIP Python API, falls back to the `plip` / `plipcmd` CLI (XML output), and finally to `binding_contacts.analyse_binding` — with the `engine` tag telling the caller which code path ran. (Phase 24i) |
 | `na_interactions.py` | `analyse_na_binding(protein, ligand_name)` → `NAContactReport` with four kinds: intercalation (ligand ring sandwiched between consecutive bases, centroid-centroid angle ≥ 120°), major-groove-hb / minor-groove-hb (name-indexed atom tables per nucleotide), phosphate-contact. Dep-free, reuses the Phase 24a PDB parser which already recognises A/T/G/C/U / DA/DT/DG/DC/DU residues. (Phase 24k) |
 | `fragment_resolver.py` | `resolve(smiles)`, `canonical_reaction_smiles(rxn)`, `audit_reaction(rxn)` — InChIKey-based DB lookup so rendering pipelines reuse canonical 2D coords everywhere. Phase 6f.1. |
+| `fulltext_search.py` | **Phase 33a** — cross-surface full-text search over every text-bearing column in the seeded DB.  Pure-Python linear scan (~1 k rows × ~300 chars, fast enough without an FTS index).  `search(query, kinds=None, limit=50) → List[SearchResult]` with title-boost scoring + word-boundary bonus + snippet excerpt.  `SEARCHABLE_KINDS = (molecule, reaction, pathway, glossary, mechanism-step)`.  `SearchResult.key` carries dispatch info (molecule_id / term / pathway_id / reaction_id + step_index).  Mechanism steps surface individually so a "Beckmann" query lands on the Nylon-6 step 2 description directly. |
 | `stereo.py` | `assign_rs(mol)`, `assign_ez(mol)`, `stereocentre_atoms(mol)`, `flip_stereocentre(mol, idx)`, `enantiomer_of(mol)`, `summarise(mol)` — canonical CIP / E-Z API (cross-cutting stereochem helper). Wraps RDKit's `AssignStereochemistry`. |
 | `druglike.py` | `lipinski(mol)`, `veber(mol)`, `ghose(mol)`, `pains(mol)`, `qed_score(mol)`, `drug_likeness_report(mol)` — medicinal-chem descriptor panel (Phase 19b). |
 | `chromatography.py` | `predict_rf(smiles, solvent)`, `simulate_tlc(smiles_list, solvent)`, `solvent_polarity(name_or_mixture)` — TLC/Rf teaching predictor (Phase 15b). |
@@ -95,6 +96,7 @@ for the project. Update it whenever the module layout changes.
 | `seed_intermediates.py` | Phase 6f.3 — 119 intermediate molecules (carbocations, enolates, Fmoc-AAs, enzyme substrates, common ions, halides, etc.). Additive by name so re-runs skip duplicates. |
 | `seed_coords.py` | Phase 6f.2 — one-shot backfill of `Molecule.molblock_2d` for every DB row, via `rdDepictor.SetPreferCoordGen(True) + Compute2DCoords`. Called automatically from `seed_if_empty`. |
 | `seed_tags.py` | Phase 28a — backfill of functional-group / composition / charge / size / ring columns on every seeded molecule, driven by `core/molecule_tags.auto_tag`. Idempotent; called automatically from `seed_if_empty`. |
+| `cleanup.py` | **Round 94** — `purge_tutor_test_pollution(prefix="Tutor-test-")` + `PurgeCounts` dataclass.  Deletes any Molecule / Reaction / GlossaryTerm / SynthesisPathway (+ cascade) / Tutorial row whose name starts with the test-fixture prefix.  Invoked from `tests/conftest.py::pytest_sessionfinish` so future authoring-action test runs clean up their own trail (previously left ~165 glossary rows in a dev's local DB).  Also exposed via the standalone `scripts/cleanup_tutor_test_pollution.py` one-shot utility for users with pre-existing pollution.  Safe: idempotent, prefix-gated, real seeded content can't collide. |
 | `seed_source_tags.py` | Phase 28b — hand-curated `{name → [source-tag, …]}` map covering NSAIDs / statins / antibiotics / SSRIs / β-blockers / hormones / steroids / neurotransmitters / alkaloids / nucleosides / sugars / fatty acids / dyes / reagent subclasses. Idempotent backfill into `Molecule.source_tags_json` with a version sentinel. `list_source_tag_values()` enumerates the full taxonomy for the filter bar. |
 | `seed_synonyms.py` | **Round 58** — `seed_synonyms_if_needed()` fills `Molecule.synonyms_json` from (a) a curated `{canonical_name → [alias, …]}` map (Retinol ↔ Vitamin A, Aspirin ↔ Acetylsalicylic acid, Acetaminophen ↔ Paracetamol, …) and (b) cross-catalogue reconciliation — any row whose InChIKey matches a Lipid / Carbohydrate / Nucleic-acid catalogue entry inherits that entry's canonical name as a synonym. Idempotent; runs once on every `seed_if_empty()` call. |
 
@@ -346,6 +348,17 @@ New sources (ChEMBL, ORD, ChEBI) just subclass `DataSource` and are registered i
     top-K spinners, two result tabs: *Single-step* (flat
     disconnection table) and *Multi-step* (tree view of the
     recursive precursor search). Tools menu entry *Retrosynthesis…*.
+  - `fulltext_search.py` — **Phase 33b** Ctrl+F find dialog.
+    Singleton per app instance.  `QLineEdit` live-updating query
+    box (debounced 100 ms via `QTimer`), 5-checkbox kind-filter
+    row, results list with kind-badge + bold title + snippet
+    preview rendered as HTML via `QLabel` per row.  Double-click
+    / return-key activation routes through module-level
+    `dispatch_search_result(result, main_win)` — handles all 5
+    kinds (molecule via bus.molecule_selected, reaction via
+    `reactions._display`, mechanism-step via the `open_mechanism`
+    agent action, pathway via `synthesis._display`, glossary via
+    `glossary.focus_term`).  Wired into *View → Find… (Ctrl+F)*.
   - `script_editor.py` — **Phase 32a** Python REPL + editor dialog.
     Top pane: `QPlainTextEdit` with monospace font and a default
     snippet. Bottom pane: dark output console with colour-coded
@@ -389,6 +402,7 @@ New sources (ChEMBL, ORD, ChEBI) just subclass `DataSource` and are registered i
 | `conversation.py` | `Conversation` — orchestrates the tool-use loop (user → model → actions → model → …). |
 | `headless.py` | `HeadlessApp` — launches the full app with `QT_QPA_PLATFORM=offscreen`; use from tests or external Python drivers. |
 | `bridge.py` | JSON-over-stdio bridge (`python main.py --agent-stdio`) so any external process (incl. a Claude Code session) can drive the app line-by-line. |
+| `actions_search.py` | **Phase 33a** — `fulltext_search(query, limit, kinds)` agent action.  Thin wrapper around `core.fulltext_search.search()`; accepts comma-separated `kinds` for filtering + returns JSON-serialisable dicts keyed by `{kind, title, snippet, score, key}`.  Validates unknown kinds with a clear error-return path instead of raising. |
 | `script_context.py` | **Phase 32a** — persistent Python REPL context for the scripting workbench. `ScriptContext` owns a globals dict with pre-imported `app` (an `AppProxy` exposing every registered action as `app.<name>(…)` + `app.call('name', **kw)` + `app.list_actions()`), `chem` (RDKit), `orgchem`, and a `viewer` stub that raises `WorkbenchNotReadyError` pending Phase 32b. `run(source)` returns an `ExecResult` with captured stdout / stderr / last-expression repr / traceback. `reset()` flushes state. Also registers the `open_script_editor` agent action (main-thread-dispatched through `_gui_dispatch`). |
 | `llm/base.py` | `LLMBackend` abstract class + `ChatMessage` / `ToolCall` / `ToolResult` dataclasses. |
 | `llm/anthropic_backend.py` | Claude via the `anthropic` SDK. |
