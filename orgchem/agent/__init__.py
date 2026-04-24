@@ -43,6 +43,7 @@ from orgchem.agent import actions_meta           # noqa: F401 — round 55 tutor
 from orgchem.agent import actions_phys_org       # noqa: F401 — Phase 17e Hammett / KIE
 from orgchem.agent import actions_authoring      # noqa: F401 — round 55 content-authoring
 from orgchem.agent import actions_search         # noqa: F401 — Phase 33a full-text search
+from orgchem.agent import actions_drawing        # noqa: F401 — Phase 36h drawing tool
 from orgchem.agent import script_context         # noqa: F401 — Phase 32a scripting
 
 __all__ = ["action", "registry", "invoke", "ActionSpec"]

@@ -398,6 +398,18 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
         "intermediate"),
     ("Aspartame",
         "COC(=O)[C@@H](Cc1ccccc1)NC(=O)[C@@H](N)CC(=O)O",              "drug"),
+
+    # ---- Phase 31b round 121 — Heck reaction fragments -------------
+    ("Methyl acrylate",
+        "C=CC(=O)OC",                                                  "reagent"),
+    ("Methyl cinnamate (trans)",
+        "COC(=O)/C=C/c1ccccc1",                                        "intermediate"),
+
+    # ---- Phase 31b round 123 — Negishi coupling fragments ----------
+    ("Phenylzinc chloride",
+        "[Cl][Zn][c]1ccccc1",                                          "reagent"),
+    ("Zinc bromochloride",
+        "[Cl][Zn][Br]",                                                "intermediate"),
 ]
 
 

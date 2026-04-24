@@ -63,6 +63,7 @@ for the project. Update it whenever the module layout changes.
 | `na_interactions.py` | `analyse_na_binding(protein, ligand_name)` → `NAContactReport` with four kinds: intercalation (ligand ring sandwiched between consecutive bases, centroid-centroid angle ≥ 120°), major-groove-hb / minor-groove-hb (name-indexed atom tables per nucleotide), phosphate-contact. Dep-free, reuses the Phase 24a PDB parser which already recognises A/T/G/C/U / DA/DT/DG/DC/DU residues. (Phase 24k) |
 | `fragment_resolver.py` | `resolve(smiles)`, `canonical_reaction_smiles(rxn)`, `audit_reaction(rxn)` — InChIKey-based DB lookup so rendering pipelines reuse canonical 2D coords everywhere. Phase 6f.1. |
 | `fulltext_search.py` | **Phase 33a** — cross-surface full-text search over every text-bearing column in the seeded DB.  Pure-Python linear scan (~1 k rows × ~300 chars, fast enough without an FTS index).  `search(query, kinds=None, limit=50) → List[SearchResult]` with title-boost scoring + word-boundary bonus + snippet excerpt.  `SEARCHABLE_KINDS = (molecule, reaction, pathway, glossary, mechanism-step)`.  `SearchResult.key` carries dispatch info (molecule_id / term / pathway_id / reaction_id + step_index).  Mechanism steps surface individually so a "Beckmann" query lands on the Nylon-6 step 2 description directly. |
+| `drawing.py` | **Phase 36a (round 124)** — headless structure-editor data core for the upcoming ChemDraw-equivalent drawing tool.  `Atom` (element, charge, isotope, radical, aromatic, h_count, chirality ∈ {none, CW, CCW}) / `Bond` (begin_idx, end_idx, order 1/2/3/aromatic, stereo ∈ {none, wedge, dash, either}) / `Structure` (atoms + bonds) dataclasses with `add_atom(element, **kw)` + `add_bond(a, b, order, stereo)` helpers.  RDKit-backed round-trip: `structure_from_smiles(smi)` / `structure_to_smiles(s, canonical=True)` / `structure_from_molblock(block)` / `structure_to_molblock(s)` — all return ``None`` on malformed input rather than raising.  Preserves formal charges, isotope labels, radical electrons, tetrahedral atom-centric chirality, and wedge/dash bond-directional stereo across the round-trip.  No Qt imports; fully headless-testable. |
 | `sequence_view.py` | **Phase 34a (round 112)** — headless sequence-viewer data core. `SequenceView` (protein_chains + dna_chains + highlights) / `ChainSequence` (chain_id, one_letter, three_letter, residue_numbers, kind=protein/dna/rna) / `HighlightSpan` (chain_id, start, end, kind, label, colour) dataclasses with JSON-serialisable `to_dict()` for the Qt widget + agent action. `build_sequence_view(protein)` splits a Phase-24a `Protein` by majority residue-kind into protein vs DNA/RNA chains. `attach_contact_highlights(view, report)` + `attach_pocket_highlights(view, pockets)` stamp per-kind colour-coded spans via a shared `HIGHLIGHT_COLOURS` palette (pocket=green, ligand-contact=yellow, active-site=orange, h-bond=blue, salt-bridge=red, π-stacking=purple, hydrophobic=tan, …). Agent action `get_sequence_view(pdb_id, include_contacts, ligand_name)` wrapped in `agent/actions_protein.py`. No Qt imports; fully headless-testable. |
 | `stereo.py` | `assign_rs(mol)`, `assign_ez(mol)`, `stereocentre_atoms(mol)`, `flip_stereocentre(mol, idx)`, `enantiomer_of(mol)`, `summarise(mol)` — canonical CIP / E-Z API (cross-cutting stereochem helper). Wraps RDKit's `AssignStereochemistry`. |
 | `druglike.py` | `lipinski(mol)`, `veber(mol)`, `ghose(mol)`, `pains(mol)`, `qed_score(mol)`, `drug_likeness_report(mol)` — medicinal-chem descriptor panel (Phase 19b). |
@@ -97,6 +98,7 @@ for the project. Update it whenever the module layout changes.
 | `seed_intermediates.py` | Phase 6f.3 — 119 intermediate molecules (carbocations, enolates, Fmoc-AAs, enzyme substrates, common ions, halides, etc.). Additive by name so re-runs skip duplicates. |
 | `seed_coords.py` | Phase 6f.2 — one-shot backfill of `Molecule.molblock_2d` for every DB row, via `rdDepictor.SetPreferCoordGen(True) + Compute2DCoords`. Called automatically from `seed_if_empty`. |
 | `seed_tags.py` | Phase 28a — backfill of functional-group / composition / charge / size / ring columns on every seeded molecule, driven by `core/molecule_tags.auto_tag`. Idempotent; called automatically from `seed_if_empty`. |
+| `backfill_synonyms.py` | **Phase 35c (round 120)** — bulk PubChem synonym backfill for every `Molecule` row whose `synonyms_json` is empty (or below a caller-supplied threshold). `backfill_synonyms(limit, rate_delay_s, min_existing, fetch_fn, skip_test_prefix) → BackfillCounts`. Walks rows, skips `Tutor-test` names + empty-InChIKey rows, queries PubChem by InChIKey via `sources/pubchem.fetch_synonyms_by_inchikey`, filters registry-IDs (CAS / ChEMBL / UNII / InChI / InChIKey) through the palette-shared `_looks_like_registry_id`, merges deduplicated. Rate-limited (default 200 ms/req stays under PubChem's 5 req/sec free-tier cap). Per-row failures swallowed so one network hiccup doesn't abort the whole run. `fetch_fn` kwarg is test-injectable so pytest runs offline. Companion CLI `scripts/backfill_molecule_synonyms.py` with `--limit`, `--rate-delay`, `--min-existing` flags. |
 | `cleanup.py` | **Round 94** — `purge_tutor_test_pollution(prefix="Tutor-test-")` + `PurgeCounts` dataclass.  Deletes any Molecule / Reaction / GlossaryTerm / SynthesisPathway (+ cascade) / Tutorial row whose name starts with the test-fixture prefix.  Invoked from `tests/conftest.py::pytest_sessionfinish` so future authoring-action test runs clean up their own trail (previously left ~165 glossary rows in a dev's local DB).  Also exposed via the standalone `scripts/cleanup_tutor_test_pollution.py` one-shot utility for users with pre-existing pollution.  Safe: idempotent, prefix-gated, real seeded content can't collide. |
 | `seed_source_tags.py` | Phase 28b — hand-curated `{name → [source-tag, …]}` map covering NSAIDs / statins / antibiotics / SSRIs / β-blockers / hormones / steroids / neurotransmitters / alkaloids / nucleosides / sugars / fatty acids / dyes / reagent subclasses. Idempotent backfill into `Molecule.source_tags_json` with a version sentinel. `list_source_tag_values()` enumerates the full taxonomy for the filter bar. |
 | `seed_synonyms.py` | **Round 58** — `seed_synonyms_if_needed()` fills `Molecule.synonyms_json` from (a) a curated `{canonical_name → [alias, …]}` map (Retinol ↔ Vitamin A, Aspirin ↔ Acetylsalicylic acid, Acetaminophen ↔ Paracetamol, …) and (b) cross-catalogue reconciliation — any row whose InChIKey matches a Lipid / Carbohydrate / Nucleic-acid catalogue entry inherits that entry's canonical name as a synonym. Idempotent; runs once on every `seed_if_empty()` call. |
@@ -174,6 +176,31 @@ New sources (ChEMBL, ORD, ChEBI) just subclass `DataSource` and are registered i
     scrollable scheme viewer + export button. Renders vertical
     step-by-step synthesis schemes for seeded classical routes (Aspirin,
     Paracetamol, BHC Ibuprofen, Wöhler, etc.).
+  - `drawing_panel.py` — **Phase 36b / 36d** molecular-drawing
+    canvas.  `QGraphicsScene`-based widget with a toolbar (select /
+    atom-C/N/O/P/S/F/Cl/Br/I/H / bond / erase / Undo / Redo / Clear)
+    + SMILES round-trip ribbon + live
+    `DrawingPanel.structure_changed(smiles)` Qt signal.  Backed by
+    the Phase-36a `Structure` core — every atom-placement / bond-draw
+    / element-change / erase action keeps a mirrored `Structure` in
+    sync so `current_smiles()` is a single-call round-trip.  Repeat
+    bond clicks cycle single → double → triple → single; bond-tool
+    clicks on empty canvas auto-place a carbon at each end (ChemDraw
+    convention).  **Phase 36d (round 128)** adds snapshot-based
+    undo/redo: `_push_undo` captures a `(Structure, positions)` deep
+    copy before each logical mutation (atom place, element swap, bond
+    draw, bond order cycle, erase atom/bond, drag-move, clear, SMILES
+    rebuild); `undo()` / `redo()` pop the most recent snapshot onto
+    the opposite stack and rebuild the scene via
+    `_restore_snapshot`.  Stack depth capped at `_UNDO_STACK_MAX =
+    100`.  Toolbar buttons enable/disable off `can_undo` /
+    `can_redo`; Ctrl+Z / Ctrl+Shift+Z `QShortcut`s scoped to the
+    widget.  No-op guards: re-clicking the same atom with the same
+    element, cancelling the bond tool by clicking the same atom
+    twice, and clearing an already-empty canvas all skip the
+    snapshot so the undo history stays clean.  Ring / FG templates
+    (36c), stereo wedges (36e), reaction arrows (36f) remain as
+    follow-ups.
   - `glossary_panel.py` — Glossary tab (Phase 11b): filterable term
     list + category combo + markdown definition pane + clickable
     "See also" cross-references. Feeds off the `GlossaryTerm` table.
@@ -361,6 +388,19 @@ New sources (ChEMBL, ORD, ChEBI) just subclass `DataSource` and are registered i
     `reactions._display`, mechanism-step via the `open_mechanism`
     agent action, pathway via `synthesis._display`, glossary via
     `glossary.focus_term`).  Wired into *View → Find… (Ctrl+F)*.
+  - `drawing_tool.py` — **Phase 36g (round 126)** molecular drawing
+    dialog. Modeless `DrawingToolDialog(QDialog)` singleton wrapping
+    the Phase-36b `DrawingPanel`. Footer buttons: *Export drawing…*
+    (PNG/SVG via `render.export.export_molecule_2d`, MOL-V2000 via
+    `core.drawing.structure_to_molblock`), *Send to Molecule
+    Workspace* (invokes the `add_molecule` authoring action with a
+    `Drawn-XXXXXXXX` UUID name + `source_tags=["drawn"]`, handles
+    duplicate-InChIKey via `existing_id`, fires
+    `bus.molecule_selected` so every panel picks up the new row).
+    `singleton(parent, seed_smiles="")` classmethod preserves the
+    canvas across re-opens and lets *Open in drawing tool…* hooks
+    preload an existing molecule. Tools menu entry *Drawing tool…
+    (Ctrl+Shift+D)*.
   - `script_editor.py` — **Phase 32a** Python REPL + editor dialog.
     Top pane: `QPlainTextEdit` with monospace font and a default
     snippet. Bottom pane: dark output console with colour-coded
@@ -405,6 +445,7 @@ New sources (ChEMBL, ORD, ChEBI) just subclass `DataSource` and are registered i
 | `headless.py` | `HeadlessApp` — launches the full app with `QT_QPA_PLATFORM=offscreen`; use from tests or external Python drivers. |
 | `bridge.py` | JSON-over-stdio bridge (`python main.py --agent-stdio`) so any external process (incl. a Claude Code session) can drive the app line-by-line. |
 | `actions_search.py` | **Phase 33a** — `fulltext_search(query, limit, kinds)` agent action.  Thin wrapper around `core.fulltext_search.search()`; accepts comma-separated `kinds` for filtering + returns JSON-serialisable dicts keyed by `{kind, title, snippet, score, key}`.  Validates unknown kinds with a clear error-return path instead of raising. |
+| `actions_drawing.py` | **Phase 36h (round 127)** — drawing-tool agent actions: `open_drawing_tool(smiles="")` (lazy singleton dialog, optional SMILES preload), `drawing_to_smiles()` (canvas → canonical SMILES + `{n_atoms, n_bonds}`), `drawing_export(path)` (PNG/SVG via `render.export.export_molecule_2d`, MOL-V2000 via `core.drawing.structure_to_molblock`; rejects other suffixes), `drawing_clear()` (wipe canvas).  All four marshal onto the Qt main thread via `_gui_dispatch.run_on_main_thread_sync`.  Every entry point returns `{"error": ...}` when the main window or the drawing dialog isn't reachable rather than raising. |
 | `script_context.py` | **Phase 32a** — persistent Python REPL context for the scripting workbench. `ScriptContext` owns a globals dict with pre-imported `app` (an `AppProxy` exposing every registered action as `app.<name>(…)` + `app.call('name', **kw)` + `app.list_actions()`), `chem` (RDKit), `orgchem`, and a `viewer` stub that raises `WorkbenchNotReadyError` pending Phase 32b. `run(source)` returns an `ExecResult` with captured stdout / stderr / last-expression repr / traceback. `reset()` flushes state. Also registers the `open_script_editor` agent action (main-thread-dispatched through `_gui_dispatch`). |
 | `llm/base.py` | `LLMBackend` abstract class + `ChatMessage` / `ToolCall` / `ToolResult` dataclasses. |
 | `llm/anthropic_backend.py` | Claude via the `anthropic` SDK. |

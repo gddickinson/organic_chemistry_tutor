@@ -269,6 +269,45 @@ _STARTER: List[Tuple[str, str, str, str]] = [
      "of two-step phosphodiester hydrolysis with general acid/base "
      "catalysis.",
      "OC1COP(=O)(O)OC1.O>>OC1COP(=O)(O)OC1.O"),
+
+    # ---- Phase 31b round 123 — Negishi coupling --------------------
+    ("Negishi coupling (bromobenzene + phenylzinc chloride)",
+     "Cross-coupling (Pd-catalysed)",
+     "Negishi 1977 (Nobel 2010, shared with Suzuki + Heck) — "
+     "Pd(0)-catalysed cross-coupling between an aryl / vinyl "
+     "halide and an organozinc reagent.  Catalytic cycle: "
+     "oxidative addition of Ar-X to Pd(0) → transmetalation "
+     "of the aryl group from Zn to Pd (the Zn-halide by-"
+     "product `Cl[Zn]Br` picks up the halide) → reductive "
+     "elimination to form the Ar-Ar' bond + regenerate Pd(0).  "
+     "Distinctive from Suzuki / Sonogashira: the Zn reagent is "
+     "milder than a Grignard, tolerant of carbonyl "
+     "functionality, and transmetalates cleanly without a "
+     "base.  Excellent for C(sp²)-C(sp²) + C(sp²)-C(sp³) + "
+     "C(sp³)-C(sp³) couplings.  Workhorse in total-synthesis "
+     "+ drug discovery where Pd-tolerant functional groups "
+     "rule out Suzuki.",
+     "Brc1ccccc1.c1ccc([Zn]Cl)cc1>>c1ccc(-c2ccccc2)cc1.Cl[Zn]Br"),
+
+    # ---- Phase 31b round 121 — Heck reaction -----------------------
+    ("Heck reaction (iodobenzene + methyl acrylate)",
+     "Cross-coupling (Pd-catalysed)",
+     "Heck 1972 (Nobel 2010, shared with Negishi + Suzuki) — "
+     "Pd(0)-catalysed C(sp²)–C(sp²) coupling between an aryl / "
+     "vinyl halide and an alkene.  Catalytic cycle: oxidative "
+     "addition of Ar–I to Pd(0), olefin insertion (syn), "
+     "β-hydride elimination to regenerate the C=C (now "
+     "conjugated to the aryl group), and HX reductive "
+     "elimination off Pd–H.  Unlike Suzuki / Sonogashira there "
+     "is **no transmetalation** — the new σ bond forms directly "
+     "during olefin insertion.  Rate-determining step is usually "
+     "oxidative addition for ArI, β-H elimination for ArBr / "
+     "electron-rich substrates.  Net: stereoselective E-product "
+     "(trans-methyl cinnamate from iodobenzene + methyl "
+     "acrylate, as drawn here).  Ubiquitous in pharma +"
+     " materials synthesis; Heck-Matsuda and asymmetric variants "
+     "are active research areas.",
+     "Ic1ccccc1.C=CC(=O)OC>>COC(=O)/C=C/c1ccccc1.[H]I"),
 ]
 
 

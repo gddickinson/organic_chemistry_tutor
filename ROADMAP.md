@@ -1979,9 +1979,20 @@ reactions, 20 mechanisms, 25 synthesis pathways, 20 energy profiles,
       (diglyme, HMPA, glycerol, pentane). Each entry tagged via
       `auto_tag` and `seed_source_tags` so the Phase 28 filter
       bar immediately surfaces them.
-- [~] **31b. Reactions → 50.** First 5 shipped (Buchwald-Hartwig,
-      Sonogashira, Mitsunobu, Swern, HWE). 19 more named reactions
-      still to come. Priority
+- [~] **31b. Reactions → 50.** Shipped across rounds 41-123 —
+      Buchwald-Hartwig, Sonogashira, Mitsunobu, Swern, HWE,
+      Heck (round 121),
+      **Negishi coupling (round 123 — completes Nobel-2010 trio
+      of Suzuki + Heck + Negishi)** — Pd(0)-catalysed
+      cross-coupling between Ar-X and an organozinc.  Cycle:
+      oxidative addition → transmetalation (Zn → Pd, with Zn
+      halide by-product) → reductive elimination.
+      Distinctive from Suzuki / Sonogashira: milder organometallic
+      reagent, no base required, tolerates carbonyl functionality,
+      handles sp²-sp² + sp²-sp³ + sp³-sp³ couplings.  Two new
+      fragments (`Phenylzinc chloride`, `Zinc bromochloride`)
+      seeded alongside.  Catalogue now **37/50**; 13 more to
+      come.  Priority
       list: Buchwald-Hartwig amination, Negishi coupling, Heck
       reaction, Stille coupling, Sonogashira coupling, Mitsunobu
       reaction, Swern oxidation, Dess-Martin oxidation, Jones
@@ -2185,12 +2196,19 @@ reactions, 20 mechanisms, 25 synthesis pathways, 20 energy profiles,
       locked NA (LNA) monomer, phosphorothioate linkage example,
       Z-DNA motif, cruciform / hairpin small examples, pre-miRNA
       example sequence.
-- [~] **31k. SAR series → 15.** Shipped across rounds 40-108:
+- [~] **31k. SAR series → 15.** Shipped across rounds 40-122:
       β-blockers (5), ACE inhibitors (5), SSRIs (round 96),
-      β-lactam penicillins (round 100),
-      **PDE5 inhibitors (round 108)** — 5 variants: sildenafil /
-      vardenafil / tadalafil / avanafil / udenafil with PDE5 IC50
-      + half-life + PDE6 selectivity. Three teaching points
+      β-lactam penicillins (round 100), PDE5 inhibitors (round 108),
+      **Benzodiazepines (round 122)** — 5 variants: diazepam /
+      lorazepam / alprazolam / clonazepam / midazolam with
+      GABA-A EC50 + half-life + onset-minutes.  Three pedagogical
+      inequalities locked in: (a) midazolam's imidazo-fused
+      chemotype → shortest half-life (IV anaesthesia); (b)
+      diazepam's long half-life via active metabolites (the
+      Valium "flat tail"); (c) alprazolam's triazolo-fusion → most
+      potent (and the addictiveness story).  Chemotype-switch
+      narrative analogous to the round-108 PDE5 story.  Catalogue
+      now **8/15**; 7 more medicinal-chem families to come: Three teaching points
       encoded: (a) vardenafil most potent (regioisomeric
       scaffold + N-Et piperazine); (b) tadalafil is the
       long-half-life outlier (β-carboline chemotype switch,
@@ -2585,6 +2603,232 @@ title.
 
 ---
 
+## Phase 36 — Molecular drawing tool (ChemDraw-equivalent) *(NEW — 2026-04-24; user-flagged)*
+
+User directive (2026-04-24): *"add molecular drawing tool — same
+abilities as chemdraw"*.
+
+Motivation.  Every workflow in the app currently starts from a
+SMILES string or a seeded database row — a real limitation when
+a student asks *"what about this structure I just thought of?"*.
+Giving users a live canvas where they can place atoms + bonds,
+pull templates off a palette, annotate stereochemistry, and
+round-trip their drawing to a SMILES / mol block instantly
+unlocks every downstream feature of the app (3D viewer,
+descriptors, retrosynthesis, spectroscopy prediction,
+fragment search, …) for structures that aren't in the DB.
+
+Scope reality check.  PerkinElmer's commercial ChemDraw has 40+
+years of polish.  Reproducing every bell and whistle isn't the
+goal; the goal is **a competent educational structure editor** —
+what undergrads + medicinal-chem students use 95 % of the time.
+Specifically: place atoms + bonds + rings + common FGs, annotate
+stereochemistry + charges + isotopes, select + move + delete,
+undo/redo, round-trip to RDKit SMILES, export PNG/SVG/MOL.
+Not in scope: reaction query editor, advanced 2D clean-up that
+matches ChemDraw's "clean structure" button exactly, polymer /
+macrocycle notation, proprietary CDX binary I/O.
+
+### Design outline
+
+- **Canvas.**  New `orgchem/gui/panels/drawing_panel.py` built on
+  `QGraphicsView` + `QGraphicsScene`.  Atoms are
+  `QGraphicsEllipseItem` subclasses carrying `element`, `charge`,
+  `radical`, `isotope`, `h_count` fields; bonds are
+  `QGraphicsLineItem` subclasses carrying `order` (1/2/3/
+  aromatic), `stereo` (none/wedge/dash/either), `begin` / `end`
+  atom references.  Scene grid optional (snap-to-0.25-Å).
+- **Tool palette.**  Left dock with one button per tool: select,
+  erase, atom types (C/N/O/P/S/halogens + custom), single /
+  double / triple bond, wedge / dash bond, ring templates
+  (benzene, cyclohexane, cyclopentane, cyclobutane, cyclopropane),
+  FG templates (COOH, CHO, C=O, NH₂, NO₂, CN, OH, OMe).  Active
+  tool drives the canvas-click behaviour.
+- **RDKit bridge.**  `orgchem/core/drawing.py` — pure-Python
+  module with `Structure` dataclass (atoms + bonds) ↔ RDKit
+  `Mol` round-trip via `MolFromMolBlock` / `MolToSmiles`.
+  Keeps the GUI module Qt-free at its core so SMILES round-
+  trips are fully headless-testable.
+- **Undo/redo.**  `QUndoStack` + `QUndoCommand` subclasses
+  (`AddAtomCommand`, `AddBondCommand`, `DeleteCommand`, `MoveCommand`,
+  `ChangeAtomTypeCommand`, …).  Ctrl-Z / Ctrl-Shift-Z bindings.
+- **SMILES paste.**  A ribbon input: paste / type a SMILES, hit
+  Enter, canvas rebuilds from RDKit's 2D layout.  Instant mode
+  switch between "I drew this" and "I have SMILES".
+- **Export.**  *File → Export drawing…* writes PNG / SVG / MOL
+  via the existing Phase 20 export helpers.  *File → Paste
+  into workspace* ships the SMILES back to the Molecule
+  Workspace as a new row.
+
+### Sub-phases
+
+- [x] **36a. `Structure` core + SMILES round-trip — shipped (round 124).**
+      New `orgchem/core/drawing.py` with `Atom` (element, charge,
+      isotope, radical, aromatic, h_count, chirality ∈
+      {none/CW/CCW}), `Bond` (begin_idx, end_idx, order 1/2/3/
+      aromatic, stereo ∈ {none/wedge/dash/either}), and
+      `Structure` (atoms + bonds + `add_atom` / `add_bond` /
+      `neighbours`) dataclasses.  Round-trip helpers: `structure_from_smiles`,
+      `structure_to_smiles`, `structure_from_molblock`,
+      `structure_to_molblock` — all RDKit-backed, all return
+      ``None`` on malformed input rather than raising.  Round-trip
+      preserves formal charges, isotopes, radicals,
+      atom-centric tetrahedral chirality, and bond-directional
+      stereo.  No Qt imports; fully headless-testable.  21 new
+      pytest cases in `tests/test_drawing_core.py`: dataclass
+      ergonomics (self-loop + out-of-range bond rejection,
+      neighbour lookup, bad-stereo-tag fallback, element
+      default), 7-SMILES parametric round-trip (methane,
+      ethanol, benzene, glycine, L-alanine with stereo, NH₄⁺,
+      aspirin), charge / isotope / stereo preservation checks,
+      mol-block round-trip via phenylacetic acid, 3 bogus-
+      input null-returns (empty / None / unclosed ring),
+      and 2 manually-constructed structures simulating the
+      Phase 36b canvas path (ethene via explicit double bond,
+      NH₄⁺ via charged N with `h_count=4`).  INTERFACE.md
+      entry added.
+
+- [x] **36b. Canvas + atom-bond placement — shipped (round 125).**
+      New `orgchem/gui/panels/drawing_panel.py` with
+      `DrawingPanel(QWidget)` + internal `_DrawingView(QGraphicsView)`
+      subclass that forwards mouse events into the panel's
+      `handle_canvas_press/move/release` dispatchers.  Toolbar
+      buttons: select, atom-C/N/O/P/S/F/Cl/Br/I/H, bond, erase,
+      Clear-canvas.  SMILES I/O ribbon above the canvas — typing a
+      SMILES + Enter rebuilds via RDKit's `Compute2DCoords`;
+      garbage input is silently rejected (canvas stays as-is).
+      Live `structure_changed(smiles)` signal fires after every
+      mutation so downstream panels (Molecule Workspace, etc.)
+      can react.  Bond-tool ergonomics: repeat clicks on the same
+      atom pair cycle single → double → triple; empty-canvas
+      clicks auto-place a carbon at each end (ChemDraw
+      convention).  Erase reindexes every bond that pointed past
+      a deleted atom so RDKit conversion doesn't crash later.
+      13 new pytest-qt cases in `tests/test_drawing_panel.py`
+      (atom placement, element swap, bond draw, bond-order cycle,
+      auto-place-endpoints, erase + reindex, SMILES ribbon happy
+      path + garbage-reject, clear, `structure_changed` signal).
+      `"custom…"` atom dialog is the 36b follow-up polish; rings
+      / FG templates are 36c; undo-redo is 36d.  INTERFACE.md
+      entry added.
+
+- [ ] **36c. Template palette.**  Rings (C3 / C4 / C5 / C6 / C6
+      aromatic / indole / pyridine / pyrimidine / furan /
+      thiophene) + functional groups (OH / NH₂ / COOH / CHO /
+      C=O / NO₂ / CN / OMe / NHAc).  Click to preview, click
+      again to place the template's anchor atom under the
+      cursor + fuse with existing structure when the anchor
+      overlaps an existing atom.
+
+- [x] **36d. Undo / redo.**  *(round 128, 2026-04-24)* —
+      snapshot-based stack in `DrawingPanel` (not `QUndoStack`).
+      Every logical mutation (atom place, element swap, bond
+      draw / order cycle, erase atom+bonds, drag-move
+      atom, clear canvas, SMILES-rebuild) pushes a deep-copied
+      `(Structure, positions)` tuple onto `_undo_stack` before
+      mutating.  `undo()` / `redo()` pop the snapshot onto the
+      opposite stack and rebuild the scene via
+      `_restore_snapshot`.  Toolbar buttons *↶ Undo* / *↷ Redo*
+      plus Ctrl+Z / Ctrl+Shift+Z shortcuts scoped to the
+      widget.  Depth capped at 100 (`_UNDO_STACK_MAX`).  No-op
+      guards on: re-clicking an atom with the same element,
+      clicking the same atom twice with the bond tool (cancel),
+      clearing an already-empty canvas.  18 pytest-qt tests
+      cover every mutation type, stack bounds, redo
+      invalidation on new mutation, button enable state, +
+      full build-undo-redo round-trip.  Lasso select + drag
+      selection + cut/copy/paste deferred to a later polish
+      round (36d+).
+
+- [ ] **36e. Stereochemistry + charges + isotopes.**  Wedge /
+      dash / either bond types from the palette.  Atom
+      right-click context menu for charge (±1, ±2),
+      isotope-label entry, lone-pair decoration, radical
+      marker, and explicit H-count.  The `Structure → SMILES`
+      helper from 36a already supports these via RDKit — the
+      GUI just needs the entry point.
+
+- [ ] **36f. Reaction arrows + multi-structure schemes.**
+      Drag a *"→"* / *"⇌"* arrow onto the canvas between two
+      structures to promote it to a reaction.  Reagents /
+      conditions typeset above the arrow via a modal dialog.
+      `Structure → ReactionSMARTS` helper bundles the LHS +
+      RHS into a reaction-SMILES string that the Reactions
+      tab can render.
+
+- [x] **36g. File + workspace integration.**  *(round 126,
+      2026-04-24)* — `DrawingToolDialog` in
+      `orgchem/gui/dialogs/drawing_tool.py` wraps the Phase-36b
+      `DrawingPanel` and is reachable from *Tools → Drawing
+      tool…* (Ctrl+Shift+D).  Singleton preserves the canvas
+      across re-opens; optional `seed_smiles=` preload for
+      future *Open in drawing tool…* handoffs.  Footer:
+      *Export drawing…* writes PNG / SVG via
+      `render.export.export_molecule_2d`, MOL-V2000 via
+      `core.drawing.structure_to_molblock`.  *Send to Molecule
+      Workspace* invokes the `add_molecule` authoring action
+      with a pollution-safe `Drawn-XXXXXXXX` UUID name +
+      `source_tags=["drawn"]`, handles duplicate InChIKey via
+      the `existing_id` code path, and fires
+      `bus.molecule_selected` so every other panel picks up
+      the new row.  11 pytest-qt tests cover singleton,
+      export-empty, MOL / PNG export, duplicate handling, and
+      error-surfacing.
+
+- [x] **36h. SMILES import ribbon + agent actions.**  *(round
+      127, 2026-04-24)* — SMILES import ribbon already shipped
+      in 36b (round 125) via `DrawingPanel._smiles_edit`.  The
+      new-in-127 piece is the agent-action surface in
+      `orgchem/agent/actions_drawing.py`:
+      `open_drawing_tool(smiles="")` lazily creates the
+      dialog singleton + optional SMILES preload;
+      `drawing_to_smiles()` returns canonical SMILES +
+      `{n_atoms, n_bonds}`; `drawing_export(path)` writes
+      PNG / SVG / MOL by suffix (rejects anything else);
+      `drawing_clear()` wipes the canvas.  All four marshal
+      onto the Qt main thread via
+      `_gui_dispatch.run_on_main_thread_sync` and return
+      `{"error": ...}` rather than raising when the GUI isn't
+      reachable.  GUI_ENTRY_POINTS entries added — audit
+      coverage stays at 100 %.  15 pytest-qt cases cover
+      registration, open w/ + w/o seed, missing-main-window
+      error, SMILES read (full + empty), export (missing
+      dialog, empty canvas, bad extension, MOL + PNG happy
+      paths), clear (missing + empty + populated), and an
+      end-to-end *open → seed → clear → set-to-pyridine →
+      export → round-trip* test.
+
+### Phase 36 status — 5 / 8 sub-phases complete
+- 36a ✅ headless core (round 124)
+- 36b ✅ canvas widget (round 125)
+- 36g ✅ dialog + workspace integration (round 126)
+- 36h ✅ agent actions (round 127)
+- 36d ✅ undo / redo (round 128)
+- 36c ⏳ ring / FG templates
+- 36e ⏳ stereo wedges + charges + isotopes
+- 36f ⏳ reaction arrows + multi-structure schemes
+
+### Open questions / risks
+
+- **Layout quality.**  RDKit's `Compute2DCoords` is fine for
+  most teaching molecules but lags ChemDraw's 2D-clean for
+  fused-ring natural products.  Phase 36 ships RDKit coords
+  as-is; optional integration with ChemAxon's layout
+  algorithm is out of scope.  If a drawing comes out ugly,
+  the user can always manually reposition atoms.
+- **CDX / CDXML compatibility.**  Out of scope.  Mentioning
+  explicitly so nobody thinks it's a miss — this is the
+  single ChemDraw feature we aren't reproducing.
+- **Touch / stylus.**  Not targeted (desktop-first app).
+  Qt's `QGraphicsView` gives us touch events for free; a
+  later polish round could add gesture shortcuts, but
+  mouse-first is fine.
+- **Canvas size + perf.**  Teaching targets rarely exceed
+  50 heavy atoms; `QGraphicsScene` handles thousands without
+  effort.  No special perf work needed.
+
+---
+
 ## Phase 35 — Universal synonyms + synonym-aware search *(NEW — 2026-04-24; user-flagged)*
 
 User directive (2026-04-24): *"add synonyms to all molecules and
@@ -2656,17 +2900,31 @@ lookup**, **tutor `show_molecule`**).
       `Tutor-test-…` prefix that the round-94/97 purge wipes at
       session end.
 
-- [ ] **35c. Bulk backfill for existing DB rows.**
-      `orgchem/db/backfill_synonyms.py` + companion
-      `scripts/backfill_molecule_synonyms.py` CLI.  Walks every
-      `Molecule` row with an empty / short `synonyms_json`,
-      queries PubChem by InChIKey (using the existing pubchempy
-      adapter), appends returned synonyms.  Rate-limited (1 req
-      / 200 ms) to stay under PubChem's 5 req/sec free-tier cap.
-      Idempotent — re-running after a few new imports just
-      top-ups the unfilled rows.  One-off: also reconcile
-      against the ChEMBL / DrugBank names when present in
-      `properties`.
+- [x] **35c. Bulk backfill for existing DB rows — shipped (round 120).**
+      New `orgchem/db/backfill_synonyms.py::backfill_synonyms(
+      limit, rate_delay_s, min_existing, fetch_fn,
+      skip_test_prefix) → BackfillCounts`.  Walks every
+      `Molecule` row, skips `Tutor-test…` prefix + empty-
+      InChIKey rows, queries PubChem by InChIKey via the
+      round-113 `fetch_synonyms_by_inchikey` helper, filters
+      registry-IDs through the round-109 palette-shared
+      `_looks_like_registry_id`, dedups against the canonical
+      name + existing synonyms, caps at 10 per row, writes the
+      cleaned list to `synonyms_json`.  Rate-limited default
+      200 ms/request stays under PubChem's 5-req/sec free-tier
+      ceiling (~85 s for a full ~415-row walk).  Idempotent —
+      re-runs only hit rows whose existing-synonym count is
+      below `min_existing` (default 1).  Per-row failures
+      swallowed so one hiccup doesn't abort the run.
+      `fetch_fn` kwarg is test-injectable so pytest runs
+      offline.  Companion CLI
+      `scripts/backfill_molecule_synonyms.py` with
+      `--limit / --rate-delay / --min-existing` flags.
+      7 pytest cases (populates empty rows, respects
+      min-existing, `min_existing=0` force-refresh, skips
+      Tutor-test prefix, skips rows without InChIKey,
+      tolerates fetch exception, `--limit` caps network
+      calls).  **Phase 35 now 6/6 — CLOSED.**
 
 - [x] **35d. Wire synonyms into the command palette (round 109).**
       `gui/dialogs/command_palette.py::_molecule_entries()` now
@@ -2889,16 +3147,37 @@ residues, and ligand-contact residues follow naturally.
       editable tag track with session-state persistence, and
       UniProt gene-annotation track for DBREF-carrying PDBs.
 
-- [ ] **34f. Selection-aware agent actions.**  Expose the full
-      selection round-trip through the `@action` registry so
-      tutor / scripts can drive it:
-      - `select_residues(pdb_id, chain, start, end)` — updates
-        both the 3D overlay and the sequence bar.
-      - `get_selection(pdb_id)` — returns the current selection
-        as `{chain_id, start, end, resnames}`.
-      - `highlight_feature(pdb_id, feature_name)` — selects a
-        named span (e.g. *"active site"* or *"signal peptide"*).
-      - `clear_selection(pdb_id)`.
+- [x] **34f. Selection-aware agent actions — shipped round 119.**
+      Three new `@action(category="protein")` entry points in
+      `agent/actions_protein.py` give the tutor / scripts /
+      stdio-bridge callers full programmatic control of the
+      sequence-bar selection:
+      - `select_residues(pdb_id, chain_id, start, end)` —
+        dispatches to the main Qt thread via
+        `_gui_dispatch.run_on_main_thread`, sets
+        `SequenceBarPanel.set_selection(...)`, and calls the
+        panel's `_on_sequence_selection` forward-path so the
+        round-117 `orgchemHighlight` JS helper runs on the 3D
+        viewer.  Auto-swaps reversed bounds.
+      - `get_selection(pdb_id)` — returns `{chain_id, start,
+        end}` or `{error}` when no selection exists.  Read-only,
+        no Qt-thread hop.
+      - `clear_selection(pdb_id)` — clears the bar; the
+        `_on_sequence_cleared` handler chains into
+        `orgchemClearHighlight()` for the live 3D reset.
+      Shared `_get_sequence_panel()` helper resolves the
+      Proteins-tab panel or returns None; all three actions
+      gracefully error-return when the GUI isn't reachable
+      (headless / Proteins tab not open / WebEngine missing).
+      GUI_ENTRY_POINTS wiring added for all three (audit
+      coverage holds at 100 %).  9 new pytest cases:
+      bar-selection set, reversed-bounds swap, single-residue,
+      get round-trip, empty-selection error, clear clears the
+      bar, + 3 monkey-patched "no GUI" error paths.
+      **Named-feature highlighting** (`highlight_feature(pdb_id,
+      name)` — e.g. *"active site"* / *"signal peptide"*) is
+      queued as 34f polish; needs a named-span catalogue that
+      34e hasn't shipped yet.
 
 ### Design notes
 

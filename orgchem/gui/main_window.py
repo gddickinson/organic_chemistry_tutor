@@ -288,6 +288,15 @@ class MainWindow(QMainWindow):
         )
         a_script.triggered.connect(self._on_script_editor)
         m_tools.addAction(a_script)
+        a_draw = QAction("Drawing tool…", self)
+        a_draw.setShortcut(QKeySequence("Ctrl+Shift+D"))
+        a_draw.setToolTip(
+            "Open the molecular drawing canvas (Phase 36) — draw a "
+            "structure and send it to the Molecule Workspace or "
+            "export PNG / SVG / MOL."
+        )
+        a_draw.triggered.connect(self._on_drawing_tool)
+        m_tools.addAction(a_draw)
         m_tools.addSeparator()
         a_prefs = QAction("Preferences…", self)
         a_prefs.setShortcut(QKeySequence("Ctrl+,"))
@@ -444,6 +453,15 @@ class MainWindow(QMainWindow):
         from orgchem.gui.dialogs.script_editor import ScriptEditorDialog
 
         dlg = ScriptEditorDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_drawing_tool(self) -> None:
+        """Open the Phase 36 molecular drawing tool (singleton, modeless)."""
+        from orgchem.gui.dialogs.drawing_tool import DrawingToolDialog
+
+        dlg = DrawingToolDialog.singleton(parent=self)
         dlg.show()
         dlg.raise_()
         dlg.activateWindow()

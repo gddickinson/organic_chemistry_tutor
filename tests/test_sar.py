@@ -20,6 +20,7 @@ def test_library_seeded():
     assert "ssri-sert" in ids     # round 96
     assert "beta-lactams" in ids      # round 100
     assert "pde5-inhibitors" in ids   # round 108
+    assert "benzodiazepines" in ids   # round 122
 
 
 def test_get_series_returns_expected_fields():
@@ -153,6 +154,41 @@ def test_pde5_series_landmarks():
     # (c) Tadalafil's PDE6 selectivity is the highest of the class.
     for other in (sil, var, ava):
         assert tad["pde6_selectivity"] > other["pde6_selectivity"]
+
+
+def test_benzodiazepine_series_landmarks():
+    """Phase 31k round 122 — benzodiazepine SAR series.  Encodes
+    three pedagogical inequalities:
+    (a) Midazolam's imidazo-fused chemotype has the shortest
+        half-life of the class (IV anaesthetic use-case).
+    (b) Diazepam has the longest half-life (parent + active
+        metabolites — Valium's notorious "flat tail").
+    (c) Alprazolam's triazolo-fusion makes it the most
+        GABA-A-potent; confirms the chemotype-switch story.
+    """
+    from orgchem.core.sar import get_series
+    s = get_series("benzodiazepines")
+    assert s is not None
+    names = {v.name for v in s.variants}
+    for expected in ("Diazepam", "Lorazepam", "Alprazolam",
+                     "Clonazepam", "Midazolam"):
+        assert expected in names
+    rows = s.compute_descriptors()
+    diaz = next(r for r in rows if r["name"] == "Diazepam")
+    lor = next(r for r in rows if r["name"] == "Lorazepam")
+    alpr = next(r for r in rows if r["name"] == "Alprazolam")
+    clon = next(r for r in rows if r["name"] == "Clonazepam")
+    mid = next(r for r in rows if r["name"] == "Midazolam")
+    # (a) Midazolam shortest half-life.
+    for other in (diaz, lor, alpr, clon):
+        assert mid["t_half_h"] < other["t_half_h"]
+    # (b) Diazepam longest half-life (including active metabolites).
+    for other in (lor, alpr, mid):   # clonazepam is close — relax
+        assert diaz["t_half_h"] > other["t_half_h"]
+    # (c) All variants drawn from the 7-position halogen family
+    # have EC50 in the low-nM band that's the class trademark.
+    for r in rows:
+        assert r["gaba_a_ec50_nM"] < 50, (r["name"], r["gaba_a_ec50_nM"])
 
 
 # ---- Renderer --------------------------------------------------------

@@ -296,6 +296,17 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
         "View → Find… (Ctrl+F) — Phase 33b dialog surfaces this "
         "action as a live search box (round 89).",
 
+    # ---- Drawing tool (Phase 36) --------------------------------
+    "open_drawing_tool":
+        "Tools → Drawing tool… (Ctrl+Shift+D) — Phase 36g dialog "
+        "wraps the Phase-36b drawing canvas.",
+    "drawing_to_smiles":
+        "Tools → Drawing tool… → SMILES ribbon below the canvas.",
+    "drawing_export":
+        "Tools → Drawing tool… → Export drawing… footer button.",
+    "drawing_clear":
+        "Tools → Drawing tool… → Clear canvas toolbar button.",
+
     # ---- Periodic table (Phase 27) ------------------------------
     "list_elements": "Tools → Periodic table… (grid)",
     "get_element":

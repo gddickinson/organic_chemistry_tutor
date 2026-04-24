@@ -546,6 +546,98 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
         ],
     ),
+
+    # ---- Phase 31k round 122 — benzodiazepines ---------------------
+    SARSeries(
+        id="benzodiazepines",
+        name="Benzodiazepine series",
+        target="GABA-A receptor (α1/α2/α3/α5 subtypes) — "
+               "positive allosteric modulator site",
+        parent_scaffold_smiles="O=C1CN=C(c2ccccc2)c2ccccc2N1",  # 1,4-BZD core
+        source="Sternbach 1979 *J. Med. Chem.* 22:1 (Hoffmann-La "
+               "Roche discovery review); Sigel & Ernst 2018 "
+               "*Trends Pharmacol. Sci.* 39:659 (subtype "
+               "selectivity update)",
+        activity_columns=["gaba_a_ec50_nM", "t_half_h",
+                          "onset_min"],
+        variants=[
+            SARVariant(
+                name="Diazepam",
+                smiles="CN1C(=O)CN=C(c2ccccc2)c2cc(Cl)ccc21",
+                r_group_label="parent 1,4-benzodiazepine; 7-Cl, "
+                              "N1-methyl, 2'-H phenyl",
+                activity={"gaba_a_ec50_nM": 15.0, "t_half_h": 44.0,
+                          "onset_min": 30.0},
+                notes="Valium — Sternbach / La Roche 1963.  The "
+                      "archetype of the class.  7-Cl optimises "
+                      "potency; N1-methyl extends half-life (no "
+                      "2-oxo removal before phase-I metabolism).  "
+                      "Active metabolites (nordiazepam, oxazepam, "
+                      "temazepam) extend the effective half-life "
+                      "further — hence the very long t½.",
+            ),
+            SARVariant(
+                name="Lorazepam",
+                smiles="OC1N=C(c2ccccc2Cl)c2cc(Cl)ccc2NC1=O",
+                r_group_label="3-OH diazepam with 2'-Cl phenyl; "
+                              "N1-H (no methyl)",
+                activity={"gaba_a_ec50_nM": 3.0, "t_half_h": 14.0,
+                          "onset_min": 45.0},
+                notes="Ativan.  3-Hydroxyl + 2'-Cl sharpen potency "
+                      "~5× vs diazepam.  Crucially, the 3-OH is "
+                      "glucuronidated directly (no active "
+                      "metabolite), so the 14-h half-life is a "
+                      "clean single-exponential — safer in "
+                      "elderly / hepatic-impaired patients.",
+            ),
+            SARVariant(
+                name="Alprazolam",
+                smiles="Cc1nnc2n1-c1ccc(Cl)cc1C(c1ccccc1)=NC2",
+                r_group_label="triazolo-fused benzodiazepine "
+                              "(1,2,4-triazole replacing N1-methyl "
+                              "+ 2-oxo)",
+                activity={"gaba_a_ec50_nM": 2.5, "t_half_h": 11.0,
+                          "onset_min": 60.0},
+                notes="Xanax.  Triazole ring fusion in place of "
+                      "diazepam's N1-CH₃ + 2-C=O is a chemotype "
+                      "switch, not a substituent tweak — it "
+                      "dramatically tightens the panic-disorder "
+                      "efficacy profile.  Highest addictive / "
+                      "withdrawal liability of the class because "
+                      "of fast onset + moderate t½ + high potency.",
+            ),
+            SARVariant(
+                name="Clonazepam",
+                smiles="O=C1CN=C(c2ccccc2Cl)c2cc([N+](=O)[O-])ccc2N1",
+                r_group_label="7-NO₂ in place of 7-Cl; 2'-Cl "
+                              "phenyl; N1-H",
+                activity={"gaba_a_ec50_nM": 1.2, "t_half_h": 35.0,
+                          "onset_min": 60.0},
+                notes="Klonopin.  7-NO₂ is the only common "
+                      "deviation from the canonical 7-Cl — shifts "
+                      "the receptor-subtype preference + prolongs "
+                      "half-life.  Gold-standard anticonvulsant "
+                      "in the class; the 2'-Cl boosts potency ~10× "
+                      "over 7-Cl-only analogues.",
+            ),
+            SARVariant(
+                name="Midazolam",
+                smiles="Cc1ncc2CN=C(c3ccccc3F)c3cc(Cl)ccc3-n12",
+                r_group_label="imidazo[1,2-a]-fused benzodiazepine; "
+                              "2'-F phenyl",
+                activity={"gaba_a_ec50_nM": 4.0, "t_half_h": 2.5,
+                          "onset_min": 5.0},
+                notes="Versed.  Imidazo-ring fusion gives pH-"
+                      "dependent solubility (closed-ring at pH 4, "
+                      "open-ring amino-ketone at physiological pH) "
+                      "— unique among BZDs: it's water-soluble in "
+                      "its ampoule, lipid-soluble in blood.  The "
+                      "very short 2.5-h half-life + 5-min onset "
+                      "make it the anaesthesiologist's preferred "
+                      "IV induction agent.",
+            ),
+        ],
+    ),
 ]
 
 
