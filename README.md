@@ -12,8 +12,10 @@ synthesis pathways**, **20 reaction-coordinate energy profiles**
 (catalogue closed — SN1/SN2, E1/E2, Diels-Alder, aldol, Grignard,
 Wittig, Michael, Sonogashira, HWE, Mitsunobu, Fischer, Claisen,
 nitration, NaBH₄, bromonium, pinacol, chymotrypsin, Friedel-Crafts),
-**80 glossary terms**, **30 tutorial lessons** across beginner /
-intermediate / advanced / graduate tiers (curriculum complete),
+**80 glossary terms**, **215 tutorial lessons** across beginner
+(68) / intermediate (51) / advanced (46) / graduate (50) tiers
+— a comprehensive curriculum spanning foundational concepts
+through cutting-edge research,
 **8 SAR series** for medicinal-chemistry teaching (NSAIDs, statins,
 β-blockers, ACE-Is, SSRIs, β-lactams, PDE5 inhibitors, benzodiazepines),
 **15 seeded protein teaching targets** (catalogue closed — haemoglobin,
@@ -26,7 +28,7 @@ with export to PNG / SVG / MOL and one-click send-to-workspace.
 Every feature is reachable from the GUI — the audit gate pins
 **100 % coverage** (every registered agent action has a corresponding
 menu / panel / dialog entry). The full regression suite is
-**1 096 tests** green as of round 127 (2026-04-24).
+**2 288 tests** green as of round 211 (2026-04-26).
 
 ![Main window — molecule workspace](screenshots/tour/01_caffeine.png)
 
@@ -389,7 +391,7 @@ python main.py --agent-stdio
   metrics and known issues.
 - [`ROADMAP.md`](ROADMAP.md) — phased plan through v1.0 and beyond.
 - [`SESSION_LOG.md`](SESSION_LOG.md) — rolling development log across
-  127+ autonomous-loop rounds.
+  211+ autonomous-loop rounds.
 
 ## Requires
 Python 3.11+, RDKit, PySide6 (with QtWebEngine + QtWebChannel),
@@ -403,18 +405,40 @@ Verma, Singh & Passey, *Rasayan J. Chem.* 17(4): 1460–1472 (2024),
 exposed as both a library call (`orgchem/core/formula.py`) and a
 Tools menu dialog.
 
-## Status (round 127 — 2026-04-24)
+## Status (round 211 — 2026-04-26)
 
 **Catalogue.**  415 molecules · 37 reactions · 20 mechanisms ·
 25 pathways · **20** energy profiles (CLOSED) · 80 glossary
-terms · **30** tutorial lessons (CLOSED) · 8 SAR series · 25
-carbohydrates · 31 lipids · 33 nucleic acids · **15** seeded
-proteins (CLOSED). Every molecule row also carries a
-`synonyms_json` field keyed off the round-58 identity helpers +
-round-113/120 PubChem backfill, so users can search by *any*
-common name (Paracetamol → Acetaminophen, ASA → Aspirin, …).
+terms · **215** tutorial lessons (beginner 68 / intermediate 51
+/ advanced 46 / graduate 50) · 8 SAR series · 25 carbohydrates ·
+31 lipids · 33 nucleic acids · **15** seeded proteins (CLOSED).
+Every molecule row also carries a `synonyms_json` field keyed
+off the round-58 identity helpers + round-113/120 PubChem
+backfill, so users can search by *any* common name (Paracetamol
+→ Acetaminophen, ASA → Aspirin, …).
 
-**Code health.**  **1 096 tests** green (0 skipped). **100 % GUI
+The tutorial curriculum (rounds 208-211, expanded from 30 → 215
+in four user-driven rounds) covers foundational concepts (atoms
++ bonds, IUPAC nomenclature, acid-base, stereochemistry, NMR /
+IR / MS reading, lab safety, glassware, recrystallisation, TLC),
+core mechanism families (SN1/SN2, E1/E2, EAS, carbonyl, aldol,
+pericyclic, organometallics, radicals), modern catalysis +
+synthesis (asymmetric organocatalysis, Pd / Ni / Cu / Ru / Ir /
+Au cross-coupling, C-H activation, metathesis, photoredox,
+bioorthogonal, macrocycles, SPPS + DNA synthesis, DEL,
+asymmetric hydrogenation, frustrated Lewis pairs, single-atom
+catalysis, mechanochemistry, sustainable polymers), and
+cutting-edge research (cryo-EM, ssNMR, hyperpolarised NMR, EPR,
+Mössbauer, XPS, VCD, computational catalyst design, ML
+retrosynthesis, ML protein design, neural-network potentials,
+generative chemistry, crystal-structure prediction, molecular
+dynamics, free-energy methods for enzymes, molecular electronics,
+spintronic molecules, OLEDs, battery electrolytes, hydrogen
+production + fuel cells, carbon capture). Tutorial-coverage
+audit pins glossary coverage at 100 %, catalogue-molecule
+coverage ≥ 85 %, named-reaction coverage ≥ 45 %.
+
+**Code health.**  **2 288 tests** green (0 skipped). **100 % GUI
 coverage** (every registered agent action reachable from a menu,
 panel, or dialog — pinned by `tests/test_gui_audit.py`).
 Pollution-safe test fixtures (`Tutor-test` prefix purge auto-runs

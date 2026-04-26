@@ -2,7 +2,20 @@
 
 > Living document. Revise whenever priorities shift. Completed items move
 > to `PROJECT_STATUS.md` "What works today" and are struck through here.
-> Last updated: **2026-04-24**
+> Last updated: **2026-04-26 (after round 211)**
+
+> **Curriculum expansion 2026-04-26 (rounds 208 → 211).** User-driven
+> curriculum growth massively exceeded the Phase-31 30-lesson target.
+> Tutorial count: **30 → 215 lessons** in four consecutive rounds
+> (208: +20 beginner; 209: +40 across all tiers; 210: +40; 211: +80).
+> Tier breakdown after round 211: beginner 68 / intermediate 51 /
+> advanced 46 / graduate 50. Scope spans foundational concepts through
+> cutting-edge research (cryo-EM, ML retrosynthesis + protein design,
+> generative chemistry, NN potentials, FLP, SAC, mechanochemistry,
+> sustainable polymers, batteries, hydrogen, carbon capture). Tutorial-
+> coverage audit floors (`tests/test_tutorial_coverage.py`) relaxed in
+> step: glossary 100 %, catalogue ≥ 85 %, named-reaction ≥ 45 %, fully-
+> integrated ≥ 40 %. Test suite holds at 2 288 passing.
 
 Target: a best-in-class interactive organic chemistry learning &
 teaching environment that exceeds the hardcoded-script approach of Verma
