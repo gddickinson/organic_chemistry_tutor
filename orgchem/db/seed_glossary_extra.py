@@ -840,4 +840,196 @@ EXTRA_TERMS: List[Dict[str, Any]] = [
         "eliminated the inter-patient CYP2C19-polymorphism "
         "variability of the racemate.  See the Phase-31k "
         "SSRI + PPI SAR series."},
+
+    # ---- Round 199 — photoredox glossary backfill -----------
+    {"term": "Photoredox catalysis",
+     "aliases": ["photoredox", "visible-light photoredox"],
+     "category": "modern methodology",
+     "see_also": ["Single-electron transfer (SET)",
+                  "Photocatalyst", "MLCT"],
+     "definition_md":
+        "**Photoredox catalysis** is a class of "
+        "single-electron-transfer (SET) reactions driven by "
+        "**visible light** through a **photocatalyst** that "
+        "absorbs the photon and shuttles into a long-lived "
+        "excited state with substantially-shifted redox "
+        "potentials.  The excited photocatalyst can either "
+        "donate an electron to a substrate (**oxidative "
+        "quenching cycle**) or steal one (**reductive "
+        "quenching cycle**) — the resulting open-shell "
+        "intermediates then undergo bond-forming chemistry "
+        "that's inaccessible to classical two-electron "
+        "polar mechanisms.  Hugely impactful since ~ 2008 "
+        "(MacMillan / Yoon / Doyle); now appears in > 10 % "
+        "of modern total-synthesis work.  See the Phase-198 "
+        "graduate lesson on photoredox & visible-light "
+        "chemistry."},
+
+    {"term": "Photocatalyst",
+     "aliases": ["photoredox catalyst"],
+     "category": "modern methodology",
+     "see_also": ["Photoredox catalysis", "MLCT",
+                  "Single-electron transfer (SET)"],
+     "definition_md":
+        "A **photocatalyst** absorbs a photon and uses the "
+        "absorbed energy to drive a chemical transformation "
+        "— in photoredox chemistry, a single-electron "
+        "transfer to or from a substrate.  Two canonical "
+        "families: (a) **Ru / Ir polypyridyl complexes** "
+        "(Ru(bpy)₃²⁺ archetype, Ir(ppy)₃, "
+        "Ir(dF(CF₃)ppy)₂(dtbbpy) — long-lived triplet "
+        "excited states ~ µs, reversible SET, well-tabulated "
+        "redox potentials); (b) **organic dyes** "
+        "(eosin Y, fluorescein, Mes-Acr⁺ acridinium salts, "
+        "4CzIPN — much cheaper, often comparable performance, "
+        "favoured for industrial scale)."},
+
+    {"term": "Single-electron transfer (SET)",
+     "aliases": ["SET", "single electron transfer"],
+     "category": "modern methodology",
+     "see_also": ["Photoredox catalysis", "Photocatalyst",
+                  "Radical"],
+     "definition_md":
+        "A **single-electron transfer** moves ONE electron "
+        "between donor + acceptor — the mechanistic "
+        "alternative to the **two-electron** "
+        "(heterolytic) bond making + breaking that defines "
+        "polar organic chemistry.  SET is the basic step in "
+        "photoredox catalysis, electrochemistry, "
+        "Birch reduction, and most radical-chain reactions.  "
+        "The donor + acceptor swap a single electron via "
+        "outer-sphere ET (Marcus theory) or inner-sphere "
+        "(through a bridge); the resulting open-shell "
+        "intermediates (radicals, radical ions) drive "
+        "downstream chemistry.  The hallmark mechanistic "
+        "diagnostic is **stoichiometric TEMPO / BHT** "
+        "quench, which intercepts the radical intermediate "
+        "and short-circuits product formation."},
+
+    {"term": "MLCT",
+     "aliases": ["metal-to-ligand charge transfer",
+                 "metal to ligand charge transfer"],
+     "category": "modern methodology",
+     "see_also": ["Photocatalyst", "Photoredox catalysis"],
+     "definition_md":
+        "A **metal-to-ligand charge transfer (MLCT)** "
+        "absorption band is the visible-light electronic "
+        "transition that powers Ru / Ir polypyridyl "
+        "photocatalysts.  An electron in a metal-centred d "
+        "orbital is promoted to a ligand-centred π* "
+        "orbital — formally the metal is oxidised + the "
+        "ligand reduced in the excited state.  For "
+        "Ru(bpy)₃²⁺ the MLCT band sits around 450 nm "
+        "(blue), giving the complex its iconic orange-red "
+        "colour.  Intersystem crossing then converts the "
+        "singlet MLCT state to a long-lived triplet (~ 1 µs "
+        "for Ru(bpy)₃²⁺) — the catalytically-active "
+        "species."},
+
+    # ---- Round 207 — computational-chemistry backfill -------
+    {"term": "DFT",
+     "aliases": ["density-functional theory",
+                 "density functional theory",
+                 "Kohn-Sham DFT"],
+     "category": "computational chemistry",
+     "see_also": ["Basis set", "Transition state",
+                  "ML potential"],
+     "definition_md":
+        "**Density-functional theory (DFT)** computes a "
+        "molecule's ground-state energy + observables from "
+        "its **electron density ρ(r)** rather than the full "
+        "many-electron wavefunction.  The **Hohenberg-Kohn "
+        "theorems** (1964, Nobel 1998 to Kohn) prove that "
+        "ρ(r) uniquely determines the energy; the **Kohn-"
+        "Sham equations** turn the many-body problem into a "
+        "set of one-body problems on non-interacting "
+        "electrons + an unknown **exchange-correlation "
+        "functional** that absorbs all the many-body "
+        "physics.  Approximate functionals form a Jacob's "
+        "ladder: LDA → GGA → meta-GGA → hybrid → "
+        "double-hybrid; **B3LYP** is the most-cited "
+        "functional in chemistry (> 100 000 citations); "
+        "modern defaults are **ωB97X-D**, **M06-2X**, and "
+        "**r²SCAN**.  Scales O(N³), about 100 × cheaper than "
+        "wavefunction CCSD(T), making it the default "
+        "workhorse for organic chemistry.  See the "
+        "Phase-206 graduate computational-chemistry lesson."},
+
+    {"term": "Basis set",
+     "aliases": ["basis-set", "basis functions"],
+     "category": "computational chemistry",
+     "see_also": ["DFT", "Transition state"],
+     "definition_md":
+        "A **basis set** is a finite set of atom-centred "
+        "functions used to represent molecular orbitals in "
+        "a quantum-chemistry calculation.  Bigger basis = "
+        "better accuracy + higher cost.  Three main "
+        "families: **Pople** (e.g. **6-31G(d,p)** — split-"
+        "valence with d-polarisation on heavy atoms; the "
+        "1990s-2000s workhorse); **Dunning** correlation-"
+        "consistent (**cc-pVDZ / cc-pVTZ / cc-pVQZ** — "
+        "designed for systematic convergence to the basis-"
+        "set limit; **cc-pVTZ** is the modern default for "
+        "accurate energetics); **Karlsruhe** (**def2-SVP / "
+        "def2-TZVP / def2-QZVP** — designed for DFT; "
+        "**def2-TZVP** is the modern default for ωB97X-D / "
+        "r²SCAN organic-chemistry calculations).  For "
+        "anions, hydrogen-bonded systems, or excited-state "
+        "work, add **diffuse functions** (the `+` in "
+        "6-31+G(d,p) or `aug-` in aug-cc-pVTZ)."},
+
+    {"term": "Transition-state optimisation",
+     "aliases": ["TS optimisation", "TS optimization",
+                 "transition state finding",
+                 "TS finding", "saddle point"],
+     "category": "computational chemistry",
+     "see_also": ["DFT", "Transition state", "Basis set"],
+     "definition_md":
+        "Computational identification of a "
+        "**transition state** — a saddle point on "
+        "the potential-energy surface separating reactant + "
+        "product — the highest-energy point along the "
+        "minimum-energy reaction coordinate.  Its energy "
+        "above the reactant defines the **activation "
+        "barrier ΔG‡**; the Eyring equation k = (k_B T / h) "
+        "· exp(−ΔG‡ / RT) converts ΔG‡ into a rate constant.  "
+        "Computationally, a TS has exactly one **imaginary "
+        "vibrational frequency** along the reaction "
+        "coordinate; everything else is real.  Common "
+        "TS-finding algorithms: **eigenvector following** "
+        "(climb the Hessian's lowest mode from a TS guess) "
+        "and **nudged elastic band (NEB)** (interpolate "
+        "intermediate images between reactant + product, "
+        "relax them all jointly).  Verify a TS via an **IRC "
+        "(intrinsic reaction coordinate)** walk that "
+        "confirms it connects the right reactant + product.  "
+        "TS structures are the foundation of modern "
+        "**transition-state-mimic drug design** (HIV "
+        "protease inhibitors, ACE inhibitors, statins)."},
+
+    {"term": "ML potential",
+     "aliases": ["machine-learning potential",
+                 "neural-network potential",
+                 "NNP", "ML force field"],
+     "category": "computational chemistry",
+     "see_also": ["DFT"],
+     "definition_md":
+        "A **machine-learning potential** approximates a "
+        "molecule's quantum-chemistry potential-energy "
+        "surface with a neural network trained on millions "
+        "of DFT (or CCSD(T)) reference calculations.  "
+        "Inference cost scales as a force field "
+        "(~ 10⁵ × faster than DFT) but accuracy approaches "
+        "the underlying reference method.  Key examples: "
+        "**ANI-1 / ANI-2x** (Smith et al., 2017-2021 — the "
+        "founding family), **AIMNet2** (Zubatyuk + Isayev "
+        "2023 — extended element coverage + better "
+        "transferability), **MACE-OFF23** (Batatia et al. "
+        "2023 — equivariant graph-neural-net architecture).  "
+        "Suitable for routine geometry optimisation + "
+        "conformer generation + medium-accuracy "
+        "thermochemistry; less reliable near transition "
+        "states + bond-breaking events not seen in training "
+        "data.  Starting to displace classical MM force "
+        "fields (MMFF, OPLS) for medium-accuracy work."},
 ]

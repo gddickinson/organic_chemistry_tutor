@@ -524,6 +524,69 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
         "C=CCCC",                                                      "reagent"),
     ("Ozone",
         "O=[O+][O-]",                                                  "reagent"),
+
+    # ---- Round 195 — biological cofactors / metabolites ------------
+    ("Acetyl-CoA",
+        "CC(=O)SCCNC(=O)CCNC(=O)[C@H](O)C(C)(C)COP(=O)(O)OP(=O)(O)"
+        "OC[C@H]1O[C@@H](n2cnc3c(N)ncnc32)[C@H](O)[C@@H]1OP(=O)(O)O",
+                                                                       "biomolecule"),
+    ("Glutathione (GSH)",
+        "N[C@@H](CCC(=O)N[C@@H](CS)C(=O)NCC(=O)O)C(=O)O",              "biomolecule"),
+    ("Plastoquinone-9",
+        "CC1=C(C)C(=O)C(CC=C(C)CCC=C(C)CCC=C(C)CCC=C(C)CCC=C(C)CCC"
+        "=C(C)CCC=C(C)CCC=C(C)CC=C(C)C)=C(C)C1=O",                     "biomolecule"),
+    ("Fructose-1,6-bisphosphate",
+        "O=P(O)(O)OC[C@@H]1O[C@](O)(COP(=O)(O)O)[C@@H](O)[C@H]1O",
+                                                                       "biomolecule"),
+    ("Glucose-6-phosphate",
+        "OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1OP(=O)(O)O",             "biomolecule"),
+    ("Indole-3-acetic acid (IAA, auxin)",
+        "OC(=O)Cc1c[nH]c2ccccc12",                                     "biomolecule"),
+
+    # ---- Round 196 — central-carbon-metabolism intermediates -------
+    ("3-Phosphoglycerate (3-PG)",
+        "OC(=O)[C@@H](O)COP(=O)(O)O",                                  "biomolecule"),
+    ("Phosphoenolpyruvate (PEP)",
+        "OC(=O)C(=C)OP(=O)(O)O",                                       "biomolecule"),
+    ("Dihydroxyacetone phosphate (DHAP)",
+        "O=C(CO)COP(=O)(O)O",                                          "biomolecule"),
+    ("Glyceraldehyde-3-phosphate (G3P)",
+        "O=C[C@@H](O)COP(=O)(O)O",                                     "biomolecule"),
+    ("Citrate",
+        "OC(=O)CC(O)(C(=O)O)CC(=O)O",                                  "biomolecule"),
+    ("α-Ketoglutarate",
+        "OC(=O)CCC(=O)C(=O)O",                                         "biomolecule"),
+    ("Succinate",
+        "OC(=O)CCC(=O)O",                                              "biomolecule"),
+    ("Fumarate",
+        "OC(=O)/C=C/C(=O)O",                                           "biomolecule"),
+    ("L-Malate",
+        "O[C@H](CC(=O)O)C(=O)O",                                       "biomolecule"),
+    ("Oxaloacetate",
+        "OC(=O)CC(=O)C(=O)O",                                          "biomolecule"),
+
+    # ---- Round 202 — adenylates + acyl-CoAs + glycolysis ext --------
+    ("ADP (adenosine-5'-diphosphate)",
+        "Nc1ncnc2c1ncn2[C@@H]1O[C@H](COP(=O)(O)OP(=O)(O)O)"
+        "[C@@H](O)[C@H]1O",                                            "biomolecule"),
+    ("AMP (adenosine-5'-monophosphate)",
+        "Nc1ncnc2c1ncn2[C@@H]1O[C@H](COP(=O)(O)O)[C@@H](O)[C@H]1O",
+                                                                       "biomolecule"),
+    ("Fructose-2,6-bisphosphate (F2,6BP)",
+        "OC[C@@H]1O[C@](OP(=O)(O)O)(COP(=O)(O)O)[C@@H](O)[C@H]1O",
+                                                                       "biomolecule"),
+    ("Malonyl-CoA",
+        "OC(=O)CC(=O)SCCNC(=O)CCNC(=O)[C@H](O)C(C)(C)COP(=O)(O)OP(=O)"
+        "(O)OC[C@H]1O[C@@H](n2cnc3c(N)ncnc32)[C@H](O)[C@@H]1OP(=O)(O)O",
+                                                                       "biomolecule"),
+    ("Succinyl-CoA",
+        "OC(=O)CCC(=O)SCCNC(=O)CCNC(=O)[C@H](O)C(C)(C)COP(=O)(O)OP(=O)"
+        "(O)OC[C@H]1O[C@@H](n2cnc3c(N)ncnc32)[C@H](O)[C@@H]1OP(=O)(O)O",
+                                                                       "biomolecule"),
+    ("1,3-Bisphosphoglycerate (1,3-BPG)",
+        "O=P(O)(O)OC[C@@H](O)C(=O)OP(=O)(O)O",                         "biomolecule"),
+    ("2-Phosphoglycerate (2-PG)",
+        "OC(=O)[C@H](OP(=O)(O)O)CO",                                   "biomolecule"),
 ]
 
 

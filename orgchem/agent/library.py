@@ -92,6 +92,10 @@ def show_molecule(name_or_id: str) -> Dict[str, Any]:
 
     The app's Molecule Workspace tab updates via the signal bus.
     """
+    # The LLM occasionally passes back an int from a previous
+    # tool result (e.g. `id: 7`) instead of a string.  Coerce so
+    # `.isdigit()` doesn't blow up on int input.
+    name_or_id = str(name_or_id)
     row: Optional[DBMol] = None
     if name_or_id.isdigit():
         row = get_molecule(int(name_or_id))

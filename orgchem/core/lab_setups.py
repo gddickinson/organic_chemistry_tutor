@@ -87,6 +87,48 @@ _SEX_NEUTRAL_JOINTS = frozenset({
 })
 
 
+def validate_port_pair(equipment_a: Equipment, port_a_name: str,
+                       equipment_b: Equipment, port_b_name: str,
+                       ) -> Optional[str]:
+    """Phase 38c.4 (round 189) — validate a single connection
+    between two equipment items at the named ports.
+
+    Returns ``None`` when the pair is compatible (joint types
+    match or one side is ``open``; sex-complementary for ground-
+    glass joints), or a short human-readable error string
+    otherwise.
+
+    Same compatibility rules as :func:`validate_setup`, but
+    callable on the per-pair level so the Phase-38c canvas can
+    snap two glyphs together (or shout a port-mismatch warning)
+    in real time.  Note: this validator does NOT enforce a
+    self-loop check on the equipment object, because two
+    different placed glyphs in the canvas legitimately share the
+    same `Equipment` instance (frozen catalogue dataclass).
+    The canvas enforces "don't connect a glyph to itself" at the
+    glyph level."""
+    port_a = _find_port(equipment_a, port_a_name)
+    if port_a is None:
+        return (f"port {port_a_name!r} not on "
+                f"{equipment_a.id}")
+    port_b = _find_port(equipment_b, port_b_name)
+    if port_b is None:
+        return (f"port {port_b_name!r} not on "
+                f"{equipment_b.id}")
+    f_type = port_a.joint_type
+    t_type = port_b.joint_type
+    if (f_type != "open" and t_type != "open"
+            and f_type != t_type):
+        return f"joint mismatch: {f_type} vs {t_type}"
+    if (f_type not in _SEX_NEUTRAL_JOINTS
+            and t_type not in _SEX_NEUTRAL_JOINTS
+            and port_a.is_male == port_b.is_male):
+        sex = "male" if port_a.is_male else "female"
+        return (f"port-sex mismatch (both {sex}); ground-glass "
+                f"joints need male ↔ female")
+    return None
+
+
 def validate_setup(setup: Setup) -> List[str]:
     """Validate every connection in a setup.  Returns a list of
     human-readable error strings; empty list = setup is valid."""

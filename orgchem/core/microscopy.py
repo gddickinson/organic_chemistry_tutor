@@ -321,7 +321,9 @@ _METHODS: List[MicroscopyMethod] = [
         limitations="Out-of-focus blur degrades thick-sample "
                     "imaging — confocal needed for sectioning",
         representative_instruments="Nikon Eclipse Ti2, Zeiss "
-                                   "Axio Observer 7, Leica DMi8",
+                                   "Axio Observer 7, Leica DMi8, "
+                                   "PerkinElmer Operetta CLS",
+        cross_reference_lab_analyser_ids=("operetta_cls",),
     ),
     MicroscopyMethod(
         id="confocal",
@@ -346,8 +348,12 @@ _METHODS: List[MicroscopyMethod] = [
                     "bleaching during long acquisitions; "
                     "expensive",
         representative_instruments="Zeiss LSM 980, Leica "
-                                   "STELLARIS, Nikon AX",
-        cross_reference_lab_analyser_ids=("zeiss_lsm_980",),
+                                   "STELLARIS, Nikon AX, "
+                                   "PerkinElmer Operetta CLS "
+                                   "(confocal mode)",
+        cross_reference_lab_analyser_ids=(
+            "zeiss_lsm_980", "operetta_cls",
+        ),
     ),
     MicroscopyMethod(
         id="spinning-disk-confocal",

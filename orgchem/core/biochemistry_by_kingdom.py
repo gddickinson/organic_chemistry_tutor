@@ -142,6 +142,9 @@ _TOPICS: List[KingdomTopic] = [
         cross_reference_cell_component_ids=(
             "nuclear-envelope", "nucleolus", "chromatin",
         ),
+        cross_reference_molecule_names=(
+            "GTP (guanosine-5'-triphosphate)",
+        ),
     ),
     KingdomTopic(
         id="eukarya-structure-ecm-and-cell-walls",
@@ -191,6 +194,10 @@ _TOPICS: List[KingdomTopic] = [
             "actin-microfilament", "microtubule",
             "intermediate-filament",
         ),
+        cross_reference_molecule_names=(
+            "ATP (adenosine-5'-triphosphate)",
+            "GTP (guanosine-5'-triphosphate)",
+        ),
     ),
 
     # ============================================================
@@ -223,6 +230,8 @@ _TOPICS: List[KingdomTopic] = [
             "FAD",
             "Pyruvate",
             "GTP (guanosine-5'-triphosphate)",
+            "Coenzyme A (CoA-SH)",
+            "Acetyl-CoA",
         ),
     ),
     KingdomTopic(
@@ -248,6 +257,8 @@ _TOPICS: List[KingdomTopic] = [
         cross_reference_molecule_names=(
             "ATP (adenosine-5'-triphosphate)",
             "NADPH",
+            "Plastoquinone-9",
+            "Glyceraldehyde-3-phosphate (G3P)",
         ),
         sub_domain="plant",
     ),
@@ -324,6 +335,9 @@ _TOPICS: List[KingdomTopic] = [
             "concentration-gradient principle.  Hox genes encode "
             "transcription factors that read morphogen gradients "
             "to establish anterior-posterior body plans."
+        ),
+        cross_reference_molecule_names=(
+            "Indole-3-acetic acid (IAA, auxin)",
         ),
     ),
 
@@ -438,6 +452,9 @@ _TOPICS: List[KingdomTopic] = [
         cross_reference_cell_component_ids=(
             "mitochondrion", "chloroplast",
         ),
+        cross_reference_molecule_names=(
+            "Cholesterol",
+        ),
     ),
 
     # ============================================================
@@ -533,6 +550,9 @@ _TOPICS: List[KingdomTopic] = [
             "flowering signal that travels phloem → shoot apical "
             "meristem."
         ),
+        cross_reference_molecule_names=(
+            "Indole-3-acetic acid (IAA, auxin)",
+        ),
     ),
     KingdomTopic(
         id="eukarya-structure-plant-vascular-tissue",
@@ -560,6 +580,9 @@ _TOPICS: List[KingdomTopic] = [
             "flow follows the gradient).  The xylem / phloem "
             "vascular bundle organisation defines monocot vs "
             "dicot anatomy."
+        ),
+        cross_reference_molecule_names=(
+            "Sucrose",
         ),
     ),
     KingdomTopic(
@@ -729,6 +752,9 @@ _TOPICS: List[KingdomTopic] = [
         cross_reference_cell_component_ids=(
             "bacterial-plasma-membrane", "bacterial-nucleoid",
         ),
+        cross_reference_molecule_names=(
+            "ATP (adenosine-5'-triphosphate)",
+        ),
     ),
     KingdomTopic(
         id="bacteria-structure-flagellum-motor",
@@ -828,6 +854,8 @@ _TOPICS: List[KingdomTopic] = [
         cross_reference_molecule_names=(
             "NADH",
             "Pyruvate",
+            "Ethanol",
+            "Fumarate",
         ),
     ),
     KingdomTopic(
@@ -1139,6 +1167,9 @@ _TOPICS: List[KingdomTopic] = [
             "the same job."
         ),
         cross_reference_cell_component_ids=("archaeal-flagellum",),
+        cross_reference_molecule_names=(
+            "ATP (adenosine-5'-triphosphate)",
+        ),
     ),
     KingdomTopic(
         id="archaea-structure-no-organelles",
@@ -1160,6 +1191,9 @@ _TOPICS: List[KingdomTopic] = [
         ),
         cross_reference_cell_component_ids=(
             "archaeal-nucleoid", "archaeal-ribosome",
+        ),
+        cross_reference_molecule_names=(
+            "ATP (adenosine-5'-triphosphate)",
         ),
     ),
 
@@ -1189,6 +1223,9 @@ _TOPICS: List[KingdomTopic] = [
             "scale: methanogens generate ~ 1 Gt CH₄ / year — "
             "the dominant atmospheric methane source + a major "
             "climate-change driver."
+        ),
+        cross_reference_molecule_names=(
+            "Methane",
         ),
     ),
     KingdomTopic(
@@ -1236,6 +1273,9 @@ _TOPICS: List[KingdomTopic] = [
             "explain why archaeal cultures took decades longer "
             "than bacterial cultures to bring into the lab."
         ),
+        cross_reference_molecule_names=(
+            "Methane",
+        ),
     ),
     KingdomTopic(
         id="archaea-physiology-bacteriorhodopsin",
@@ -1257,6 +1297,9 @@ _TOPICS: List[KingdomTopic] = [
             "rhodopsin + the channelrhodopsins that revolutionised "
             "neuroscience as **optogenetics tools** (Boyden + "
             "Deisseroth + Nagel et al. 2005)."
+        ),
+        cross_reference_molecule_names=(
+            "ATP (adenosine-5'-triphosphate)",
         ),
     ),
     KingdomTopic(

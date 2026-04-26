@@ -60,6 +60,8 @@ from orgchem.agent import actions_microscopy     # noqa: F401 — Phase 44 micro
 from orgchem.agent import actions_cell_components  # noqa: F401 — Phase 43 cell components
 from orgchem.agent import actions_biochemistry_by_kingdom  # noqa: F401 — Phase 47 kingdom topics
 from orgchem.agent import actions_isomers              # noqa: F401 — Phase 48 isomers
+from orgchem.agent import actions_lab_canvas    # noqa: F401 — Phase 38c.5 lab canvas
+from orgchem.agent import actions_simulator     # noqa: F401 — Phase 38d.4 process simulator
 from orgchem.agent import script_context         # noqa: F401 — Phase 32a scripting
 
 __all__ = ["action", "registry", "invoke", "ActionSpec"]

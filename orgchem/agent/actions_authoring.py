@@ -211,6 +211,7 @@ def add_molecule_synonym(name_or_id: str, synonym: str) -> Dict[str, Any]:
     forgiving match as :func:`find_molecule_by_name`). Idempotent:
     if the synonym is already attached, returns ``updated=False``.
     """
+    name_or_id = str(name_or_id)   # tolerate int from prior tool result
     if not name_or_id or not name_or_id.strip():
         return _rejected("`name_or_id` is required.")
     if not synonym or not synonym.strip():

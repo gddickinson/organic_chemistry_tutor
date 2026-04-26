@@ -46,6 +46,7 @@ CROSS_REFERENCE_KINDS: Tuple[Tuple[str, str], ...] = (
     ("kingdom-topic", "metabolic-pathway"),
     ("kingdom-topic", "molecule"),
     ("microscopy-method", "lab-analyser"),
+    ("metabolic-pathway", "molecule"),   # round 197
 )
 
 
@@ -186,14 +187,87 @@ def _walk_microscopy_xrefs() -> List[CrossRef]:
     return out
 
 
+def _walk_metabolic_pathway_xrefs() -> List[CrossRef]:
+    """Round 197 — derive `metabolic-pathway → molecule` edges
+    from the seeded Phase-42a pathway data.  Each edge connects
+    a pathway to the canonical name of every substrate / product
+    its steps reference that ALSO resolves to a Molecule DB row.
+
+    Filters out unresolvable names (water, generic ions, enzyme
+    names) at the walker level — only emits edges for names that
+    map to actual DB rows so the validator never reports them as
+    broken.  De-duplicates per (pathway, molecule) so the same
+    pathway-and-molecule pair only contributes one edge regardless
+    of how many steps mention it."""
+    out: List[CrossRef] = []
+    try:
+        from orgchem.core.metabolic_pathways import list_pathways
+        from orgchem.db.queries import find_molecule_by_name
+    except Exception:
+        return out
+    seen: set = set()
+
+    def _try_lookup(raw: str):
+        try:
+            return find_molecule_by_name(raw)
+        except Exception:
+            return None
+
+    for p in list_pathways():
+        # Walk substrates + products first so they take
+        # priority in the dedup set.
+        for step in p.steps:
+            for raw in (list(step.substrates)
+                        + list(step.products)):
+                row = _try_lookup(raw)
+                if row is None:
+                    continue
+                key = (p.id, row.name)
+                if key in seen:
+                    continue
+                seen.add(key)
+                out.append(CrossRef(
+                    source_kind="metabolic-pathway",
+                    source_id=p.id,
+                    target_kind="molecule",
+                    target_id=row.name,
+                ))
+        # Round 201 — also walk regulatory_effectors.  Captures
+        # cross-pathway regulator molecules that AREN'T in the
+        # pathway's substrate/product flow (e.g. Citrate as the
+        # PFK inhibitor of glycolysis from the TCA cycle;
+        # Cyanide as the Complex-IV inhibitor of ox-phos).
+        # Dedup with the substrate/product set so a molecule
+        # that's both a substrate AND a regulator only
+        # contributes one edge.
+        for step in p.steps:
+            for eff in step.regulatory_effectors:
+                row = _try_lookup(eff.name)
+                if row is None:
+                    continue
+                key = (p.id, row.name)
+                if key in seen:
+                    continue
+                seen.add(key)
+                out.append(CrossRef(
+                    source_kind="metabolic-pathway",
+                    source_id=p.id,
+                    target_kind="molecule",
+                    target_id=row.name,
+                ))
+    return out
+
+
 def gather_all_cross_references() -> List[CrossRef]:
     """Walk every catalogue and return every declared cross-ref
     edge as a flat list.  Order is stable: cell-component refs,
-    then kingdom-topic refs, then microscopy refs."""
+    then kingdom-topic refs, then microscopy refs, then
+    metabolic-pathway refs."""
     out: List[CrossRef] = []
     out.extend(_walk_cell_component_xrefs())
     out.extend(_walk_kingdom_topic_xrefs())
     out.extend(_walk_microscopy_xrefs())
+    out.extend(_walk_metabolic_pathway_xrefs())
     return out
 
 

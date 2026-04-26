@@ -98,6 +98,14 @@ _CATEGORY_SUMMARIES: Dict[str, str] = {
                          "Beer-Lambert solver (UV-Vis, "
                          "fluorescence, IR / FTIR, NIR, Raman, "
                          "CD, AAS, ICP, NMR).",
+    "lab-canvas": "Interactive lab-setup canvas — place "
+                  "equipment, snap connection ports, build "
+                  "apparatus from seeded Phase-38b setups.",
+    "simulator": "Process simulator — animate a seeded lab "
+                 "setup through its teaching stages "
+                 "(distillation / reflux / extraction / "
+                 "filtration / recrystallisation) with "
+                 "play/pause/step controls + commentary track.",
 }
 
 

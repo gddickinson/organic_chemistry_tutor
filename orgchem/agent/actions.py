@@ -99,7 +99,19 @@ def registry() -> Dict[str, ActionSpec]:
     return dict(_REGISTRY)
 
 
-def invoke(name: str, **kwargs: Any) -> Any:
+def invoke(name: str, /, **kwargs: Any) -> Any:
+    """Invoke a registered action by name.
+
+    The action-name argument is **positional-only** (the ``/`` after
+    it).  This matters because some actions declare a parameter
+    literally called ``name`` (e.g. ``import_smiles(name, smiles)``),
+    and the agent's tool-loop calls this as
+    ``invoke(tool.name, **tool.arguments)``.  Without the
+    positional-only marker, ``tool.arguments = {"name": "glucose",
+    ...}`` would collide with the registry's own ``name`` parameter
+    and raise ``TypeError: invoke() got multiple values for
+    argument 'name'``.
+    """
     if name not in _REGISTRY:
         raise KeyError(f"Unknown action: {name!r}. Known: {sorted(_REGISTRY)}")
     return _REGISTRY[name].fn(**kwargs)

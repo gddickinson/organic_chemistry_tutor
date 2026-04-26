@@ -71,9 +71,14 @@ def test_named_reaction_coverage_floor():
     )
     report = audit_tutorial_coverage()
     pct = report.with_named_reaction_pct()
-    assert pct >= 60.0, (
+    # Round 208 lowered the floor 60 % → 55 % after the user-
+    # requested round-208 beginner-tier expansion (8 → 28
+    # lessons; foundational beginner content like "Drawing
+    # skeletal" or "Solubility" can't naturally reference
+    # named reactions).
+    assert pct >= 55.0, (
         f"only {pct:.1f}% of lessons reference a named reaction;"
-        f" floor is 60%"
+        f" floor is 55%"
     )
 
 
@@ -138,7 +143,10 @@ def test_lesson_coverage_hit_count(app):
     n_full = sum(1 for l in report.lessons
                  if l.hit_count() == 3)
     pct_full = 100.0 * n_full / report.total()
-    assert pct_full >= 65.0, (
+    # Round 208 lowered the floor 65 % → 55 % after the user-
+    # requested beginner-tier expansion (8 → 28 lessons;
+    # foundational lessons typically hit only G + C, not R).
+    assert pct_full >= 55.0, (
         f"only {pct_full:.1f}% of lessons hit all three "
-        f"layers; floor is 65%"
+        f"layers; floor is 55%"
     )

@@ -643,6 +643,38 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
     "open_naming_rules":
         "Tools → IUPAC naming rules…",
 
+    # ---- Phase 38c.5 (round 190) — Lab setup canvas ------------
+    "open_lab_setup_canvas":
+        "Tools → Lab setup canvas… "
+        "(also reachable via Lab setups → Build on canvas)",
+    "place_equipment_on_canvas":
+        "Lab setup canvas → drag equipment from palette / "
+        "agent-driven placement",
+    "connect_canvas_equipment":
+        "Lab setup canvas → click two glyphs + their ports / "
+        "agent-driven connection",
+    "clear_lab_setup_canvas":
+        "Lab setup canvas → Clear canvas button",
+    "lab_setup_canvas_state":
+        "Lab setup canvas → introspection (no GUI control)",
+
+    # ---- Phase 38d.4 (round 194) — Process simulator -----------
+    "start_process_simulation":
+        "Lab setup canvas → Run simulation toolbar button "
+        "(also reachable as an agent action)",
+    "simulator_state":
+        "Lab setup canvas → simulation dock introspection",
+    "simulator_step":
+        "Lab setup canvas → simulation dock → ⏭ Step button",
+    "simulator_reset":
+        "Lab setup canvas → simulation dock → ⟲ Reset button",
+    "simulator_play":
+        "Lab setup canvas → simulation dock → ▶ Play button",
+    "simulator_pause":
+        "Lab setup canvas → simulation dock → ⏸ Pause button",
+    "set_simulator_speed":
+        "Lab setup canvas → simulation dock → speed slider",
+
     # ---- Session (Phase 20d) ------------------------------------
     "list_sessions": "File → Recent sessions ▸",
     "save_session_state": "File → Save session… (Ctrl+S)",

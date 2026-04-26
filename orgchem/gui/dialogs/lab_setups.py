@@ -48,6 +48,7 @@ class LabSetupsDialog(QDialog):
         self.setWindowTitle("Lab setups")
         self.setModal(False)
         self.resize(1080, 660)
+        self._current_setup_id: str = ""   # Phase 38c.5
         self._build_ui()
         self._reload_list()
 
@@ -95,6 +96,12 @@ class LabSetupsDialog(QDialog):
         outer.addWidget(splitter, 1)
 
         footer = QHBoxLayout()
+        # Phase 38c.5 — Build on canvas button.  Disabled until
+        # the user picks a setup; enabled by `_show_setup`.
+        self._build_btn = QPushButton("Build on canvas")
+        self._build_btn.setEnabled(False)
+        self._build_btn.clicked.connect(self._on_build_on_canvas)
+        footer.addWidget(self._build_btn)
         footer.addStretch(1)
         close_btn = QPushButton("Close")
         close_btn.clicked.connect(self.close)
@@ -143,6 +150,10 @@ class LabSetupsDialog(QDialog):
         self._meta.setText(
             f"<b>Equipment:</b> {n_eq} pieces &nbsp;·&nbsp; "
             f"<b>Connections:</b> {n_conn}")
+        # Phase 38c.5 — remember the current setup id so the
+        # *Build on canvas* button knows what to build.
+        self._current_setup_id = s.id
+        self._build_btn.setEnabled(True)
         # Build the equipment list with resolved names.
         eq_html = "<ol>"
         for eid in s.equipment:
@@ -207,6 +218,25 @@ class LabSetupsDialog(QDialog):
         self._title.setText(message)
         self._meta.setText("")
         self._detail.setHtml("")
+        self._current_setup_id = ""
+        self._build_btn.setEnabled(False)
+
+    # ---- Phase 38c.5 — Build on canvas -----------------------
+
+    def _on_build_on_canvas(self) -> None:
+        """Open the Phase-38c canvas dialog pre-populated with
+        the currently-displayed setup."""
+        sid = getattr(self, "_current_setup_id", "")
+        if not sid:
+            return
+        from orgchem.gui.dialogs.lab_setup_canvas import (
+            LabSetupCanvasDialog,
+        )
+        dlg = LabSetupCanvasDialog.singleton(parent=self.parent())
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+        dlg.populate_from_setup(sid)
 
     # ---- programmatic API ------------------------------------
 

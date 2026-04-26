@@ -4704,12 +4704,158 @@ of canonical setups.  Two halves:
   validator + 11 dialog).
 - **38c — Equipment palette + `QGraphicsScene` canvas**
   (drag from palette → drop on canvas → snap connection
-  ports between adjacent items).
+  ports between adjacent items).  Sub-phases:
+  - [x] **38c.1 (round 186, 2026-04-26) SHIPPED** —
+    headless palette data layer (`core/lab_palette.py`).
+    `PaletteCategory` + `Palette` dataclasses,
+    `default_palette()` (every Phase-38a equipment item,
+    grouped + ordered across 12 categories),
+    `palette_for_setup(setup_id)` (filtered to one Phase-38b
+    setup's equipment for the future *Build on canvas*
+    button), category-display-order constants, JSON
+    serialiser.  11 new tests; 2176 total passing.  No
+    Qt imports.
+  - [x] **38c.2 (round 187, 2026-04-26) SHIPPED** —
+    `QGraphicsScene` canvas widget + palette dock layout
+    in a singleton modeless `LabSetupCanvasDialog`.
+    `PaletteDock` (`QTreeWidget`-backed) renders
+    `default_palette()` with category-grouped collapsible
+    sections, click-to-select with `item_selected(eid)`
+    Qt signal entry point for 38c.3.  `CanvasView`
+    (`QGraphicsView` + 1200×800 `QGraphicsScene`) — empty
+    in 38c.2.  Toolbar (Clear canvas / Show all equipment)
+    + status bar.  `load_setup(setup_id)` swaps the
+    palette to a per-setup view via
+    `palette_for_setup(setup_id)`.  12 tests covering
+    singleton, modeless flag, palette population +
+    grouping + signal emission, category-header
+    click-suppression, load-setup happy + unknown-id
+    paths, *Show all equipment* reset, empty canvas,
+    *Clear canvas* button.
+  - [x] **38c.3 (round 188, 2026-04-26) SHIPPED** — drag-
+    source on palette (`_PaletteTree.startDrag` packages
+    equipment id as `EQUIPMENT_MIME =
+    "application/x-orgchem-equipment-id"` MIME payload)
+    + drop target on canvas (`CanvasView.dragEnterEvent`
+    + `dragMoveEvent` + `dropEvent`).  Drops place an
+    `EquipmentGlyph` (`QGraphicsItemGroup` with bordered
+    ellipse + name text, movable + selectable so the user
+    can rearrange after placing) at the drop position.
+    `place_equipment(eid, x, y)` public method on
+    `CanvasView` is the same code path used by drops + by
+    tests / future agent actions; emits
+    `equipment_placed(eid, x, y)` Qt signal.
+    `equipment_glyphs()` accessor for inspection.  10 new
+    tests covering: canvas accepts drops, palette tree
+    drag-enabled, place_equipment returns glyph at right
+    pos, unknown-id returns None, multiple glyphs
+    coexist, clear-canvas removes glyphs, glyphs are
+    movable + selectable, MIME constant exported, full
+    drop-event round trip, unrecognised-MIME drops are
+    ignored.  Status bar updates on every placement.
+  - [x] **38c.4 (round 189, 2026-04-26) SHIPPED** —
+    snap-validation against Phase-38a `connection_ports`.
+    Extracted `core/lab_setups.validate_port_pair(eq_a,
+    port_a, eq_b, port_b)` from the existing per-setup
+    validator — single-pair compatibility check (joint
+    type + open-wildcard + male/female sex check for
+    ground-glass joints, with hose/socket/open marked
+    sex-neutral).  `ConnectionLine(QGraphicsLineItem)`
+    visual: solid green for valid pairs, dashed red for
+    invalid; sits beneath glyphs (zValue=-1).
+    `CanvasView.connect_glyphs(g_a, port_a, g_b, port_b)`
+    instantiates the line + emits
+    `equipment_connected(eid_a, port_a, eid_b, port_b,
+    error_or_empty)` Qt signal.  Glyph-level self-loop
+    check sits in the canvas (the equipment-level check
+    in `validate_port_pair` was wrong — two RBFs share
+    the same `Equipment` instance from the frozen
+    catalogue, so `is` would always trip; the canvas
+    knows about distinct glyph instances).  Dialog
+    status bar shows ✓ Connected / ⚠ Port mismatch.  9
+    new tests covering: valid pair, two-female-joints
+    rejected, unknown-port rejected, open wildcard
+    accepts anything, connect_glyphs creates line +
+    emits signal, invalid pair dashes red, z-value below
+    glyphs, unknown-equipment returns None, clear-canvas
+    drops lines.  31 canvas tests total.
+  - [x] **38c.5 (round 190, 2026-04-26) SHIPPED** —
+    agent actions + *Build on canvas* integration; closes
+    Phase 38c.  New `agent/actions_lab_canvas.py` module
+    with 5 actions in the `lab-canvas` category:
+    `open_lab_setup_canvas(setup_id="")`,
+    `place_equipment_on_canvas(equipment_id, x, y)`,
+    `connect_canvas_equipment(eid_a, port_a, eid_b,
+    port_b)`, `clear_lab_setup_canvas()`,
+    `lab_setup_canvas_state()` (JSON snapshot of glyphs +
+    connections for tutor introspection).
+    `LabSetupCanvasDialog.populate_from_setup(setup_id)`
+    method places equipment in a horizontal row + draws
+    every connection from the seeded Phase-38b setup.
+    *Build on canvas* button added to the Phase-38b
+    `LabSetupsDialog` footer (enabled when a setup is in
+    focus); clicking it opens the canvas + calls
+    `populate_from_setup`.  17 new tests covering all 5
+    actions + populate_from_setup + the new button.
+
+**Phase 38c COMPLETE** (rounds 186-190).  Five sub-phases
+shipped over 5 rounds: headless palette → Qt scaffolding
+→ drag/drop → snap-validation → agent actions.  46 tests
+across the canvas suite.  Phase 38d (process simulator)
+is the next big multi-round chunk; Phase 38e (Reactions-
+tab integration) + Phase 38f (extended agent actions) are
+queued.
 - **38d — Process simulator**: per-setup state machine that
   animates the sequence ("turn on heat → vapour rises →
   condenser cools → receiver fills"), with adjustable
   parameters (heating rate, condenser temperature) and a
-  pedagogical commentary track.
+  pedagogical commentary track.  Sub-phases:
+  - [x] **38d.1 (round 192, 2026-04-26) SHIPPED** —
+    headless state-machine layer (`core/process_simulator.py`).
+    `Stage` frozen dataclass + `ProcessSimulator` linear-
+    state driver + `simulator_for_setup(setup_id)` builder.
+    5 of 8 Phase-38b setups have scripts (simple +
+    fractional distillation share `_distillation_stages`
+    via a `with_column` flag; reflux, vacuum filtration,
+    recrystallisation each have their own).  15 new tests.
+  - [x] **38d.2 (round 193, 2026-04-26) SHIPPED** —
+    canvas-animation playback dock.
+    `SimulationDock(QWidget)` with Play / Pause / Step /
+    Reset buttons + speed slider (0.5× to 4×) + stage
+    label + description text + progress bar.  `QTimer`
+    (10 Hz tick) drives auto-advance based on per-stage
+    `duration_seconds` × speed.  Signals
+    `stage_changed(stage_id, stage_index)` + `finished()`.
+    Wired into `LabSetupCanvasDialog` via a *Run
+    simulation* toolbar button + a bottom dock.
+    `simulation_dock()` accessor for tests.
+    **Refactor**: extracted `EquipmentGlyph` +
+    `ConnectionLine` to `gui/dialogs/lab_canvas_items.py`
+    so `lab_setup_canvas.py` stays under the 500-line cap
+    after the simulator wiring lands.  14 new tests.
+  - [ ] 38d.3 — pedagogical commentary track + parameter
+    tweaks (heating rate, condenser temperature)
+  - [x] **38d.4 (round 194, 2026-04-26) SHIPPED** — 7
+    agent actions in the new `simulator` category +
+    the 3 remaining setup scripts.  Actions:
+    `start_process_simulation(setup_id)` (opens dialog +
+    populates from setup + binds simulator + auto-plays),
+    `simulator_state` (JSON snapshot for tutor
+    introspection), `simulator_step` / `simulator_reset` /
+    `simulator_play` / `simulator_pause`,
+    `set_simulator_speed(speed)` (clamped 0.5 - 4.0).
+    Setup scripts: Soxhlet extraction (6 stages including
+    siphon trip), liquid-liquid extraction (6 stages
+    including invert+vent + settle), reflux-with-addition
+    (6 stages including dropwise).  All 8 Phase-38b setups
+    now have simulator scripts.  15 new tests + 1 round-193
+    test updated for the new "all setups scripted" reality.
+
+**Phase 38d skipped sub-phase 38d.3 (per-stage canvas
+choreography polish)** — left as a low-priority future
+follow-up since the dock's text commentary already gives
+the pedagogical content; visual flashing of glyphs is
+icing, not core function.
 - **38e — Connection between the simulator and the
   Reactions tab**: pick a seeded reaction, select the
   matching setup, watch the apparatus + reaction co-animate.

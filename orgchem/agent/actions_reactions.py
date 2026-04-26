@@ -35,6 +35,7 @@ def show_reaction(name_or_id: str) -> Dict[str, Any]:
     from orgchem.db.models import Reaction as DBRxn
     from sqlalchemy import select, or_
 
+    name_or_id = str(name_or_id)   # tolerate int from prior tool result
     with session_scope() as s:
         if name_or_id.isdigit():
             row = s.get(DBRxn, int(name_or_id))
@@ -128,6 +129,7 @@ def play_reaction_trajectory(name_or_id: str) -> Dict[str, Any]:
     from orgchem.db.models import Reaction as DBRxn
     from sqlalchemy import select
 
+    name_or_id = str(name_or_id)   # tolerate int from prior tool result
     with session_scope() as s:
         if name_or_id.isdigit():
             row = s.get(DBRxn, int(name_or_id))
@@ -228,6 +230,7 @@ def get_mechanism_details(name_or_id: str) -> Dict[str, Any]:
     from orgchem.db.session import session_scope
     from sqlalchemy import select
 
+    name_or_id = str(name_or_id)   # tolerate int from prior tool result
     with session_scope() as s:
         if name_or_id.isdigit():
             row = s.get(DBRxn, int(name_or_id))
@@ -261,6 +264,7 @@ def open_mechanism(name_or_id: str) -> Dict[str, Any]:
     from orgchem.core.mechanism import Mechanism
     from sqlalchemy import select
 
+    name_or_id = str(name_or_id)   # tolerate int from prior tool result
     with session_scope() as s:
         if name_or_id.isdigit():
             row = s.get(DBRxn, int(name_or_id))

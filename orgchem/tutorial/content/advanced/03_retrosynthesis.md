@@ -122,15 +122,16 @@ algorithmic and automatable.
 
 ## The four classical disconnection strategies
 
-1. **Carbonyl α-disconnection (aldol / Claisen / Michael)**. Break a
-   C–C bond α to a C=O. Synthons: enolate⁻ + electrophilic carbonyl⁺.
-   Unlocks almost all C–C bonds next to a carbonyl.
-2. **Olefin disconnection (Wittig / olefin metathesis)**. Break a C=C
-   bond. Synthons: phosphorus ylide + aldehyde (Wittig) or
-   alkene + alkene (metathesis).
-3. **Aromatic disconnection (EAS / cross-coupling)**. Break a C(aryl)–X
-   bond. Synthons: Ar⁻ + X⁺ (for cross-coupling) or Ar-H + E⁺
-   (for EAS).
+1. **Carbonyl α-disconnection** (aldol condensation / Claisen
+   condensation / Michael addition). Break a C–C bond α to a C=O.
+   Synthons: enolate⁻ + electrophilic carbonyl⁺.  Unlocks almost
+   all C–C bonds next to a carbonyl.
+2. **Olefin disconnection** (Wittig reaction / Grubbs olefin
+   metathesis). Break a C=C bond. Synthons: phosphorus ylide +
+   aldehyde (Wittig) or alkene + alkene (metathesis).
+3. **Aromatic disconnection** (EAS / Suzuki coupling /
+   cross-coupling). Break a C(aryl)–X bond. Synthons: Ar⁻ + X⁺
+   (for cross-coupling) or Ar-H + E⁺ (for EAS).
 4. **Heteroatom disconnection (amide / ester / ether)**. Break a
    C–O–C or C–N–C bond. Synthons: acyl⁺ + heteronucleophile⁻.
 

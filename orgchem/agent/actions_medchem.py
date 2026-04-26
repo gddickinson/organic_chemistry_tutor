@@ -30,14 +30,23 @@ def suggest_bioisosteres(smiles: str, template_ids: list = None) -> Dict[str, An
 
 
 @action(category="medchem")
-def drug_likeness(smiles: str = "", molecule_id: int = 0) -> Dict[str, Any]:
+def drug_likeness(smiles: str = "", molecule_id: int = 0,
+                  name: str = "") -> Dict[str, Any]:
     """Compute Lipinski / Veber / Ghose / PAINS / QED for a molecule.
 
-    Accepts either a raw SMILES or a DB molecule id. Returns a nested
+    Accepts any one of: a raw SMILES, a DB ``molecule_id``, or a
+    ``name`` (resolved via :func:`find_molecule_by_name` so synonyms
+    + case-tolerant lookups work — pass ``"aspirin"`` /
+    ``"Aspirin"`` / ``"acetylsalicylic acid"``).  Returns a nested
     dict with per-rule pass/fail flags plus the QED score.
+
+    Round 205 — added the ``name`` fallback after a tutor-test
+    surfaced the LLM repeatedly passing broken SMILES strings for
+    well-known drugs that ARE in the DB by name.
     """
     from orgchem.core.druglike import drug_likeness_report
     smi = smiles
+    resolved_name = ""
     if not smi and molecule_id:
         from orgchem.db.session import session_scope
         from orgchem.db.models import Molecule as DBMol
@@ -46,15 +55,19 @@ def drug_likeness(smiles: str = "", molecule_id: int = 0) -> Dict[str, Any]:
             if row is None:
                 return {"error": f"No molecule id {molecule_id}"}
             smi = row.smiles
-            name = row.name
-    elif molecule_id:
-        name = ""
-    else:
-        name = ""
+            resolved_name = row.name
+    if not smi and name:
+        from orgchem.db.queries import find_molecule_by_name
+        row = find_molecule_by_name(name)
+        if row is None:
+            return {"error": f"No molecule matching name {name!r}"}
+        smi = row.smiles
+        resolved_name = row.name
     if not smi:
-        return {"error": "Supply either smiles= or molecule_id="}
+        return {"error": "Supply one of smiles=, molecule_id=, "
+                         "or name="}
     try:
         report = drug_likeness_report(smi)
     except ValueError as e:
         return {"error": str(e)}
-    return {"smiles": smi, "name": name, **report}
+    return {"smiles": smi, "name": resolved_name, **report}

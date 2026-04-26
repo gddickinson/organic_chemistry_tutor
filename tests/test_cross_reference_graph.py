@@ -32,20 +32,46 @@ def app():
 # downstream broken-link test fires.
 # ==================================================================
 
-def test_gather_returns_at_least_50_cross_references():
-    """The walker collects ≥ 50 cross-reference edges across all
+def test_gather_returns_at_least_50_cross_references(app):
+    """The walker collects ≥ 100 cross-reference edges across all
     catalogues — sanity floor that catches "I deleted a catalogue"
-    regressions."""
+    regressions.  Round-197 raised the floor 50 → 100 after the
+    `metabolic-pathway → molecule` walker added 40 + edges in
+    one go.  Now requires the `app` fixture so the DB-driven
+    metabolic-pathway walker has a seeded DB to query."""
     from orgchem.core.cross_reference_audit import (
         gather_all_cross_references,
     )
     refs = gather_all_cross_references()
-    assert len(refs) >= 50, f"only {len(refs)} cross-refs gathered"
+    assert len(refs) >= 100, \
+        f"only {len(refs)} cross-refs gathered"
 
 
-def test_matrix_covers_every_declared_kind():
+def test_metabolic_pathway_walker_uses_db_filter(app):
+    """The Phase-42a pathway data references many molecule names
+    (water, generic ions, enzyme co-substrates) that aren't in
+    the seeded Molecule DB.  The new
+    `metabolic-pathway → molecule` walker MUST filter by DB
+    resolvability so it never emits unresolvable edges that
+    `validate_cross_references` would flag as broken."""
+    from orgchem.core.cross_reference_audit import (
+        gather_all_cross_references, validate_cross_references,
+    )
+    refs = [r for r in gather_all_cross_references()
+            if r.source_kind == "metabolic-pathway"]
+    assert refs, "metabolic-pathway walker emitted no edges"
+    report = validate_cross_references(refs)
+    assert report.broken == [], (
+        f"{len(report.broken)} unresolvable metabolic-pathway → "
+        f"molecule edges leaked through the walker filter"
+    )
+
+
+def test_matrix_covers_every_declared_kind(app):
     """The matrix surfaces every (source, target) tuple in
-    :data:`CROSS_REFERENCE_KINDS`, with non-zero edge counts."""
+    :data:`CROSS_REFERENCE_KINDS`, with non-zero edge counts.
+    Requires `app` since the metabolic-pathway → molecule
+    walker reads the DB."""
     from orgchem.core.cross_reference_audit import (
         CROSS_REFERENCE_KINDS, cross_reference_matrix,
     )
@@ -60,7 +86,7 @@ def test_matrix_covers_every_declared_kind():
         )
 
 
-def test_matrix_renders_as_text():
+def test_matrix_renders_as_text(app):
     """Smoke-test the human-readable matrix renderer used by the
     Phase-49c doc + failure messages."""
     from orgchem.core.cross_reference_audit import (
@@ -115,8 +141,9 @@ def test_per_kind_floors(app):
         ("cell-component", "molecule"): 5,
         ("kingdom-topic", "cell-component"): 20,
         ("kingdom-topic", "metabolic-pathway"): 1,
-        ("kingdom-topic", "molecule"): 10,
-        ("microscopy-method", "lab-analyser"): 4,
+        ("kingdom-topic", "molecule"): 30,
+        ("microscopy-method", "lab-analyser"): 7,
+        ("metabolic-pathway", "molecule"): 55,   # rounds 197 + 201 + 202
     }
     for kind, floor in floors.items():
         assert matrix.get(kind, 0) >= floor, (

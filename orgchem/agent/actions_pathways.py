@@ -40,6 +40,7 @@ def show_pathway(name_or_id: str) -> Dict[str, Any]:
     from orgchem.db.session import session_scope
     from orgchem.db.models import SynthesisPathway
 
+    name_or_id = str(name_or_id)   # tolerate int from prior tool result
     with session_scope() as s:
         if name_or_id.isdigit():
             row = s.get(SynthesisPathway, int(name_or_id))
