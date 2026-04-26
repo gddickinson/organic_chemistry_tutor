@@ -27,3 +27,28 @@ def naming_rule_categories() -> List[str]:
     """Distinct categories present in the catalogue (alkanes, aromatics, …)."""
     from orgchem.naming import rule_categories
     return rule_categories()
+
+
+@action(category="naming")
+def open_naming_rules() -> Dict[str, Any]:
+    """Open the *Tools → IUPAC naming rules…* dialog.  Returns
+    ``{"opened": True}`` on success or ``{"error": ...}`` if the
+    main window isn't reachable (e.g. headless without a GUI)."""
+    from orgchem.agent import controller
+    from orgchem.agent._gui_dispatch import run_on_main_thread_sync
+    win = controller.main_window()
+    if win is None:
+        return {"error": "Main window not available — run the app "
+                         "interactively or via HeadlessApp first."}
+
+    def _open() -> Dict[str, Any]:
+        from orgchem.gui.dialogs.naming_rules import (
+            NamingRulesDialog,
+        )
+        dlg = NamingRulesDialog(win)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+        return {"opened": True}
+
+    return run_on_main_thread_sync(_open)

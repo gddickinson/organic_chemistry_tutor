@@ -1,5 +1,8139 @@
 # Session Log — OrgChem Studio
 
+## 2026-04-25 — Round 184 (Phase 49 follow-up — tutorial coverage 16 % → 32 % fully-integrated; second audit-driven expansion round)
+
+**Goal.**  Round 181's tutorial coverage audit reported 16.1 %
+of lessons hit all 3 knowledge-graph layers (glossary +
+catalogue molecule + named reaction).  Round 184 lifts that
+metric using the audit dashboard as a roadmap.
+
+**What shipped.**
+
+1. **Improved the audit matcher**.  Previously
+   `_named_reaction_names()` matched only the FULL `_STARTER`
+   reaction name (e.g. `'Wittig reaction (propanal +
+   methylidene ylide)'`).  That misses the natural shorthand
+   most tutorials use (`'Wittig reaction'` / `'Wittig'` /
+   `'Diels-Alder'`).  Updated to also match the **short root**
+   — everything before the first colon or parenthesis.  The
+   matcher was undercounting coverage; the new version
+   reports the actual reality.
+
+2. **Sugars + carbohydrates lesson** (`intermediate/07_sugars.md`)
+   extended with a closing section linking sugar biosynthesis
+   to the **Aldolase class I** named reaction (DHAP + G3P →
+   F1,6BP) so the lesson's body text resolves to the seeded
+   reaction by name.  Hit count 2 → 3.
+
+3. **Per-test floors raised** to lock the new state in:
+   - `test_named_reaction_coverage_floor`: 40 % → 60 %
+   - `test_lesson_coverage_hit_count`: 15 % → 30 %
+
+**Live coverage report after round 184.**
+
+```
+Tutorial-to-knowledge-graph coverage audit
+============================================================
+Total lessons:                  31
+Lessons with glossary ref:      100.0 %
+Lessons with catalogue ref:      54.8 %
+Lessons with named-reaction ref: 67.7 %
+============================================================
+Fully-integrated: 10/31 (32.3 %)
+```
+
+(Round-181 baseline: 100 % glossary, 54.8 % catalogue,
+**45.2 % named-reaction**, **16.1 % fully-integrated**.  The
+named-reaction + fully-integrated metrics doubled this round
+— most of the gain was the matcher fix surfacing real
+references that were already in the lessons; the sugars-
+lesson edit added one more.)
+
+**Test count.** 2165 passed (held — no new tests, just
+matcher improvement + floor tightening + one lesson edit).
+Full suite green.
+
+**Why this matters.**  Continues the audit-driven-expansion
+pattern from round 183: audit surfaces a gap → root cause
+turns out to be partly an audit-accuracy issue + partly a real
+content gap → fix both at once → tighten the floor.  The
+matcher-accuracy lesson generalises: every audit module's
+matcher needs occasional revisits to make sure it's measuring
+what it claims to measure.
+
+**Files touched.**
+- `orgchem/core/tutorial_coverage_audit.py` —
+  `_named_reaction_names()` short-root matcher
+- `orgchem/tutorial/content/intermediate/07_sugars.md` —
+  Aldolase section added
+- `tests/test_tutorial_coverage.py` — 2 floors raised
+- `PROJECT_STATUS.md` — round 184 summary
+
+**Next.**  Audit dashboards still surface coverage gaps:
+- 21 lessons hit only 2 of 3 layers (the audit's catalogue
+  layer is hard to reference for many topics — could broaden
+  it to include `seed_molecules_extended` molecules)
+- 9 dialogs lack `open_*` agent actions (Phase 49d
+  `KNOWN_GAPS` allow-list)
+- `cell-component → molecule` is at 6 edges; many constituents
+  could still link to molecules in the extended seed
+
+Or: pivot to Phase 38c (lab-equipment palette + canvas, the
+last big multi-round pending item).
+
+---
+
+## 2026-04-25 — Round 183 (Phase 49 follow-up — cross-reference graph 59 → 75 edges; first round to use the round-178 audit dashboard as a roadmap)
+
+**Goal.**  The Phase-49 audit shipped in round 178 surfaced a
+real coverage gap: only 1 cell-component → molecule edge + 1
+kingdom-topic → molecule edge in the catalogue cross-reference
+graph, despite ~ 100 catalogue entries that could meaningfully
+link to specific molecule-DB rows.  Round 183 is the first
+round to **use the audit dashboard as a roadmap** — walk the
+two low-coverage kinds, find linkable candidates, wire them up,
+then tighten the per-kind floors to lock the improvement in.
+
+**What shipped.**
+
+1. **Cell-component → molecule edges: 1 → 6 (+5).**
+
+   Walked every `MolecularConstituent` in `cell_components.py`
+   that lacked a `cross_reference_molecule_name`, looked up its
+   name via `find_molecule_by_name()`, and wired in the 5 clean
+   matches:
+   - Phosphatidylcholine → `Phosphatidylcholine (POPC-like)`
+   - Phosphatidylethanolamine → `Phosphatidylethanolamine (POPE-like)`
+   - Sphingomyelin → `Sphingomyelin (C18)`
+   - N-acetylglucosamine (NAG) on `peptidoglycan-gram-positive`
+     → `N-Acetylglucosamine (GlcNAc)`
+   - Same NAG on `pseudopeptidoglycan` → same DB row
+
+2. **Kingdom-topic → molecule edges: 1 → 12 (+11).**
+
+   Walked `biochemistry_by_kingdom` topics whose body text
+   mentions ATP / NADH / NADPH / FAD / Pyruvate / GTP / cAMP /
+   Cholesterol — molecules that ARE in the seeded DB.  Added
+   `cross_reference_molecule_names` tuples for 4 high-density
+   topics:
+   - `eukarya-physiology-aerobic-respiration` → ATP, NADH,
+     FAD, Pyruvate, GTP (5)
+   - `eukarya-physiology-photosynthesis` → ATP, NADPH (2)
+   - `eukarya-physiology-signalling-gpcr` → GTP, cAMP (2)
+   - `bacteria-physiology-anaerobic-fermentation` → NADH,
+     Pyruvate (2)
+
+3. **Per-kind floors raised** in
+   `tests/test_cross_reference_graph.py::test_per_kind_floors`:
+   - `cell-component → molecule`: 1 → 5
+   - `kingdom-topic → molecule`: 1 → 10
+
+   So a future regression that drops below the new state
+   surfaces immediately.
+
+**Live cross-reference matrix after round 183.**
+
+```
+Source kind          → Target kind         | Edges
+------------------------------------------------------------
+cell-component       → molecule             |     6
+kingdom-topic        → cell-component       |    46
+kingdom-topic        → metabolic-pathway    |     5
+kingdom-topic        → molecule             |    12
+microscopy-method    → lab-analyser         |     6
+------------------------------------------------------------
+TOTAL                                       |    75
+```
+
+(Was 59 edges in round 178: 1 + 46 + 5 + 1 + 6 = 59.  +16
+edges + 27 %.)
+
+**Test count.** 2165 passed (held — no new tests, just floor
+tightening).  Full suite green.
+
+**Why this matters.**  Demonstrates the Phase-49 audit
+infrastructure as a **living dashboard driving expansion**,
+not just a defensive regression gate.  The audit surfaced the
+gap → this round closed it → the floors lock the improvement
+in.  The pattern (audit shows low coverage → walk + wire-up →
+raise floor) generalises to:
+- agent-surface KNOWN_GAPS (49d): 9 dialogs deliberately ship
+  without openers; future rounds can promote them
+- tutorial coverage (49f): 16 % of lessons hit all 3 layers;
+  curriculum revisions can lift this floor
+- glossary terms vs catalogue body text (49a): future
+  vocabulary expansion guided by the required-terms list
+
+**Files touched.**
+- `orgchem/core/cell_components.py` — 5 cross-references
+  added on 3 components
+- `orgchem/core/biochemistry_by_kingdom.py` — 4 topics gained
+  `cross_reference_molecule_names` tuples
+- `tests/test_cross_reference_graph.py` — per-kind floors
+  raised
+- `PROJECT_STATUS.md` — round 183 summary
+
+**Next.**  Continue mining the audit dashboards for
+coverage opportunities — kingdom-topic body texts have ~ 12
+more candidate molecule mentions waiting to be wired up; or
+move to a different roadmap item (Phase 38c equipment-canvas,
+or curriculum expansion for low-hit-count lessons).
+
+---
+
+## 2026-04-25 — Round 182 (Phase 31b 60/60 SHIPPED — 4 named reactions added to close out the named-reaction extension)
+
+**Goal.** Phase 31b's reaction catalogue grew from 4 in Phase 1
+to 56 by round 175, with a stretch target of 60.  Round 182
+closes the 60/60 milestone with 4 well-chosen named reactions
+that fill real pedagogical gaps.
+
+**What shipped.** 4 entries in `db/seed_reactions._STARTER`:
+
+1. **Grubbs olefin metathesis** (cross-metathesis of styrene +
+   1-hexene → 1-phenyl-1-hexene).  Ru-catalysed C=C bond
+   shuffling via metallacyclobutane.  Nobel 2005 (Grubbs +
+   Schrock + Chauvin).  Three productive variants (CM / RCM /
+   ROMP).  Fills the **olefin-metathesis gap** — complements
+   the Pd-cross-coupling cluster (Suzuki / Heck / Negishi /
+   Stille / Buchwald-Hartwig / Sonogashira) with Ru-catalysed
+   C=C bond formation.
+
+2. **Wolff-Kishner reduction** (acetophenone → ethylbenzene).
+   Strongly basic carbonyl → CH₂ via hydrazone + N₂ extrusion.
+   Wolff 1912 / Kishner 1911 / Huang-Minlon modification.
+   **Complementary to Clemmensen** (Zn(Hg) / HCl, strongly
+   acidic) for acid-sensitive substrates.  Fills the
+   **non-hydride / non-SET reduction gap** — existing
+   reductions are NaBH₄, Birch, CBS.
+
+3. **Hofmann elimination** (2-pentyltrimethylammonium hydroxide
+   → 1-pentene + trimethylamine).  Anti-Zaitsev / Hofmann's
+   rule β-elimination.  Hofmann 1851.  Bulky leaving group
+   (NMe₃) + syn-periplanar TS biases deprotonation toward the
+   less-hindered β-H, giving the terminal alkene.  Pedagogical
+   contrast with E2 / Saytzeff — same overall transformation,
+   opposite regioselectivity, driven by leaving-group bulk.
+
+4. **Ozonolysis with reductive workup** (cis-2-butene + O₃/Me₂S
+   → 2 acetaldehyde).  Oxidative cleavage of C=C → 2 carbonyls
+   via molozonide → Criegee ozonide.  Workup (Me₂S / Zn-AcOH /
+   PPh₃) determines product oxidation state.  Pre-NMR-era
+   structure-determination workhorse (cholesterol, pyrethrins,
+   terpenes).  Fills the **oxidative-cleavage gap** in the
+   alkene-reaction cluster.
+
+**Supporting fragments** added to `db/seed_intermediates._STARTER`
+to keep the round-92 fragment-consistency audit green:
+1-Hexene, 1-Phenyl-1-hexene, 2-Pentyltrimethylammonium,
+1-Pentene, Ozone.
+
+**Phase 31b → 60/60 milestone**.  Reaction catalogue distribution:
+- Substitution / elimination / addition: 11
+- Pericyclic + cycloaddition: 4
+- Cross-coupling: 6 (now 7 with Grubbs)
+- Asymmetric catalysis: 6
+- Oxidation / reduction / rearrangement: 13 (now 15 with W-K
+  + ozonolysis)
+- Enzyme: 4
+- MCR / annulation / condensation: 5
+- Functional-group interconversion + others: 7
+
+**Test count.** 2165 passed (held — no new tests added; the
+round-92 fragment-consistency audit + the round-126
+reaction-count test both held green after the seed-level
+additions).
+
+**Files touched.**
+- `orgchem/db/seed_reactions.py` — 4 new `_STARTER` entries
+  (~ 80 new lines)
+- `orgchem/db/seed_intermediates.py` — 5 new fragment entries
+- `ROADMAP.md` — Phase 31b → 60/60 SHIPPED
+- `PROJECT_STATUS.md` — round 182 summary
+
+**Next.** Pending roadmap: Phase 38c (lab-equipment palette +
+QGraphicsScene canvas, multi-round); follow-ups on the
+Phase-49 audit dashboards (low-coverage areas in
+cell-component → molecule and kingdom-topic → molecule
+cross-refs); curriculum expansion for lessons that hit
+fewer than 3 knowledge-graph layers.
+
+---
+
+## 2026-04-25 — Round 181 (Phase 49f — tutorial-to-knowledge-graph coverage audit + welcome-lesson fix; **PHASE 49 COMPLETE**)
+
+**Goal.**  Round 175 surfaced a user-flagged Phase-49 cross-
+module integration audit ("ensure modules are well integrated —
+words linked to glossary, molecules in the same format and
+findable in the database, reactions and techniques linked
+between modules, the AI tutor able to access and use all
+features").  Rounds 176-180 delivered 49a (glossary coverage)
+→ 49b (molecule-DB canonicalisation) → 49c (cross-reference
+graph) → 49d (agent-surface symmetry) → 49e (feature
+discovery).  Round 181 ships the closing sub-phase, **49f:
+tutorial coverage**, and promotes Phase 49 to DONE.
+
+**What shipped (49f).**
+
+1. **`core/tutorial_coverage_audit.py` (NEW, ~ 200 lines)** —
+   walks every tutorial markdown lesson and reports per-lesson
+   coverage across 3 knowledge-graph layers:
+   - Glossary terms (≥ 4 chars to filter noise)
+   - Catalogue molecules (lipids / carbs / NA / SAR /
+     cell-component constituents / kingdom-topic xrefs)
+   - Named reactions (`seed_reactions._STARTER`)
+
+   `LessonCoverage` per-lesson dataclass with `hit_count()`
+   (0-3) helper + `TutorialCoverageReport` aggregate with
+   percentage methods (`with_glossary_pct()` etc.) +
+   `lessons_missing(report, layer)` per-layer drill-down +
+   `render_report_text()` plain-text summary.  Skips
+   authoring-test stub lessons by title prefix (round-94
+   `Tutor-test-` lessons inject bare-stub markdown that has
+   no chemistry content).
+
+2. **First-run finding — 1 real gap caught.**  The welcome
+   lesson (`beginner/01_welcome.md`) was a meta-lesson about
+   how to USE the app and didn't reference any chemistry
+   concept.  None of its words matched a glossary term.
+   Fixed by adding a one-sentence chemistry intro mentioning
+   hybridisation + pKa.
+
+3. **`tests/test_tutorial_coverage.py` (NEW)** — 7 tests:
+   100 % glossary coverage, ≥ 50 % catalogue-molecule
+   coverage, ≥ 40 % named-reaction coverage, ≥ 30 lessons
+   across 4 levels, report renders, layer-name validation,
+   ≥ 15 % fully-integrated lessons.
+
+**Live audit output (Phase-49f doc).**
+
+```
+Tutorial-to-knowledge-graph coverage audit
+============================================================
+Total lessons:                  31
+Lessons with glossary ref:      100.0 %
+Lessons with catalogue ref:      54.8 %
+Lessons with named-reaction ref: 45.2 %
+============================================================
+```
+
+**Test count.**  2165 passed (was 2158 in round 180, +7).
+Full suite green.
+
+---
+
+### **PHASE 49 CLOSE-OUT**
+
+The user-flagged Phase-49 cross-module integration sweep
+shipped over **6 sub-phases × 6 rounds (176-181) =
+45 audit tests** + 6 audit modules + ~ 1500 lines of audit
+infrastructure.
+
+**Sub-phases.**
+
+| Sub | Round | Module | Audit gate |
+|-----|-------|--------|------------|
+| 49a | 176 | `core/glossary_audit.py` | Glossary autolink coverage — every catalogue body / tutorial / reaction description references glossary-defined terms.  15 missing terms backfilled. |
+| 49b | 177 | `db/seed_catalogue_molecules.py` + `tests/test_molecule_db_canonicalisation.py` | Every catalogue molecule with a parseable SMILES is a Molecule DB row by InChIKey.  120 catalogue molecules backfilled.  **Caught the Citalopram SMILES bug** (DB had F + CN swapped vs the SAR catalogue). |
+| 49c | 178 | `core/cross_reference_audit.py` | Every catalogue cross-reference resolves to a real target.  5 relationships, 59 edges audited. |
+| 49d | 179 | `core/agent_surface_audit.py` | Every Tools-menu dialog has an `open_*` agent action + lookup trio.  24/24 surfaces complete after `open_periodic_table` + `open_naming_rules` shipped. |
+| 49e | 180 | `core/feature_discovery_audit.py` | Every action has a docstring + every category has a summary.  19 missing summaries + 2 empty docstrings backfilled. |
+| 49f | 181 | `core/tutorial_coverage_audit.py` | Every tutorial lesson references the knowledge graph; aggregate floors on catalogue + reaction coverage. |
+
+**8 real bugs caught + fixed in the same round they were
+surfaced.**
+1. (49a) 15 high-priority glossary terms missing
+2. (49b) 120 catalogue molecules missing from the DB
+3. (49b) Citalopram SMILES encoded the wrong molecule
+4. (49b) `list_molecules()` 500-row default truncated agent
+   responses after the catalogue backfill
+5. (49c) Microscopy → lab-analyser cross-refs broken by a
+   wrong-API-name bug in the audit code itself
+6. (49d) Periodic table + IUPAC naming dialogs lacked agent
+   openers
+7. (49e) 19 categories had no `_CATEGORY_SUMMARIES` entry
+8. (49e) `get_centrifuge_action` + `get_rotor_action` had
+   empty docstrings
+9. (49f) Welcome lesson referenced no glossary term
+
+**Why this matters.**  The user's directive identified three
+failure modes (words not linked to glossary; molecules not
+findable across modules; AI tutor can't use features).  All
+three are now closed at test time.  A future drift in any
+of those areas surfaces immediately as a CI failure rather
+than as a silently-broken user experience.
+
+The audit layer is **a living dashboard** — each report
+renderer (`render_matrix_text` for cross-refs,
+`render_audit_text` for agent surfaces / feature discovery,
+`render_report_text` for tutorial coverage) gives a
+human-readable snapshot that future rounds use to drive
+expansion.  Particularly interesting low-coverage areas
+flagged for follow-up:
+- Only 1 cell-component → molecule edge (49c)
+- Only 1 kingdom-topic → molecule edge (49c)
+- 9 dialogs with no `open_*` action (49d KNOWN_GAPS)
+- 16.1 % of lessons hit all 3 knowledge-graph layers (49f)
+
+These are **opportunities for expansion** rather than bugs.
+Phase 49 deliberately set realistic floors that lock current
+state in but invite future contribution.
+
+**Files touched (49f only).**
+- NEW `orgchem/core/tutorial_coverage_audit.py` (~ 200 lines)
+- NEW `tests/test_tutorial_coverage.py` (~ 130 lines)
+- `orgchem/tutorial/content/beginner/01_welcome.md` —
+  added one-sentence chemistry intro
+- `INTERFACE.md` — new audit-module row
+- `ROADMAP.md` — Phase 49 → COMPLETE + close-out summary
+- `PROJECT_STATUS.md` — round 181 summary
+
+**Next.**  Phase 49 closes the integration sweep.  Pending
+roadmap items: Phase 38c (equipment-palette canvas, multi-
+round), Phase 31b reaction-catalogue extension (4 more to
+60-target), and follow-up rounds to drive curriculum +
+cross-reference coverage from the audit dashboards.
+
+---
+
+## 2026-04-25 — Round 180 (Phase 49e — tutor-panel feature-discovery audit + 19-category-summary backfill, fifth sub-phase of the user-flagged integration sweep)
+
+**Goal.**  Round 175 surfaced a user-flagged Phase 49 cross-module
+integration audit.  Rounds 176-179 shipped 49a (glossary) → 49b
+(molecule-DB) → 49c (cross-reference graph) → 49d (agent-surface
+symmetry).  Round 180 ships **49e: tutor-panel
+feature-discovery**.  Goal: ensure the AI tutor backend can
+**discover** every feature, not just call them — every action
+shows up in `tool_schemas()`, every schema has the required
+keys, every action has a non-empty docstring (so the LLM sees
+useful descriptions), and every registered category has an
+entry in `actions_meta._CATEGORY_SUMMARIES` so the tutor's
+`list_capabilities()` self-introspection returns useful info.
+
+**What shipped.**
+
+1. **`core/feature_discovery_audit.py` (NEW, ~ 165 lines)** —
+   single audit walker:
+   - `FeatureDiscoveryReport` dataclass with per-failure-mode
+     gap lists.
+   - `audit_feature_discovery()` runs all three checks
+     (schema-coverage, description, category-summary) in one
+     pass.
+   - `list_capabilities_smoke()` — no-arg `list_capabilities()`
+     invocation as a smoke check.
+   - `render_report_text(report)` — human-readable failure
+     summary + Phase-49e doc renderer.
+   - `REQUIRED_SCHEMA_KEYS` + `REQUIRED_INPUT_SCHEMA_KEYS`
+     constants document the Anthropic / OpenAI tool-schema
+     shape contract so the audit catches schema-format
+     regressions, not just missing entries.
+
+2. **First-run findings — 2 real bugs caught.**
+   - **19 categories with no summary** in
+     `actions_meta._CATEGORY_SUMMARIES`: authoring, biochem,
+     calc, cell, centrifugation, chromatography, clinical,
+     drawing, instrumentation, isomer, kingdom, microscopy,
+     ph, phys-org, qualitative, reagent, scripting, search,
+     spectrophotometry.  All shipped after the round-55
+     baseline `_CATEGORY_SUMMARIES` was last updated.  Result:
+     when the AI tutor calls `list_capabilities()` to
+     introspect, those 19 areas of the app appeared with
+     empty descriptions.  The tutor literally couldn't tell
+     what they were for.
+   - **2 actions with empty docstrings**:
+     `get_centrifuge_action` + `get_rotor_action` in
+     `agent/actions_centrifugation.py`.  Their tool-schema
+     descriptions came back as `""` so the LLM had only the
+     function name to go on.
+
+3. **Backfill in the same round.**
+   - All 19 missing category summaries written into
+     `_CATEGORY_SUMMARIES` with substantive descriptions
+     (30-130 chars each, enough to give the LLM real
+     pedagogical context).
+   - Both empty docstrings filled in with realistic
+     parameter / return-type descriptions.
+
+4. **`tests/test_feature_discovery.py` (NEW)** — 9 tests:
+   audit clean, registry size floor (≥ 200), every action
+   has a schema, every schema has required keys, every
+   category has a summary, no stale summaries,
+   `list_capabilities()` smoke, round-180 backfilled
+   descriptions substantive (≥ 30 chars), round-180
+   docstrings non-empty.
+
+**Live audit output (Phase-49e doc).**
+
+```
+Feature-discovery audit
+============================================================
+Registered actions: 243
+Tool schemas:       243
+Categories:         43
+
+Actions missing description: 0
+Actions missing from tool_schemas: 0
+Schemas missing required keys: 0
+Categories missing summary: 0
+============================================================
+STATUS: CLEAN
+```
+
+**Test count.** 2158 passed (was 2149 in round 179, +9 from
+the new feature-discovery suite).  Full suite green.
+
+**Why this matters.**  Closes the cross-module integration
+sweep on the LLM-facing side.  The AI tutor now sees:
+- every action with a meaningful description (49e)
+- every category with a meaningful summary (49e)
+- every action callable via tool_schemas (49e)
+- every dialog openable via an opener action (49d)
+- every cross-reference between catalogues resolved (49c)
+- every catalogue molecule canonicalised in the DB (49b)
+- every pedagogically-important term in the glossary (49a)
+
+A student asking the tutor "can the app help me design a
+buffer?" or "show me chromatography techniques" can no longer
+be told "I don't know" because the feature was invisible —
+that's exactly the kind of round-55 incident
+(`list_capabilities` was added to fix the tutor refusing to
+visualise ligand binding) that this audit prevents from
+recurring.
+
+**Files touched.**
+- NEW `orgchem/core/feature_discovery_audit.py` (~ 165 lines)
+- NEW `tests/test_feature_discovery.py` (~ 110 lines)
+- `orgchem/agent/actions_meta.py` — 19 new
+  `_CATEGORY_SUMMARIES` entries
+- `orgchem/agent/actions_centrifugation.py` — 2 docstring
+  fills
+- `INTERFACE.md` — new audit-module row
+- `ROADMAP.md` — Phase 49 status: 49a-e all SHIPPED
+- `PROJECT_STATUS.md` — round 180 summary
+
+**Next sub-phase.** 49f — doc-coverage extension: the final
+sub-phase of the user-flagged Phase-49 sweep.  Verify that
+every tutorial markdown lesson references at least one
+glossary term + one catalogue entry + one named reaction (so
+the curriculum stays connected to the rest of the app).  Then
+write a Phase-49 close-out doc tying all 6 sub-phases together
++ promote Phase 49 → DONE.
+
+---
+
+## 2026-04-25 — Round 179 (Phase 49d — agent-surface symmetry audit + 2 new dialog openers, fourth sub-phase of the user-flagged integration sweep)
+
+**Goal.**  Round 175 surfaced a user-flagged Phase 49 cross-module
+integration audit.  Rounds 176-178 shipped 49a (glossary
+coverage) → 49b (molecule-DB canonicalisation) → 49c (cross-
+module reference graph).  Round 179 ships **49d: agent-surface
+symmetry**.  Goal: ensure the AI tutor can do everything the
+human GUI can do — every Tools-menu dialog has an `open_*` agent
+action + the lookup trio.
+
+**Survey first.**  Walked the registry of 254 actions across 36
+categories.  Found 22 `open_*` actions covering most catalogue
+dialogs but **2 obvious gaps**: Periodic table + IUPAC naming
+rules (both in the Tools menu, both queried frequently in
+chemistry tutoring).  Plus 7 more dialogs (Spectroscopy / Stereo /
+Medchem / Orbitals / Retrosynthesis / Lab techniques / Green
+metrics) that ship without openers but DO surface their content
+via direct lookup / predict / export actions — those count as
+"deliberately deferred", not gaps.
+
+**What shipped.**
+
+1. **`core/agent_surface_audit.py` (NEW, ~ 220 lines)** — walks
+   the agent action registry and verifies every catalogue with a
+   Tools-menu dialog has a symmetric agent-action surface.
+
+   Public API:
+   - `SurfaceSpec(catalogue, opener, list_action, get_action,
+     find_action)` frozen dataclass.
+   - `EXPECTED_SURFACES` 24-tuple of every Tools-menu dialog +
+     its expected actions.
+   - `KNOWN_GAPS` 9-tuple of `(action_name, rationale)` for
+     deliberately-deferred openers.  Rationale field is
+     mandatory — keeps the allow-list honest.
+   - `gather_action_names()` — full registered set.
+   - `audit_surface(spec)` / `audit_all_surfaces()` — return
+     `SurfaceAuditReport(spec, missing_actions)` rows.
+   - `stale_known_gaps()` — catches allow-list drift (any
+     action listed in `KNOWN_GAPS` that DOES exist now must be
+     promoted to `EXPECTED_SURFACES`).
+   - `render_audit_text()` — 24-row coverage table for the
+     Phase-49d doc + failure messages.
+
+2. **2 new agent actions to close the highest-value gaps**:
+   - `open_periodic_table` in `agent/actions_periodic.py`
+     (Tools → Periodic table…, Ctrl+Shift+T).  Periodic-table
+     lookups are some of the most common questions an AI tutor
+     gets in early chemistry education — the dialog shows
+     coloured cells + atomic-mass / electronegativity / oxidation
+     states / electron configuration in a side pane.
+   - `open_naming_rules` in `agent/actions_naming.py` (Tools →
+     IUPAC naming rules…).  Naming questions are similarly high-
+     volume, and the dialog has a category combo + per-rule
+     description / example / pitfall layout that's hard to
+     recreate inline.
+
+   Both follow the established
+   `_gui_dispatch.run_on_main_thread_sync` marshalling pattern,
+   instantiate the dialog with `parent=win`, and call `.show()`
+   (modeless) so the agent action returns immediately.
+
+3. **`gui/audit.py` `GUI_ENTRY_POINTS` dict** updated with both
+   new entries so the GUI-coverage check stays at 100 %.
+
+4. **`tests/test_agent_surface_symmetry.py` (NEW)** — 7 tests:
+   - Spec sanity (≥ 20 surfaces, no duplicate openers).
+   - `KNOWN_GAPS` well-formed (every entry has `open_` prefix +
+     non-empty rationale).
+   - Every expected surface complete (24/24).
+   - `KNOWN_GAPS` allow-list is honest (no stale entries).
+   - Audit text renders.
+   - Round-179 openers registered.
+   - Round-179 openers in correct categories
+     (`periodic` + `naming`).
+
+**Live audit output (Phase-49d doc).**
+
+```
+Catalogue                             Status
+------------------------------------------------------------
+Cell components                       ok
+Centrifugation                        ok
+Chromatography methods                ok
+Clinical lab panels                   ok
+Drawing tool                          ok
+Isomer explorer                       ok
+Lab analysers                         ok
+Lab calculator                        ok
+Lab equipment                         ok
+Lab reagents                          ok
+Lab setups                            ok
+Macromolecules window                 ok
+Mechanism player                      ok
+Metabolic pathways                    ok
+Microscopy methods                    ok
+Naming rules                          ok
+Periodic table                        ok
+pH explorer                           ok
+Qualitative inorganic tests           ok
+Script editor                         ok
+Spectrophotometry methods             ok
+Tutorial browser                      ok
+Workbench                             ok
+Biochemistry by kingdom               ok
+------------------------------------------------------------
+24/24 catalogues have complete agent-action surfaces
+
+KNOWN_GAPS: 9 dialogs deliberately ship without an `open_*` action
+(see source for per-entry rationale)
+```
+
+**Test count.** 2149 passed (was 2142 in round 178, +7 from the
+new audit suite).  Full suite green.
+
+**Why this matters.**  Closes the third of the user's three
+flagged failure modes from round 175: *"the AI tutor is able to
+access and use all features in all modules"*.  Combined with
+49a (glossary coverage), 49b (molecule-DB canonicalisation), and
+49c (cross-reference graph), the audit layer now catches:
+- words used in catalogues that aren't in the glossary (49a)
+- molecule names referenced across modules that don't resolve
+  to the DB (49b + 49c)
+- cross-references between catalogues that don't resolve (49c)
+- dialogs the AI tutor can't open or query (49d)
+
+The remaining sub-phases (49e tutor-panel feature-discovery,
+49f doc-coverage extension) extend the visibility surface
+further but don't add new failure-mode coverage.
+
+**Files touched.**
+- NEW `orgchem/core/agent_surface_audit.py` (~ 220 lines)
+- NEW `tests/test_agent_surface_symmetry.py` (~ 110 lines)
+- `orgchem/agent/actions_periodic.py` — added
+  `open_periodic_table` (~ 25 new lines)
+- `orgchem/agent/actions_naming.py` — added
+  `open_naming_rules` (~ 25 new lines)
+- `orgchem/gui/audit.py` — 2 new GUI_ENTRY_POINTS entries
+- `INTERFACE.md` — new audit-module row
+- `ROADMAP.md` — Phase 49 status: 49a + 49b + 49c + 49d SHIPPED
+- `PROJECT_STATUS.md` — round 179 summary
+
+**Next sub-phase.** 49e — tutor-panel feature-discovery audit:
+verify the tutor-panel chat backend's tool-schemas surface
+includes every registered agent action so the LLM can discover
++ call any feature.  Also check the system-prompt / capabilities
+manifest exposes the right per-category descriptions.
+
+---
+
+## 2026-04-25 — Round 178 (Phase 49c — cross-module reference graph audit + living matrix, third sub-phase of the user-flagged integration sweep)
+
+**Goal.**  Round 175 surfaced a user-flagged Phase 49 cross-module
+integration audit.  Round 176 → 49a (glossary coverage); round
+177 → 49b (molecule-DB canonicalisation).  Round 178 ships the
+next sub-phase — **49c: cross-module reference graph**.  Goal:
+unify the per-catalogue cross-reference tests (added in rounds
+146 / 151 / 166) into a single project-wide audit + a renderable
+matrix that surfaces low-coverage areas.
+
+**What shipped.**
+
+1. **`core/cross_reference_audit.py` (NEW, ~ 250 lines)** —
+   walks every catalogue's cross-reference fields and validates
+   each edge.  Five relationships audited:
+   - `cell-component → molecule` (Phase-43)
+   - `kingdom-topic → cell-component` (Phase-47)
+   - `kingdom-topic → metabolic-pathway` (Phase-47)
+   - `kingdom-topic → molecule` (Phase-47)
+   - `microscopy-method → lab-analyser` (Phase-44)
+
+   Public API:
+   - `CrossRef(source_kind, source_id, target_kind, target_id)`
+     frozen dataclass + `CrossRefReport(total, broken, by_kind)`
+   - `gather_all_cross_references()` — flat list of every edge
+     (currently 59)
+   - `validate_cross_references(refs=None)` — broken-link
+     report.  Molecule-name lookups go through normalised-name
+     + synonyms matching so synonyms like "Vitamin A" hit the
+     "Retinol" row.
+   - `cross_reference_matrix()` —
+     `{(source_kind, target_kind): edge_count}` for the doc.
+   - `render_matrix_text()` — left-aligned plain-text matrix.
+
+2. **`tests/test_cross_reference_graph.py` (NEW)** — 7 tests:
+   ≥ 50 edges gathered, every declared kind present with
+   non-zero count, matrix renders, no broken edges, per-kind
+   floors, dataclass hashability, explicit-refs validation.
+
+3. **Real bug caught on first run.**  The audit module was
+   calling `list_lab_analysers` (doesn't exist) — the actual
+   public API is `list_analysers`.  All 6 microscopy → lab-
+   analyser cross-refs reported broken until the fix.  This is
+   exactly what the audit is for: surfacing inconsistencies
+   between catalogues at test time.
+
+**Live matrix output (Phase-49c doc).**
+
+```
+Source kind          → Target kind         | Edges
+------------------------------------------------------------
+cell-component       → molecule             |     1
+kingdom-topic        → cell-component       |    46
+kingdom-topic        → metabolic-pathway    |     5
+kingdom-topic        → molecule             |     1
+microscopy-method    → lab-analyser         |     6
+------------------------------------------------------------
+TOTAL                                       |    59
+```
+
+**Coverage gap surfaced.**  Only **1** cell-component → molecule
+edge + **1** kingdom-topic → molecule edge exist, despite ~ 100
+catalogue entries that could meaningfully link to specific
+molecule-DB rows (every cell-component constituent COULD
+cross-reference its dominant molecule; every kingdom-topic with
+a named compound in its body text COULD link to that molecule).
+Future Phase-49d-f rounds will use this matrix to drive cross-
+reference expansion.  The matrix doc serves as both a
+regression floor (lock current counts in) and a roadmap
+(visible gaps invite contribution).
+
+**Test count.** 2142 passed (was 2135 in round 177, +7 from the
+new audit suite).  Full suite green.
+
+**Files touched.**
+- NEW `orgchem/core/cross_reference_audit.py` (~ 250 lines)
+- NEW `tests/test_cross_reference_graph.py` (~ 145 lines)
+- `INTERFACE.md` — new module row
+- `ROADMAP.md` — Phase 49 status: 49a + 49b + 49c SHIPPED
+- `PROJECT_STATUS.md` — round 178 summary
+
+**Next sub-phase.** 49d — agent-surface symmetry audit:
+verify that every catalogue with a Tools-menu dialog also has
+a corresponding agent-action surface (`open_<dialog>` opener +
+list / get / find lookups).  Same audit pattern: walk a list
+of (dialog id, expected action names) pairs, surface any
+missing actions as test failures.
+
+---
+
+## 2026-04-25 — Round 177 (Phase 49b — molecule-DB canonicalisation audit + 120-row catalogue backfill, second sub-phase of the user-flagged integration sweep)
+
+**Goal.** Round 175 surfaced a user-flagged Phase 49 cross-module
+integration audit ("ensure modules are well integrated — words
+linked to glossary, molecules in the same format and findable in
+the database, …").  Round 176 delivered 49a (glossary coverage).
+Round 177 ships the next sub-phase — **49b: molecule-DB
+canonicalisation**.  Goal: *every catalogue molecule with a
+parseable SMILES is also a Molecule row in the DB*, so a learner
+who clicks a sugar in the Carbohydrates tab or a steroid in the
+Lipids tab can flip into the molecule workspace, run descriptors,
+or use it as a retrosynthesis target without "molecule not
+found" surprises.
+
+**What shipped.**
+
+1. **`core/glossary_audit.py` extended** with
+   `gather_catalogue_molecule_references()` — walker returning
+   `(source, name, smiles)` triples across:
+   - Phase-29 carbohydrate / lipid / nucleic-acid catalogues
+     (each entry IS a molecule reference)
+   - Phase-31k SAR series variants
+   - Phase-43 cell-component constituents with
+     `cross_reference_molecule_name` (name-only)
+   - Phase-47 biochemistry-by-kingdom topics with
+     `cross_reference_molecule_names` (name-only)
+   ~ 250 triples total, ~ 151 carrying SMILES + ~ 100 name-only.
+
+2. **`db/seed_catalogue_molecules.py` (NEW)** —
+   `seed_catalogue_molecules_if_needed()` backfills any
+   catalogue molecule whose canonical InChIKey isn't already in
+   the Molecule DB.  120 molecules seeded on first run.  Each
+   row tagged with source `carbohydrate-catalogue` /
+   `lipid-catalogue` / `nucleic-acid-catalogue` /
+   `sar-<series-id>` so the source filter can drill into a
+   specific catalogue's contributions.  Goes through the same
+   `ChemMol.from_smiles + ensure_properties` path the
+   round-58 seed-set uses, so canonicalisation is consistent.
+   Idempotent — second run finds 0 new rows.
+
+3. **Wired into `db/seed.py::seed_if_empty()`** after the
+   round-58 `seed_synonyms_if_needed()` call.  Generalises round
+   58's InChIKey reconciliation by ADDING missing rows rather
+   than only adding aliases.
+
+4. **`tests/test_molecule_db_canonicalisation.py` (NEW)** —
+   6 tests:
+   - `test_gather_returns_at_least_100_references` — walker
+     produces ≥ 100 refs.
+   - `test_gather_covers_all_four_smiles_sources` — carb /
+     lipid / NA / sar-* sources all hit.
+   - `test_every_smiles_ref_resolves_by_inchikey` — every
+     catalogue SMILES matches a DB row by full InChIKey OR by
+     name + matching skeleton block (the stereo-variant
+     fallback covers cases where the catalogue ships a
+     fully-specified stereoisomer of an already-named
+     partial-stereo seed-set compound, e.g. Cholesterol /
+     Codeine / Captopril / Amoxicillin).
+   - `test_every_name_ref_resolves` — every name-only
+     cross-reference (Phase-43 + 47) hits a DB row by name
+     lookup.
+   - `test_seed_catalogue_molecules_idempotent` — second run
+     returns 0.
+   - `test_at_least_some_catalogue_molecules_added` — ≥ 50
+     catalogue-sourced molecules in DB after backfill.
+
+5. **Real bug caught: Citalopram SMILES.**  The
+   `db/seed_molecules_extended.py` row for Citalopram had F and
+   CN swapped relative to the Phase-31k SAR-catalogue version.
+   The two SMILES encode completely different molecules
+   (different InChIKey skeletons — `OTURDUAIBJEUEI` vs
+   `WSEQXVZVJXJVFP`); the DB version isn't actually
+   citalopram.  Fixed the seed to the DrugBank structure
+   `CN(C)CCCC1(c2ccc(F)cc2)OCc2cc(C#N)ccc21` (CAS 59729-33-8).
+   The existing local DB row was patched to match.  This is
+   exactly the kind of cross-module inconsistency the user
+   flagged — the SAR series and the molecule DB were
+   silently disagreeing about a textbook drug.
+
+6. **Bumped `db/queries.py::list_molecules` default `limit`**
+   from 500 to 5000.  After the round-177 backfill the DB has
+   ~ 720 rows (40 starter + 193 extended + 247 intermediates +
+   120 catalogue + …); the previous 500-row default was
+   truncating the alphabetically-late tail (α / β / γ-prefixed
+   sugars, Testosterone, THF) from `list_all_molecules`, which
+   in turn broke the Phase-6 + Phase-6a smoke tests after the
+   backfill ran.
+
+**Test count.** 2135 passed (was 2126 in round 176, +6 from the
+new canonicalisation suite + 3 already-passing checks now
+guarded against truncation).  Full suite green.
+
+**Why this matters.**  Round 177 closes the second of the
+user's three flagged failure modes: *"molecules in all modules
+are compatible and in the same format as each other and can be
+found in the database"*.  Together with round 176's glossary
+coverage (failure mode 1), the round-177 audit means a learner
+or an LLM tutor can:
+- click any catalogue molecule (lipid / sugar / NA / SAR) and
+  expect it to be in the molecule browser
+- look up any term mentioned in a catalogue's body text and
+  expect it to be glossary-defined
+- trust that two modules using the same name for a molecule
+  use the same structure (caught Citalopram on the first run)
+
+**Files touched.**
+- NEW `orgchem/db/seed_catalogue_molecules.py` (~ 160 lines)
+- NEW `tests/test_molecule_db_canonicalisation.py` (~ 175 lines)
+- `orgchem/core/glossary_audit.py` — added
+  `gather_catalogue_molecule_references()` (~ 70 new lines)
+- `orgchem/db/seed.py` — call into seeder
+- `orgchem/db/seed_molecules_extended.py` — Citalopram fix
+- `orgchem/db/queries.py` — `list_molecules` default limit
+- `INTERFACE.md` — new seeder row
+- `ROADMAP.md` — Phase 49 status: 49a + 49b SHIPPED
+- `PROJECT_STATUS.md` — round 177 summary
+
+**Next sub-phase.** 49c — cross-module reference graph doc:
+build a single living matrix that shows which modules
+cross-reference which (catalogues → DB rows, glossary terms
+→ catalogues, agent actions → catalogues, tutorials →
+glossary), with a pytest test that walks the matrix to surface
+holes.
+
+---
+
+## 2026-04-25 — Round 176 (Phase 49a — glossary autolink coverage audit + 15-term backfill, first sub-phase of the user-flagged integration sweep)
+
+### Context
+Round 175 added Phase 49 to the roadmap per user request:
+*"Do a code review and ensure that all modules are well
+integrated…words used in modules are included and linked to
+the glossary, molecules in all modules are compatible…"*
+Round 176 ships the first sub-phase — **49a: glossary
+autolink coverage audit + missing-term backfill**.
+
+### What shipped
+**Audit infrastructure** —
+`orgchem/core/glossary_audit.py` (~ 175 lines).
+Test-time helper module that walks:
+- Phase-43 cell components (every component's function +
+  notes + per-constituent role + notes)
+- Phase-42 metabolic pathways (overview + per-step notes)
+- Phase-44 microscopy (typical_uses + notes + contrast
+  mechanism)
+- Phase-45 lab reagents (typical_usage + notes +
+  preparation notes)
+- Phase-46 pH explorer reference cards (markdown bodies)
+- Phase-47 biochemistry-by-kingdom (every topic's body +
+  notes)
+- Phase-31k SAR series (every variant's notes)
+- Phase-31b named-reaction descriptions (`_STARTER` body
+  text)
+- Every registered tutorial markdown lesson body
+
+Returns the union as a single ~ 330 kchar string.  Plus
+`glossary_term_set()` returning the lowercase set of all
+glossary terms + aliases (~ 247 entries).  Plus
+`PHASE_49A_REQUIRED_TERMS` 12-tuple of high-priority
+integration gates: pH / pKa / buffer / hydrogen bonding /
+LDA / active-methylene compound / multi-component reaction
+/ endosymbiotic theory / horizontal gene transfer / CRISPR /
+chirality / chiral switch.
+
+Pure-Python; no DB dependency (reads glossary entries
+directly from the seed-file Python data structures); no
+Qt imports.  Designed to be reused by Phase 49b-f for
+additional cross-module audits.
+
+**15 new glossary entries** appended to
+`orgchem/db/seed_glossary_extra.py`, filling the high-
+priority gaps surfaced by the audit:
+
+1. **pH** — foundational, referenced everywhere; 0-14
+   scale; physiological 7.4 anchor.
+2. **pKa** — −log₁₀(Kₐ); inflection on titration curve at
+   pH = pKa.
+3. **Buffer** — weak acid + conjugate base; biological +
+   bench buffer examples.
+4. **Buffer capacity** — β = 2.303·C·α·(1−α); max at
+   pH = pKa, drops to 30 % at |ΔpH| = 1.
+5. **Henderson-Hasselbalch** — pH = pKa + log([A⁻]/[HA]);
+   Henderson 1908 + Hasselbalch 1916.
+6. **Hydrogen bonding** — 5-30 kJ/mol H↔X-lone-pair
+   interaction; drives water bp + protein 2° structure +
+   Watson-Crick.
+7. **Hydrophobic effect** — entropic clathrate-water
+   restructuring; drives protein folding + lipid bilayers.
+8. **Lithium diisopropylamide (LDA)** — strong non-
+   nucleophilic base; kinetic-vs-thermodynamic enolate
+   teaching.
+9. **Multi-component reaction (MCR)** — Hantzsch / Strecker
+   / Mannich / Ugi 4CR canonical examples.
+10. **Active-methylene compound** — CH₂ flanked by two EWGs;
+    pKa ~ 11-13 vs ketone α-CH ~ 20.
+11. **Endosymbiotic theory** — Margulis 1967, 5 lines of
+    evidence.
+12. **Horizontal gene transfer (HGT)** — transformation +
+    transduction + conjugation; antibiotic-resistance
+    spread.
+13. **CRISPR-Cas** — adaptive bacterial immunity → Doudna
+    + Charpentier Nobel 2020 → Casgevy 2023.
+14. **Chirality** — umbrella term + sp³ stereocentre
+    origin + biological selectivity.
+15. **Chiral switch** — citalopram → escitalopram +
+    omeprazole → esomeprazole patent-extension paradigm.
+
+`SEED_VERSION` bumped 9 → 10.
+
+### Tests
+9 new tests in `tests/test_glossary_coverage.py`:
+- `test_glossary_term_set_is_substantial` (≥ 200 entries)
+- `test_all_catalogue_text_is_substantial` (≥ 100 kchars)
+- `test_required_terms_in_glossary` — every Phase-49a
+  required term in glossary
+- `test_required_terms_appear_in_catalogue_text` — every
+  required term used somewhere via canonical-name OR
+  alias match (load-bearing, not seeded for completeness
+  alone)
+- `test_ph_chemistry_terms_present` — domain-specific
+  check for pH / pKa / buffer / buffer capacity /
+  Henderson-Hasselbalch
+- `test_synthesis_vocabulary_terms_present` — LDA /
+  active-methylene / MCR
+- `test_biology_vocabulary_terms_present` — endosymbiotic
+  theory / HGT / CRISPR
+- `test_phase_49a_glossary_grew_by_at_least_15` — set-size
+  floor (≥ 240 with aliases)
+- `test_glossary_audit_module_public_api` — three exported
+  symbols present + correctly-typed
+
+Discovered + fixed during the test run: first iteration
+of `_catalogue_text_sources()` walked Phase-43/42/44/45/46/
+47/31k catalogues + tutorial markdown but NOT the
+`db.seed_reactions._STARTER` reaction descriptions — so the
+required-term-in-text check failed for `active-methylene
+compound` (only mentioned in the Knoevenagel reaction
+description) and `multi-component reaction` (only in the
+Hantzsch description).  Added the reaction-seed walk; all
+12 required terms now found.  Plus a doc-coverage-test
+adjustment: an INTERFACE.md row mentioned
+`tests/test_glossary_coverage.py` as a `path.py` token,
+which the existence-checker tried to verify under
+`orgchem/` — rephrased to drop the explicit test-file
+reference.
+
+### Documentation updates
+- INTERFACE.md — added row for `core/glossary_audit.py`.
+- ROADMAP.md — Phase 49 status updated to "IN PROGRESS —
+  49a SHIPPED round 176" with delivery manifest + queued
+  next-round work (49b-f).
+- PROJECT_STATUS.md — round 176 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+2 129 passing (up from 2 120 in round 175 — net +9 from
+this round's 9 new test functions).  Doc-coverage test
+green; full suite ~51 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 49b** — molecule-DB canonicalisation audit.
+  Walk every catalogue's molecule-name / SMILES references;
+  verify each canonicalises to a real seeded `Molecule` row
+  (by InChIKey via `core/fragment_resolver.py`).  Same
+  test-time helper pattern as 49a.  Lowest-risk next step
+  — same audit-walker scaffolding extends naturally.
+- **Phase 49c-f** — cross-module reference graph + agent-
+  surface symmetry + tutor-panel discovery + doc-coverage
+  extension.
+- **Phase 31b extension** — 4 more entries to reach the
+  60-target.
+
+A safer next pick is **Phase 49b** to keep the integration-
+sweep momentum + reuse the round-176 audit-walker.
+
+## 2026-04-25 — Round 175 (Phase 31b extension — Henry reaction + Hantzsch dihydropyridine MCR; Phase 49 added to roadmap)
+
+### Context
+Round 174 closed Phase 48 entirely.  Round 175 returns to
+the Phase 31b extension (54/60) and ships two more
+reactions: Henry (nitroaldol C-N + C-C) and Hantzsch
+dihydropyridine MCR.  Mid-round the user flagged a new
+**cross-module integration audit** request that's been
+captured as Phase 49 in the roadmap.
+
+### What shipped
+**Two named reactions** added to
+`orgchem/db/seed_reactions.py`:
+
+1. **Henry reaction (nitromethane + benzaldehyde →
+   2-nitro-1-phenylethanol)** — category *Condensation
+   (nitroaldol)*.  Louis Henry 1895.  Description teaches:
+   base-catalysed addition of a nitroalkane to an aldehyde
+   or ketone giving a β-nitro alcohol; pKa contrast with
+   the classic aldol — nitroalkane α-H ~ 10 vs ketone α-H
+   ~ 20 — enables mild secondary-amine / KF / fluoride /
+   phosphazene catalysts; mechanism (base deprotonates the
+   nitroalkane to the **aci-nitro carbanion**; carbanion
+   attacks the carbonyl C; protonation gives the β-nitro
+   alcohol); downstream value (Pd/C-H₂ reduction of the
+   -NO₂ group gives a 1,2-amino alcohol — β-blocker /
+   chloramphenicol scaffold; Nef reaction converts -NO₂ to
+   a carbonyl giving an α,β-dihydroxyketone or aldehyde;
+   dehydration gives a Michael-acceptor nitroalkene);
+   asymmetric variants — Shibasaki Ln-BINOL 1992, Trost
+   Zn-ProPhenol 2002 — deliver > 90 % ee for chiral
+   1,2-amino alcohol synthesis.
+
+2. **Hantzsch dihydropyridine synthesis (benzaldehyde + 2
+   ethyl acetoacetate + NH₃ → diethyl 4-phenyl-2,6-
+   dimethyl-1,4-dihydropyridine-3,5-dicarboxylate + 3
+   H₂O)** — category *Multi-component reaction (heterocycle
+   synthesis)*.  Hantzsch 1881.  **The textbook MCR**.
+   Description walks the cascade: (1) Knoevenagel of one
+   β-ketoester with the aldehyde → unsaturated diketoester
+   (cross-references the Phase-31b's seeded Knoevenagel
+   reaction); (2) the second β-ketoester condenses with
+   NH₃ → β-enaminone; (3) Michael addition of enaminone
+   onto the Knoevenagel adduct closes the ring; (4)
+   dehydration aromatises to the symmetric 1,4-DHP.  Three
+   new C-N + C-C bonds + 4 bond-rearrangements in one pot.
+   **Pharmaceutical significance**: 1,4-DHP scaffold is
+   the core of the calcium-channel-blocker antihypertensive
+   class (nifedipine 1975, amlodipine 1990, felodipine,
+   nicardipine, isradipine, lacidipine).
+
+**Three intermediate fragments** added to
+`orgchem/db/seed_intermediates.py`: `Nitromethane
+C[N+](=O)[O-]` (reagent), `2-Nitro-1-phenylethanol (Henry
+product) O=[N+]([O-])CC(O)c1ccccc1` (intermediate),
+`Hantzsch 1,4-dihydropyridine` (intermediate).
+
+### Tests
+Three new tests in `tests/test_reactions.py` plus the
+catalogue-size floor bumped:
+- `test_henry_reaction_seeded` — nitro-group SMILES +
+  nitroalkane class + pKa contrast + aci-nitro carbanion
+  + Shibasaki/Trost asymmetric variant teaching anchors.
+- `test_hantzsch_dihydropyridine_seeded` — Hantzsch 1881
+  + MCR class + ≥ 3 of 4 cascade steps named (Knoevenagel
+  + enaminone + Michael + dehydration) + calcium-channel-
+  blocker pharmaceutical context.
+- `test_multi_component_reaction_anchor_present` —
+  Hantzsch + Robinson annulation + Knoevenagel cascade
+  trio guarded against future regression.
+- `test_named_reaction_count_at_least_fifty_six` —
+  catalogue floor bumped 54 → 56 (renamed from round-165
+  `_fifty_four`).
+
+Discovered + fixed during the test run: fragment-
+consistency audit caught 3 missing fragments on first
+reaction-add.  Resolved by seeding the 3 intermediate
+rows above.  All 39 reaction-tests pass + all 12
+fragment-consistency tests pass.
+
+### Mid-round: Phase 49 added to roadmap (user request)
+The user flagged a new audit request mid-round: *"Do a
+code review and ensure that all modules are well
+integrated with each other, for example, words used in
+modules are included and linked to the glossary, molecules
+in all modules are compatible and in the same format as
+each other and can be found in the database, reactions and
+techniques are linked between modules, the AI tutor is
+able to access and use all features in all modules etc."*
+
+Added to ROADMAP.md as **Phase 49 — Cross-module
+integration audit + glue** with 6 sub-phases:
+- 49a — Glossary autolink coverage audit + missing-term
+  backfill.
+- 49b — Molecule-DB canonicalisation audit (every
+  catalogue's molecule references resolve to a real
+  Molecule row by InChIKey).
+- 49c — Cross-module reference graph doc
+  (`docs/CROSS_MODULE_REFERENCES.md`).
+- 49d — Agent-surface symmetry audit (extends the existing
+  Phase-25a `gui/audit.py` to 100 % open-from-agent
+  coverage).
+- 49e — Tutor-panel feature-discovery audit
+  (`list_capabilities` returns every feature).
+- 49f — Doc-coverage extension (every INTERFACE.md row →
+  `CLAUDE.md` "Where each concern lives" + every Tools-
+  menu shortcut unique).
+
+Why it matters: earlier rounds proved that **test-guarded
+cross-module references catch real bugs** — the Phase-47 →
+Phase-43 xref test in round 166 caught a Phase-42
+id-format mismatch (`tca-cycle` vs `tca_cycle`); the
+Phase-43 → Molecule-DB xref test in round 151 caught 4
+broken cross-references on first run.  Phase 49
+generalises those one-off audits into a comprehensive
+integration sweep.  Likely 6 rounds; lowest-risk start is
+49a (glossary coverage) since it's purely additive content
+work + sets up the autolinker for every following sub-phase.
+
+### Documentation updates
+- ROADMAP.md — Phase 31b extension count updated 54/60 →
+  56/60 + new Phase 49 added with full sub-phase plan +
+  design rationale.
+- PROJECT_STATUS.md — round 175 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+2 120 passing (up from 2 117 in round 174 — net +3 from
+this round's 3 new test functions).  Doc-coverage test
+green; full suite ~48 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 49a** — glossary autolink coverage audit + the
+  missing-term backfill.  Lowest-risk first step of the
+  new user-flagged Phase 49 sweep.
+- **Phase 31b extension** — 4 more entries to reach the
+  60-target.
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.
+
+A safer next pick is **Phase 49a** to start the user-
+flagged integration sweep with the lowest-risk piece.
+
+## 2026-04-25 — Round 174 (🎉 Phase 48 CLOSED — tutorial cross-link)
+
+### Context
+Rounds 170-173 shipped Phase 48a (headless core +
+glossary), 48b (dialog), 48c (agent actions), 48d
+(inline 'View isomers' button).  Round 174 closes Phase
+48 entirely with the tutorial cross-link — completing
+all four user-flagged round-165 design recommendations.
+
+### What shipped
+**Tutorial lesson** —
+`orgchem/tutorial/content/intermediate/11_isomerism.md`.
+Title: *"Isomerism: a unified hierarchy"*.  ~ 5-screen
+intermediate lesson covering:
+- The 5-tier hierarchy as a comparison table
+  (constitutional / conformer / enantiomer /
+  diastereomer / tautomer + identical /
+  different-molecule edge cases).
+- Worked SMILES examples in every section that the
+  reader can paste into the Phase-48b dialog:
+  - n-/sec-/iso-/tert-butanol C₄H₁₀O constitutional
+    family
+  - Propanal vs acetone constitutional pair
+  - (R)/(S)-lactic acid enantiomers
+  - (2R,3R)/(2R,3S)-2,3-dihydroxybutanoate diastereomers
+  - meso-tartaric acid internal-mirror-plane example
+  - Acetone keto/enol tautomer pair
+  - 2,4-pentanedione 5-tautomer doubly-activated CH₂
+  - BINAP atropisomer asymmetric-hydrogenation context
+  - Butenes worked example covering all 5 isomer-family
+    branches in one substrate
+- Inline cross-references to the Phase-48b *Tools →
+  Isomer relationships…* dialog (Ctrl+Shift+B) AND the
+  Phase-48d inline 'View isomers…' workspace button so
+  readers discover both entry paths.
+- References to all 7 round-170 glossary terms
+  (Isomerism / Stereoisomer / Conformer / Tautomer /
+  Atropisomer / Cis-trans isomerism / Optical activity)
+  so the existing tutorial-panel autolinker
+  (`gui/widgets/glossary_linker.py`) wraps them as
+  clickable anchors automatically.
+
+**Curriculum wiring** — `orgchem/tutorial/curriculum.py`
+gains an 11th intermediate-level entry between 'Protecting
+groups' and the existing advanced/01 Pericyclic-reactions
+lesson.
+
+### Tests
+9 new tests in `tests/test_isomerism_lesson.py`:
+- `test_lesson_file_exists` — markdown file on disk.
+- `test_lesson_registered_at_intermediate_level` — the
+  curriculum tree has it.
+- `test_lesson_path_follows_convention` — path is
+  `intermediate/11_isomerism.md` (next sequential number).
+- `test_lesson_covers_all_seven_relationships` — every
+  RELATIONSHIPS string mentioned in the body.
+- `test_lesson_cross_links_to_isomer_explorer_dialog` —
+  both the dialog name + the Ctrl+Shift+B shortcut appear.
+- `test_lesson_cross_links_to_view_isomers_workspace_button`
+  — the Phase-48d inline button name appears.
+- `test_lesson_cross_links_to_round_170_glossary_terms` —
+  all 7 isomer-vocabulary glossary terms referenced by
+  exact name (so the autolinker turns them into anchors).
+- `test_lesson_includes_worked_example_smiles` — at least
+  5 of the canonical worked-example SMILES strings
+  appear (n-butanol, tert-butanol, propanal, acetone,
+  R-lactic acid, S-lactic acid, 2,4-pentanedione).
+- `test_lesson_intermediate_count_increased_to_11` —
+  curriculum-size floor.
+
+All 9 tests pass on first run.
+
+### Documentation updates
+- ROADMAP.md — Phase 48 status flipped to "🎉 SHIPPED
+  end-to-end across rounds 170-174" with full delivery
+  manifest for the 48e sub-phase + Phase-48-vision-
+  realised closeout language.
+- PROJECT_STATUS.md — round 174 summary prepended with
+  the 🎉 Phase 48 CLOSED milestone language.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+2 117 passing (up from 2 108 in round 173 — net +9 from
+this round's 9 new test functions).  Doc-coverage test
+green; full suite ~48 s wall-clock.
+
+### What's open (next-round candidates)
+**Phase 48 is COMPLETE.**  The second of the two user-
+flagged round-165 phases is now fully delivered (Phase 47
+Biochemistry-by-Kingdom closed in round 169 with its 47d
+sub-domain-filter follow-up).  All user-flagged feature
+requests in scope are now shipped.
+
+Remaining roadmap work:
+- **Phase 31b extension** — 6 more named reactions to
+  reach the 60-target (Ramberg-Bäcklund, Shapiro,
+  Oppenauer, Julia / Peterson olefinations, Henry,
+  Hantzsch dihydropyridine).
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.  Multi-round; the
+  highest-value remaining work + the only unfinished
+  feature still on the original Phase-38 roadmap.
+- **Phase 31k extension** — 6 more SAR series for a 21-
+  target.
+- **Phase 47b/c follow-ups** — additional kingdom topics
+  for the Asgard / Heimdall sub-domain detail level.
+
+A safer next pick is the **Phase 31b extension** (1-2
+named reactions per round, established tight pattern).
+The bigger ambition is **Phase 38c** lab-setup canvas —
+the only major unfinished user-flagged feature.
+
+## 2026-04-25 — Round 173 (Phase 48d — inline 'View isomers' button on the molecule 2D viewer)
+
+### Context
+Round 172 closed the agent-action layer for Phase 48.  Round
+173 closes the user-flagged 4-pronged isomers integration at
+the GUI level: any molecule displayed in the Viewer2DPanel
+now carries a one-click jump to the Phase-48b isomer-
+relationships dialog with the SMILES pre-filled.
+
+### What shipped
+**`orgchem/gui/panels/viewer_2d.py`** extended:
+- New **"View isomers…"** button on the top row, next to
+  the existing Style combo.
+- Button is **disabled until a molecule is selected**;
+  enables when a `molecule_selected` bus signal carries
+  a real SMILES.
+- Click handler `_on_view_isomers` walks up to the
+  main-window parent, opens the singleton
+  `IsomerExplorerDialog`, and **pre-fills all three
+  SMILES inputs** simultaneously (Stereoisomers tab +
+  Tautomers tab + Classify pair tab 'A' input) so the
+  user lands in a ready-to-run state on whichever tab
+  they switch to.
+- Then **auto-runs the stereoisomer enumeration** via
+  `_on_stereo_run()` so results appear immediately on
+  the default Stereoisomers tab — the user does NOT have
+  to click Enumerate themselves.
+- **Singleton pattern reused** — repeat clicks update
+  the SMILES in the same dialog instance rather than
+  spawning new dialogs.
+- Tooltip explains the Ctrl+Shift+B shortcut for
+  keyboard-driven users.
+- **No-op safety**: clicking with
+  `_current_smiles=None` (e.g. signal race) silently
+  exits instead of opening an empty dialog.
+
+### Tests
+8 new tests in `tests/test_viewer_2d_isomer_button.py`:
+- `test_viewer_2d_carries_view_isomers_button` — button
+  present + correct text.
+- `test_viewer_2d_button_disabled_before_selection` —
+  initial state.
+- `test_viewer_2d_button_enabled_after_smiles_set` —
+  uses the seeded Cholesterol molecule as the smoke-
+  test substrate.
+- `test_view_isomers_click_opens_dialog` — click
+  pre-fills all 3 SMILES inputs.
+- `test_view_isomers_click_focuses_stereoisomers_tab` —
+  click lands on the Stereoisomers tab (most natural
+  starting view).
+- `test_view_isomers_click_auto_runs_enumeration` —
+  verifies `_stereo_list.count() == 4` for the
+  2-stereocentre input `CC(O)C(O)CO`, proving the
+  auto-run actually happens.
+- `test_view_isomers_click_with_no_smiles_is_noop` —
+  no dialog instance created.
+- `test_view_isomers_singleton_pattern` — second click
+  updates SMILES in the same instance.
+
+All 8 tests pass on first run.
+
+### Documentation updates
+- ROADMAP.md — Phase 48 status updated to "48a + 48b +
+  48c + 48d SHIPPED" with delivery manifest for the 48d
+  sub-phase.
+- PROJECT_STATUS.md — round 173 summary prepended.
+- SESSION_LOG.md — this entry.
+
+(No INTERFACE.md changes needed — the existing
+`viewer_2d.py` row covers the new feature implicitly.)
+
+### Test suite status
+2 108 passing (up from 2 099 in round 172 — net +8 from
+this round's 8 new test functions, plus +1 from
+`tests/test_glossary.py` having one fewer skip flag this
+round).  Doc-coverage test green; full suite ~48 s
+wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 48e** — tutorial-content cross-link.  Write
+  1-2 lessons under `tutorial/content/intermediate/`
+  covering isomerism with worked examples that link out
+  to the isomer-relationship explorer.  Closes Phase 48
+  entirely.  Ships in 1 round.
+- **Phase 31b extension** — 6 more entries to reach the
+  60-target.
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.
+
+A safer next pick is **Phase 48e** to close Phase 48
+entirely — leaving Phase 48 at 5/5 sub-phases shipped.
+
+## 2026-04-25 — Round 172 (Phase 48c — isomer agent actions + audit-map registration)
+
+### Context
+Round 171 shipped Phase 48b — the Tools → *Isomer
+relationships…* (Ctrl+Shift+B) dialog wrapping the round-170
+core engine.  Round 172 ships the agent layer for the same
+core, mirroring the established Phase-37/40/45/47 catalogue
+agent-action pattern.
+
+### What shipped
+**Agent actions** — `orgchem/agent/actions_isomers.py`
+(~120 lines).  4 actions in a new `isomer` category:
+
+- **`find_stereoisomers(smiles, max_results=16)`** — wraps
+  `core.isomers.enumerate_stereoisomers`.  Under-specified
+  input expands to all consistent stereoisomers.  Returns
+  `{input_smiles, canonical_smiles_list, truncated}` dict.
+  Unparseable input returns empty list rather than
+  raising.
+- **`find_tautomers(smiles, max_results=16)`** — wraps
+  `enumerate_tautomers` (RDKit's TautomerEnumerator,
+  ~ 20 documented rules).  Same dict shape as above.
+- **`classify_isomer_pair(smiles_a, smiles_b)`** — wraps
+  `classify_isomer_relationship`.  Returns
+  `{smiles_a, smiles_b, relationship, formula_a,
+  formula_b}` dict — **the formulas surface AS PART OF
+  the response** so an LLM caller can immediately reason
+  about whether the pair shares a formula AND what kind
+  of isomer relationship they have, in a single call.
+- **`open_isomer_explorer(tab="")`** — opens the *Tools
+  → Isomer relationships…* dialog (Ctrl+Shift+B) and
+  optionally focuses one of the 3 tabs (Stereoisomers /
+  Tautomers / Classify pair).  Marshals onto the Qt main
+  thread via `_gui_dispatch.run_on_main_thread_sync`.
+  Returns `{opened, selected, tab, available_tabs}` so
+  the agent can introspect failure paths.
+
+**Wiring**:
+- `orgchem/agent/__init__.py` — added `from orgchem.agent
+  import actions_isomers`.
+- `orgchem/gui/audit.py` — registered all 4 actions in
+  `GUI_ENTRY_POINTS` (each pointing at *Tools → Isomer
+  relationships…* (Ctrl+Shift+B)).
+
+### Tests
+20 new tests in `tests/test_isomer_actions.py`:
+- `find_stereoisomers`: 2-centres → 4 isomers; 0 centres
+  → 1 isomer; max_results truncation sets truncated=True
+  + caps the list; unparseable → empty list.
+- `find_tautomers`: acetone ≥ 2; pentanedione ≥ 5;
+  unparseable → empty.
+- `classify_isomer_pair`: every branch — identical /
+  enantiomer / diastereomer / constitutional / tautomer /
+  different-molecule / unparseable.  Plus a separate
+  invariant — every classify response carries both
+  molecular formulas (or None for unparseable).
+- `open_isomer_explorer`: no-args + with-tab + with-
+  unknown-tab + introspect `available_tabs` field.
+- `audit_map_includes_all_four_isomer_actions` — guards
+  against future regression of the wiring.
+- `isomer_category_actions_registered` — introspects
+  `ActionSpec.category` to confirm all 4 actions carry
+  the new `isomer` tag.
+
+All 20 tests pass on first run.
+
+### Documentation updates
+- INTERFACE.md — added row for `agent/actions_isomers.py`
+  with full 4-action API surface description.
+- ROADMAP.md — Phase 48 status updated to "48a + 48b +
+  48c SHIPPED" with delivery manifest for the 48c
+  sub-phase.
+- PROJECT_STATUS.md — round 172 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+2 099 passing (up from 2 079 in round 171 — net +20 from
+this round's 20 new test functions).  Doc-coverage test
+green; full suite ~48 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 48d** — inline 'View isomers' button on the
+  molecule-workspace toolbar.  Wires up the same dialog
+  + pre-fills the SMILES input from the currently-
+  selected molecule.  Ships in 1 round.
+- **Phase 48e** — tutorial-content cross-link (1-2 lessons
+  under `tutorial/content/intermediate/` covering
+  isomerism with worked examples linking out to the
+  isomer-relationship explorer).  Ships in 1 round.
+- **Phase 31b extension** — 6 more entries to reach the
+  60-target.
+
+A safer next pick is **Phase 48d** to complete the user-
+visible integration of the isomers tool with the molecule
+workspace.
+
+## 2026-04-25 — Round 171 (Phase 48b — Tools → Isomer relationships… dialog)
+
+### Context
+Round 170 shipped Phase 48a — the headless `core/isomers.py`
+engine with 3 public APIs (`enumerate_stereoisomers`,
+`enumerate_tautomers`, `classify_isomer_relationship`) plus
+the 7-term glossary expansion.  Round 171 ships the GUI:
+the Tools → *Isomer relationships…* (Ctrl+Shift+B) dialog
+that wraps the engine.
+
+### What shipped
+**Dialog** — `orgchem/gui/dialogs/isomer_explorer.py`
+(~340 lines).  Singleton modeless `QDialog` with a 3-tab
+layout:
+
+1. **Stereoisomers** tab — SMILES input + max-results spin
+   + Enumerate button → list of canonical SMILES from
+   `enumerate_stereoisomers`.  Meta line shows the input
+   SMILES + molecular formula + result count + a red
+   "(truncated at max=N)" notice when the cap was hit.
+2. **Tautomers** tab — same shape, drives
+   `enumerate_tautomers`.
+3. **Classify pair** tab — two SMILES inputs (A and B) +
+   a Classify button → HTML result panel showing:
+   - The **colour-coded relationship label** as a heading
+     (green for identical, blue for constitutional,
+     purple for enantiomer / diastereomer / meso, orange
+     for tautomer, grey for different-molecule).
+   - The canonical RELATIONSHIPS string in code-font.
+   - A 2-row comparison table with both SMILES + their
+     molecular formulas.
+   - A **per-relationship explainer paragraph** that walks
+     the user through the pedagogical implications — e.g.
+     for enantiomers the "identical physical properties
+     EXCEPT optical rotation + biological activity at
+     chiral receptors" lesson; for diastereomers the
+     "different physical properties + separable by ordinary
+     chromatography" lesson; for tautomers the "dynamic
+     equilibrium under ambient conditions" lesson.
+
+Singleton pattern preserves the user's last input across
+re-opens.  Programmatic API for the upcoming Phase-48c
+agent action: `select_tab(label)`, `tab_labels()`.
+
+**Wiring** — `orgchem/gui/main_window.py`:
+- New *Tools → Isomer relationships…* menu entry with
+  **Ctrl+Shift+B** shortcut.
+- New `_on_isomer_explorer()` slot that opens the
+  singleton.
+
+### Tests
+17 new tests in `tests/test_isomer_explorer_dialog.py`:
+- Construction: 3-tab labels in canonical order
+  (`["Stereoisomers", "Tautomers", "Classify pair"]`).
+- Singleton pattern.
+- `select_tab` known + unknown.
+- Stereoisomers tab: 2-stereocentre input → 4 isomers in
+  list; 4-stereocentre input with max=4 → truncation
+  notice; empty input → enter-a-smiles message;
+  unparseable input → "unparseable" formula in meta line +
+  empty list.
+- Tautomers tab: acetone ≥ 2; pentanedione ≥ 5; empty
+  input → empty list.
+- Classify pair tab: enantiomers (R/S lactic) → "enantiomer"
+  + "mirror" in result HTML; identical → "identical";
+  constitutional (propanal/acetone) → "constitutional";
+  tautomer (acetone keto/enol) → "tautomer";
+  different-molecule (benzene/toluene) → "different" +
+  "isomer"; empty input → enter-both-smiles message.
+- Main-window slot: `app.window._on_isomer_explorer()`
+  opens the singleton.
+
+All 17 tests pass on first run.
+
+### Documentation updates
+- INTERFACE.md — added row for `gui/dialogs/isomer_explorer.py`
+  with full 3-tab description.
+- ROADMAP.md — Phase 48 status updated to "48a + 48b SHIPPED"
+  with delivery manifest.
+- PROJECT_STATUS.md — round 171 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+2 079 passing (up from 2 062 in round 170 — net +17 from
+this round's 17 new test functions).  Doc-coverage test
+green; full suite ~46 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 48c** — agent actions in a new `isomer` category
+  (`enumerate_stereoisomers`, `enumerate_tautomers`,
+  `classify_isomer_pair`, `open_isomer_explorer`).  Plus
+  audit-map registration.  Ships in 1 round.
+- **Phase 48d** — inline 'View isomers' button on the
+  molecule workspace.  Ships in 1 round.
+- **Phase 31b extension** — 6 more entries to reach the
+  60-target.
+
+A safer next pick is **Phase 48c** to keep the isomer
+momentum + give the agent surface access to the new
+catalogue.
+
+## 2026-04-25 — Round 170 (Phase 48a — isomer-relationship core + 7-term glossary expansion)
+
+### Context
+Round 169 closed Phase 47 entirely (Biochemistry-by-Kingdom
+window with the round-167 GUI plus the round-169 sub-domain
+filter addressing the user's plant/animal feedback).  Round
+170 starts Phase 48 — the **other** unfinished user-flagged
+phase from round 165 — the isomers exploration tool.  The
+round-165 design recommendation called for 4-pronged
+integration: (1) relationship-explorer dialog, (2) inline
+'View isomers' button on the molecule workspace, (3)
+glossary expansion, (4) tutorial cross-link.  This round
+ships the headless data core for (1) plus (3) — the
+lowest-risk first step.
+
+### What shipped
+**Headless core** — `orgchem/core/isomers.py` (~250 lines).
+RDKit-backed.  Three public APIs:
+
+1. **`enumerate_stereoisomers(smiles, max_results=16)`** —
+   wraps RDKit's `EnumerateStereoisomers` with
+   `onlyUnassigned=True`.  Fully-specified inputs return just
+   themselves; under-specified inputs expand to all consistent
+   stereoisomers (e.g. `CC(O)C(O)CO` → 4 isomers).
+   `max_results` cap keeps highly-stereogenic substrates from
+   blowing up; de-duplicated by canonical SMILES; returns
+   `IsomerEnumerationResult` dataclass (input_smiles +
+   canonical_smiles_list + truncated flag).
+2. **`enumerate_tautomers(smiles, max_results=16)`** —
+   wraps `MolStandardize.TautomerEnumerator` (covers
+   keto/enol, amide/iminol, hydroxypyridine/pyridone,
+   nitroso/oxime, ~ 20 documented rules).  Finds 5 tautomers
+   for 2,4-pentanedione.
+3. **`classify_isomer_relationship(smi_a, smi_b)`** — the
+   core comparator.  Walks an 8-step decision tree to return
+   one of 7 canonical RELATIONSHIPS strings:
+   - `identical` (same canonical SMILES with stereo)
+   - `enantiomer` (same connectivity; inverting all
+     stereocentres of `a` equals `b`)
+   - `meso` (caught implicitly via the identical branch
+     when a == its own mirror image)
+   - `diastereomer` (same connectivity, different stereo,
+     not mirror images)
+   - `tautomer` (different connectivity, same formula, AND
+     `b` appears in `a`'s tautomer enumeration)
+   - `constitutional` (different connectivity, same formula,
+     not tautomers)
+   - `different-molecule` (different formulas OR
+     unparseable input — conservative answer)
+
+   Order matters — identical/enantiomer/meso/diastereomer
+   all imply same molecular formula, so constitutional +
+   tautomer + different-molecule fall through.
+
+Sanity-tested across all 7 branches:
+- (R)-/(S)-lactic acid → enantiomer
+- (2R,3R)/(2R,3S)-2,3-dihydroxybutanoic acid → diastereomer
+- propanal / acetone → constitutional
+- acetone keto / enol → tautomer
+- benzene / toluene → different-molecule
+
+**Glossary expansion** — `orgchem/db/seed_glossary_extra.py`.
+7 new isomer-vocabulary terms appended:
+1. **Isomerism** — umbrella term + 5-tier hierarchy walk
+   (constitutional + stereo + conformational + tautomer +
+   atropisomer).
+2. **Stereoisomer** — same connectivity, different 3D;
+   enantiomer vs diastereomer split.
+3. **Conformer** — rotational state, freely interconverting,
+   bioactive-conformer drug-discovery angle.
+4. **Tautomer** — 5 major classes (keto/enol, amide/iminol,
+   lactam/lactim, nitroso/oxime, ring-chain in sugars);
+   environment-dependent ratio.
+5. **Atropisomer** — restricted-rotation biaryl stereoisomers;
+   BINAP for asymmetric hydrogenation; FDA pharmaceutical-
+   gotcha (telmisartan / lesinurad / gefitinib).
+6. **Cis-trans isomerism** — E/Z designation; cis-platin vs
+   trans-platin (only cis active); cis vs trans fatty-acid
+   cardiovascular story.
+7. **Optical activity** — specific rotation [α]ᴅ²⁰; Biot
+   1815 / Pasteur tartrate; ee measurement via polarimetry.
+
+`SEED_VERSION` bumped 8 → 9 so existing DBs pick up the
+new terms on next launch.
+
+### Tests
+**20 new tests** in `tests/test_isomers.py`:
+- RELATIONSHIPS vocabulary completeness + molecular_formula
+  helper.
+- Every classify branch: identical (3 cases), enantiomer
+  (lactic acid), diastereomer (2,3-dihydroxybutanoate),
+  constitutional (propanal/acetone + 4 butanol pairs),
+  tautomer (acetone keto/enol), different-molecule
+  (different formula + unparseable input).
+- Symmetry: classify_isomer_relationship(a, b) ==
+  classify_isomer_relationship(b, a) for non-tautomer
+  pairs.
+- Stereoisomer enumeration: 2 centres → 4 isomers; 0
+  centres → 1 isomer; fully-specified → 1 isomer;
+  max_results cap with truncated=True; unparseable → empty.
+- Tautomer enumeration: acetone ≥ 2; pentanedione ≥ 5;
+  methane ≥ 1; unparseable → empty.
+
+**1 new test** in `tests/test_glossary.py`:
+- `test_phase_48a_isomer_terms_present` — locks in all 7
+  new isomer-vocabulary terms.
+
+### Documentation updates
+- INTERFACE.md — added row for `core/isomers.py` with
+  full API surface description.
+- ROADMAP.md — Phase 48 status updated to "IN PROGRESS —
+  48a SHIPPED round 170" with delivery manifest + queued
+  next-round work (48b dialog, 48c agent actions, 48d
+  inline 'View isomers' workspace button, 48e tutorial
+  cross-link).
+- PROJECT_STATUS.md — round 170 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+2 062 passing (up from 2 042 in round 169 — net +20 from
+this round's 20 + 1 new test functions, minus 1 because
+the existing `test_glossary_seeded_with_at_least_40_terms`
+counts against the same set).  Doc-coverage test green;
+full suite ~46 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 48b** — `gui/dialogs/isomer_explorer.py` —
+  Tools → *Isomer relationships…* (Ctrl+Shift+B) singleton
+  modeless dialog.  SMILES input → tabbed results
+  (Constitutional / Stereoisomers / Tautomers /
+  Conformers).  Ships in 1 round.
+- **Phase 48c** — agent actions in a new `isomer` category
+  (`find_isomers`, `classify_isomer_pair`,
+  `enumerate_constitutional`, `enumerate_stereoisomers`,
+  `enumerate_tautomers`, `open_isomer_explorer`).  Ships
+  in 1 round.
+- **Phase 48d** — inline 'View isomers' button on the
+  molecule workspace.  Ships in 1 round.
+- **Phase 31b extension** — 6 more entries to reach the
+  60-target.
+
+A safer next pick is **Phase 48b** to keep the isomer
+momentum going + give the user a visible UI deliverable
+for the new feature.
+
+## 2026-04-25 — Round 169 (Phase 47d — sub-domain filter on Eukarya tab + plant/animal/fungus topic expansion, addressing user feedback)
+
+### Context
+Round 168 closed Phase 47 at the original 60-topic 4-
+kingdom × 3-sub-tab vision.  The user followed up: *"In the
+new biochemistry by kingdom window — what happened to plant
+and animal kingdoms?"*  Fair design point: although Plantae
++ Animalia + Fungi + Protista are kingdoms WITHIN Eukarya
+(not separate domains under the modern three-domain
+phylogeny), users will reasonably look for them at the top
+level.  Recommended options 1 + 3 together; user confirmed
+*"Please update with options 1 and 3 together"*.
+
+Round 169 ships **Phase 47d** — sub-domain filter on every
+kingdom tab + 8 new explicitly-tagged plant / animal /
+fungus topics in the Eukarya tab.  Catalogue grows 60 → 68;
+Eukarya tab grows 15 → 23.
+
+### What shipped
+**Headless data core** —
+`orgchem/core/biochemistry_by_kingdom.py`:
+- New `sub_domain: str = ""` field on `KingdomTopic`.
+  Default empty string means **pan-domain** — the topic
+  surfaces under any sub-domain query within its kingdom
+  (same semantics as Phase-43 cell-component sub-domain
+  queries).  Backward-compatible with existing topic data.
+- New `SUB_DOMAINS` canonical tuple covering all 4
+  kingdoms' meaningful sub-domains: animal / plant /
+  fungus / protist (Eukarya); gram-positive / gram-
+  negative (Bacteria); euryarchaeota / crenarchaeota /
+  asgard (Archaea); dna-virus / rna-virus / retrovirus
+  (Viruses).
+- New `sub_domains_for_kingdom(kingdom)` helper picks the
+  kingdom-appropriate subset for the GUI's per-tab combo
+  population.
+- `list_topics(kingdom, subtab, sub_domain)` extended with
+  the new kwarg.
+
+**8 new explicitly-tagged eukaryote topics**:
+1. `eukarya-structure-animal-tight-junctions` — animal
+   tight + adherens + desmosomes + gap junctions; pemphigus
+   autoimmune teaching anchor.
+2. `eukarya-physiology-animal-nervous-system` — resting +
+   action potentials, SNARE-mediated vesicle fusion,
+   neurotransmitter classes (glutamate / GABA / ACh /
+   dopamine / serotonin), drug targets.
+3. `eukarya-physiology-animal-immune-system` — innate
+   (TLRs, complement, NK) vs adaptive (B + T cells, MHC,
+   class switching), checkpoint-inhibitor immunotherapy
+   (Honjo + Allison Nobel 2018).
+4. `eukarya-physiology-plant-auxin-photoperiodism` — 5
+   classical phytohormones (auxin / cytokinin /
+   gibberellins / abscisic acid / ethylene), phytochrome
+   + cryptochrome, florigen.
+5. `eukarya-structure-plant-vascular-tissue` — xylem
+   cohesion-tension + phloem Münch pressure-flow.
+6. `eukarya-genetics-plant-polyploidy` — rare in animals +
+   extremely common in plants; modern wheat is hexaploid;
+   strawberry octoploid; agronomic-improvement driver.
+7. `eukarya-physiology-fungus-hyphal-growth` — Spitzenkörper
+   tip growth, mycelium, largest known organism a single
+   Armillaria mycelium covering 9.6 km² in Oregon,
+   mycorrhizal symbioses with > 80% of plant species,
+   lovastatin / cyclosporine drug-discovery legacy.
+8. `eukarya-genetics-fungus-mating-types` — MAT loci,
+   *Schizophyllum commune* > 23 000 mating types from
+   tetrapolar MAT combinatorics, Pontecorvo 1956
+   parasexual cycle drives fungicide resistance.
+
+**3 existing topics tagged**: `eukarya-physiology-
+photosynthesis` → plant; `eukarya-physiology-development-
+multicellularity` → animal.
+
+**Per-kingdom widget** —
+`orgchem/gui/panels/kingdom_subtab_panel.py`:
+- New sub-domain combo above the inner sub-tabs.
+- Kingdom-appropriate label per outer tab: "Kingdom
+  (within Eukarya):" / "Gram-stain class:" / "Phylum:" /
+  "Genome class:".
+- First combo item is `(all)` sentinel — shows pan-domain
+  view.
+- Combo selection cascades to all 3 sub-pane filters
+  simultaneously via `_on_sub_domain_changed`.
+- Programmatic API: `set_sub_domain(value)` returns True
+  for valid values; `current_sub_domain()` returns the
+  current selection (empty string for `(all)`).
+
+**Agent action** —
+`orgchem/agent/actions_biochemistry_by_kingdom.py`:
+- `list_kingdom_topics` gains the `sub_domain` kwarg with
+  clean-error path for unknown values + docstring listing
+  all 12 valid sub-domain ids.
+
+### Tests
+13 new tests across 3 files:
+- `tests/test_biochemistry_by_kingdom.py` (+10):
+  catalogue-grew-to-68 + eukarya-grew-to-23 + sub-domains-
+  for-kingdom helper + filter-eukarya-animal-includes-pan-
+  eukaryotic + filter-eukarya-plant-excludes-animal-only +
+  filter-eukarya-fungus + unknown-sub-domain → empty +
+  every-sub-domain-in-canonical-set + plant-animal-fungus-
+  topic-count ≥ 8 + topic_to_dict-includes-sub-domain.
+- `tests/test_biochemistry_by_kingdom_window.py` (+5):
+  eukarya-panel-has-sub-domain-combo + set-sub-domain
+  round-trip + set-unknown-sub-domain returns False +
+  filter-narrows-pane-lists (animal-tight-junctions
+  excluded under plant filter; plant-vascular-tissue
+  included) + sub-domain-combo-present-for-all-kingdoms.
+- `tests/test_biochemistry_by_kingdom_actions.py` (+3):
+  list-by-sub-domain + unknown-sub-domain → error +
+  get-topic-includes-sub-domain-field.
+
+Existing `test_topic_to_dict_keys` updated to expect the
+new `sub_domain` key.  All 83 Phase-47 tests pass.
+
+### Documentation updates
+- ROADMAP.md — Phase 47 status updated to "🎉 SHIPPED end-
+  to-end across rounds 166-169" with full delivery manifest
+  for the 47d sub-phase + closeout language ("vision
+  realised in 4 rounds — 68-topic explorer with kingdom-
+  within-domain sub-domain filter addressing the user-
+  feedback concern").
+- PROJECT_STATUS.md — round 169 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+2 042 passing (up from 2 024 in round 168 — net +18 from
+this round's 13 new tests + 5 existing-test-shape
+additions).  Doc-coverage test green; full suite ~51 s
+wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 48a** — isomers exploration tool first round
+  (glossary + headless `core/isomers.py` with
+  `classify_isomer_relationship`).  The other unfinished
+  user-flagged phase.
+- **Phase 31b extension** — 6 more entries to reach the
+  60-target.
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.
+
+A safer next pick is **Phase 48a** — the other still-open
+user-flagged phase.
+
+## 2026-04-25 — Round 168 (🎉 Phase 47 CLOSED — agent actions + audit map registration)
+
+### Context
+Round 166 shipped Phase 47a (60-topic headless catalogue) +
+round 167 shipped Phase 47b (GUI window + per-kingdom
+widget).  Round 168 closes Phase 47 entirely with the
+agent-action layer + audit-map registration — same shape
+as the established Phase-37/40/45 catalogue actions.
+
+### What shipped
+**Agent actions** —
+`orgchem/agent/actions_biochemistry_by_kingdom.py`
+(~120 lines).  4 actions in a new `kingdom` category:
+- `list_kingdom_topics(kingdom="", subtab="")` — full
+  catalogue or filtered by kingdom and / or sub-tab.
+  Unknown kingdom or sub-tab values return a clean
+  `{"error": str}` dict.
+- `get_kingdom_topic(topic_id)` — full record by id.
+  Unknown id → `{"error": str}`.
+- `find_kingdom_topics(needle)` — case-insensitive
+  substring search across id + title + body + every
+  cross-reference field (so a search for
+  `"mitochondrion"` lands on topics that cross-reference
+  the Phase-43 cell-component id, not just topics that
+  mention the word in body text).
+- `open_biochemistry_by_kingdom(kingdom="", subtab="",
+  topic_id="")` — opens the *Window → Biochemistry by
+  Kingdom…* window.  Passing just `kingdom` switches
+  the outer tab; passing all three drills all the way
+  down to a specific topic.  Marshals onto the Qt main
+  thread via `_gui_dispatch.run_on_main_thread_sync`.
+  Reports `selected: True/False` so the agent can
+  introspect failure paths (unknown kingdom / unknown
+  topic id).
+
+**Wiring**:
+- `orgchem/agent/__init__.py` — added `from orgchem.agent
+  import actions_biochemistry_by_kingdom`.
+- `orgchem/gui/audit.py` — registered all 4 actions in
+  `GUI_ENTRY_POINTS` (each pointing at *Window →
+  Biochemistry by Kingdom…* (Ctrl+Shift+K)).
+
+### Tests
+17 new tests in
+`tests/test_biochemistry_by_kingdom_actions.py`:
+- `list_kingdom_topics`: unfiltered (≥ 60), by-kingdom
+  (archaea ≥ 10), by-subtab (genetics ≥ 15), by-both
+  (viruses + genetics ≥ 4), unknown-kingdom →
+  `{"error": ...}`, unknown-subtab → `{"error": ...}`.
+- `get_kingdom_topic`: known id round-trips with cross-
+  references intact, unknown id → `{"error": ...}`.
+- `find_kingdom_topics`: substring search returns CRISPR
+  topics, **walks cross-reference fields** so
+  `find("mitochondrion")` lands on the
+  endosymbiotic-origin topic, empty needle → `[]`.
+- `open_biochemistry_by_kingdom`: no-args opens the
+  window, with-kingdom focuses the right outer tab and
+  the window's actual current-tab text confirms it,
+  with-full-path drills all 3 levels and confirms the
+  outer tab moved, unknown-topic → `selected: False`.
+- `audit_map_includes_all_four_kingdom_actions` — guards
+  against future regression of the wiring.
+- `kingdom_category_actions_registered` — introspects
+  `ActionSpec.category` to confirm all 4 actions are
+  tagged under the new `kingdom` category.
+
+Discovered + fixed during the test run:
+- `test_kingdom_category_actions_registered` first
+  version tried to read `registry()` as a categorised
+  dict — actually it's a flat `name → ActionSpec` dict
+  with `category` as an ActionSpec attribute.  Rewrote
+  the test to filter by `getattr(spec, "category", None)`.
+  Now passes cleanly + correctly verifies the 4 actions
+  carry the `kingdom` category tag.
+
+### Documentation updates
+- INTERFACE.md — added row for `agent/actions_biochemistry_
+  by_kingdom.py` (the third + final Phase 47 module).
+- ROADMAP.md — Phase 47 status flipped to "🎉 SHIPPED
+  end-to-end across rounds 166-168" with full delivery
+  manifest for all 3 sub-phases + Phase-47-vision-realised
+  closeout language.
+- PROJECT_STATUS.md — round 168 summary prepended with
+  the 🎉 Phase 47 CLOSED milestone.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+2 024 passing (up from 2 007 in round 167 — net +17 from
+this round's 17 new test functions).  Doc-coverage test
+green; full suite ~46 s wall-clock.
+
+### What's open (next-round candidates)
+**Phase 47 is COMPLETE.**  The first user-flagged GUI
+extension on top of the existing Macromolecules-style
+template ships in 3 rounds.  The complementary view —
+chemistry-class organisation (Phase-30 Macromolecules) +
+kingdom-of-life organisation (Phase 47) — is now available
+from the Window menu.
+
+Remaining roadmap work:
+- **Phase 48** — isomers exploration tool (the second new
+  user-flagged phase from round 165).  Recommended 3-
+  pronged integration; 48a glossary + headless `core/
+  isomers.py` with `classify_isomer_relationship` ships
+  in 1 round as the lowest-risk first step.
+- **Phase 31b extension** — 6 more entries to reach the
+  60-target.
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.  Multi-round; the
+  highest-value remaining work + the only unfinished
+  user-flagged feature still in scope.
+
+A safer next pick is **Phase 48a** — open the second new
+user-flagged surface with the lowest-risk part of the
+4-pronged plan.
+
+## 2026-04-25 — Round 167 (Phase 47b — Biochemistry-by-Kingdom GUI window + per-kingdom subtab widget)
+
+### Context
+Round 166 shipped Phase 47a — the headless 60-topic
+catalogue of biochemistry-by-kingdom topics.  Round 167
+delivers the GUI: top-level `BiochemistryByKingdomWindow`
++ reusable `KingdomSubtabPanel` widget, wired through
+*Window → Biochemistry by Kingdom…* (Ctrl+Shift+K).
+
+### What shipped
+**Window** — `orgchem/gui/windows/biochemistry_by_kingdom_window.py`
+(~140 lines).  Top-level `QMainWindow` modelled on the
+Phase-30 `MacromoleculesWindow`: 4 outer tabs (Eukarya,
+Bacteria, Archaea, Viruses), single persistent instance
+constructed lazily on first `MainWindow.open_…` call,
+`QSettings`-persisted geometry + last-active outer tab.
+`_SETTINGS_GROUP = "window/biochemistry_by_kingdom"` so it
+doesn't collide with the Macromolecules window's settings.
+Programmatic API: `switch_to_kingdom(id)`,
+`select_topic(kingdom, subtab, topic_id)`,
+`kingdom_panel(id)`, `kingdom_labels()`.  Each outer tab
+hosts a `KingdomSubtabPanel`.
+
+**Per-kingdom widget** —
+`orgchem/gui/panels/kingdom_subtab_panel.py` (~190 lines).
+Reusable `KingdomSubtabPanel(kingdom)` widget that
+encapsulates the three sub-tabs (Structure /
+Physiology+Development / Genetics+Evolution).  Each sub-tab
+is an internal `_SubtabPane(kingdom, subtab)` with the
+canonical filterable-list-on-the-left +
+HTML-detail-card-on-the-right layout used across the rest
+of the app.  The detail card renders the topic body
+markdown plus cross-reference sections for **Phase-43 cell
+components**, **Phase-42 metabolic pathways**, and
+**molecule-database names** — only renders the section
+when the topic actually carries cross-references for that
+category.  Programmatic API: `switch_to_subtab(subtab)`,
+`select_topic(subtab, topic_id)`, `subtab_labels()`.
+
+**Wiring** — `orgchem/gui/main_window.py`:
+- Added `_biochemistry_by_kingdom_window: Optional[QMainWindow]
+  = None` instance var alongside the existing
+  `_macromolecules_window`.
+- Added *Window → Biochemistry by Kingdom…* menu entry with
+  **Ctrl+Shift+K** shortcut.
+- Added `open_biochemistry_by_kingdom_window(kingdom=None,
+  subtab=None, topic_id=None)` slot — lazy-constructs the
+  window, then supports full programmatic navigation: just
+  `kingdom` focuses the outer tab, full
+  (kingdom + subtab + topic_id) drills all the way down to
+  a specific topic.
+
+### Tests
+15 new tests in
+`tests/test_biochemistry_by_kingdom_window.py`:
+- `test_subtab_panel_constructs_for_each_kingdom` — all 4
+  kingdoms produce a panel with the canonical 3 sub-tab
+  labels.
+- `test_subtab_panel_lists_topics` — each sub-pane lists ≥
+  4 topics for the eukarya kingdom (one per (kingdom,
+  subtab) cell).
+- `test_subtab_panel_select_topic` — programmatic
+  select_topic round-trips: returns True + the detail-card
+  title updates.
+- `test_subtab_panel_select_unknown_topic` — returns False.
+- `test_subtab_panel_unknown_subtab` — returns False.
+- `test_subtab_panel_filter_narrows_results` — typing
+  "CRISPR" into the bacteria-genetics filter narrows the
+  list to a smaller set.
+- `test_subtab_panel_detail_shows_cross_references` — the
+  endosymbiotic-origin topic's mitochondrion + chloroplast
+  Phase-43 cross-references appear in the detail card HTML.
+- `test_window_constructs` — 4 outer tabs.
+- `test_window_kingdom_labels_in_canonical_order` — Eukarya
+  / Bacteria / Archaea / Viruses tab labels in canonical
+  order.
+- `test_window_switch_to_kingdom` — known + unknown
+  kingdom return True + False respectively.
+- `test_window_select_topic_round_trip` — drilling all 3
+  levels works end-to-end + outer tab moves to the right
+  kingdom.
+- `test_window_select_unknown_topic_returns_false` — graceful
+  handling.
+- `test_main_window_open_method_returns_window` — the
+  `MainWindow.open_…` method returns + caches a window
+  instance (second call returns the same).
+- `test_main_window_open_with_kingdom_focuses_tab` — passing
+  just `kingdom` switches the outer tab.
+- `test_main_window_open_with_full_path` — passing all 3
+  arguments drills all the way down + verifies the round-
+  166 viruses-not-a-domain ribosome teaching invariant
+  survives end-to-end through the GUI render path.
+
+All 15 tests pass on first run.
+
+### Documentation updates
+- INTERFACE.md — added rows for both new GUI modules
+  (`gui/windows/biochemistry_by_kingdom_window.py` +
+  `gui/panels/kingdom_subtab_panel.py`).
+- ROADMAP.md — Phase 47 status updated to "47a + 47b
+  SHIPPED" with separate manifest sections for each
+  sub-phase.
+- PROJECT_STATUS.md — round 167 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+2 007 passing (up from 1 992 in round 166 — net +15 from
+this round's 15 new test functions).  Doc-coverage test
+green; full suite ~46 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 47c** — agent actions in a new `kingdom`
+  category (`list_kingdom_topics`, `get_kingdom_topic`,
+  `find_kingdom_topics`, `open_biochemistry_by_kingdom`)
+  + audit map registration.  Closes Phase 47 entirely.
+  Ships in 1 round.
+- **Phase 48a** — isomers exploration tool first round
+  (glossary + headless `core/isomers.py` with
+  `classify_isomer_relationship` + RDKit stereoisomer +
+  tautomer enumeration helpers).  Lowest-risk part of the
+  4-pronged plan.
+- **Phase 31b extension** — 6 more entries to reach the
+  60-target.
+
+A safer next pick is **Phase 47c** to close Phase 47 entirely
+before starting Phase 48.
+
+## 2026-04-25 — Round 166 (Phase 47a — biochemistry-by-kingdom headless catalogue, 60 topics across 4 kingdoms × 3 sub-tabs)
+
+### Context
+Round 165 added Phase 47 (Biochemistry-by-Kingdom explorer)
++ Phase 48 (Isomers exploration tool) to the roadmap as
+fresh user-flagged feature requests.  Round 166 ships the
+**Phase 47a headless catalogue** — the data foundation for
+the upcoming Macromolecules-style window.  Subsequent rounds
+will deliver 47b (per-kingdom widget + window) + 47c (agent
+actions + audit map).
+
+### What shipped
+**Headless data core** — `orgchem/core/biochemistry_by_kingdom.py`
+(~830 lines).  `KingdomTopic` frozen dataclass with 9 fields:
+id / kingdom / subtab / title / body markdown /
+cross_reference_cell_component_ids tuple (Phase-43 ids) /
+cross_reference_pathway_ids tuple (Phase-42 ids) /
+cross_reference_molecule_names tuple / notes.  Two canonical
+tuples: `KINGDOMS = ("eukarya", "bacteria", "archaea",
+"viruses")` + `SUBTABS = ("structure", "physiology",
+"genetics")`.
+
+**60 entries** in a balanced 4 × 3 = 12-cell grid with
+exactly 5 topics per cell:
+
+- **Eukarya (15)**: structure — plasma membrane,
+  endomembrane organelles, nucleus + NPC, ECM + cell walls,
+  three-filament cytoskeleton; physiology — aerobic
+  respiration, photosynthesis, cell cycle + mitosis,
+  GPCR signalling, multicellular development; genetics —
+  chromatin + nucleosomes, RNA splicing, meiosis +
+  recombination, telomeres + senescence, **endosymbiotic
+  origin** (Margulis 1967).
+- **Bacteria (15)**: structure — gram divide, prokaryotic
+  minimalism, flagellar rotary motor, biofilms + EPS,
+  capsule + virulence; physiology — anaerobic fermentation +
+  diverse e⁻ acceptors, FtsZ binary fission, quorum
+  sensing, sporulation + endospores, secondary metabolism +
+  natural-product antibiotics; genetics — circular
+  chromosome + nucleoid, **HGT** (transformation +
+  transduction + conjugation), **CRISPR-Cas** adaptive
+  immunity, restriction-modification, evolutionary rate.
+- **Archaea (15)**: structure — **ether-linked isoprenoid
+  lipids** (the lipid divide — strongest argument for the
+  three-domain phylogeny), pseudopeptidoglycan + S-layers,
+  extremophile adaptations, archaellum (convergent rotary
+  motor), cellular minimalism; physiology —
+  **methanogenesis** (only metabolic pathway exclusively in
+  archaea), no human pathogens, syntrophic partners + AOM,
+  bacteriorhodopsin + light-driven proton pumps,
+  psychrophilic + acidophilic; genetics — **eukaryote-like**
+  transcription + translation machinery, archaeal histones
+  + chromatin precursors, **Asgard archaea + eocyte
+  hypothesis** of eukaryogenesis, archaeal CRISPR-Cas,
+  deep evolutionary roots + LUCA.
+- **Viruses (15)**: structure — capsid architectures
+  (icosahedral / helical / complex), enveloped vs naked,
+  spike glycoproteins + receptor binding, **Baltimore
+  classification** (7 genome groups), bacteriophage
+  architectures; physiology — generic 6-stage life cycle,
+  **lytic vs lysogenic** phage cycles, mutation rates +
+  quasispecies, cell + tissue tropism, immune evasion;
+  genetics — **NOT a domain + why** (lack ribosomes +
+  polyphyletic + no metabolism), **endogenous retroviruses**
+  + host-genome contributions (syncytin → mammalian
+  placenta), virus-host arms race + Red Queen + MHC
+  polymorphism, viroids + RNA-world relics, pandemic
+  emergence + spillover events.
+
+Each topic body is ≥ 200 chars of actual teaching content
+(test-enforced).  Cross-references resolve to real Phase-43
+cell-component ids + Phase-42 metabolic-pathway ids (also
+test-enforced — guards against rot when either catalogue is
+edited).
+
+Lookup helpers: `list_topics(kingdom, subtab)`,
+`get_topic(id)`, `find_topics(needle)` (case-insensitive
+substring across id + title + body + every cross-reference
+field), `kingdoms()`, `subtabs()`, `topic_to_dict(t)`.
+
+### Tests
+33 new tests in `tests/test_biochemistry_by_kingdom.py`:
+- catalogue size ≥ 60 + every kingdom + every subtab
+  populated;
+- balanced grid: each (kingdom, subtab) cell has ≥ 4 topics;
+- every entry has all required fields;
+- every id unique + lowercase-kebab + starts with
+  `<kingdom>-<subtab>-` (the dialog's grouping convention);
+- every kingdom + subtab in canonical set;
+- every body ≥ 200 chars (proves teaching content vs
+  placeholder stubs);
+- 8 per-row teaching invariants — eukarya endosymbiotic
+  origin names Margulis 1967 + xrefs both mitochondrion +
+  chloroplast; bacteria HGT names all 3 mechanisms; archaea
+  ether-lipid divide explicit; archaea eukaryote-like RNA
+  Pol II + MCM machinery; viruses-not-a-domain explains the
+  no-ribosome reason; viruses-Baltimore-classification
+  explicit; viruses-ERVs names syncytin + placenta;
+  methanogenesis archaea-only;
+- **cross-reference resolution checks**: every
+  cross_reference_cell_component_ids entry must point to a
+  real Phase-43 id; every cross_reference_pathway_ids entry
+  must point to a real Phase-42 id;
+- at least 8 topics carry cross-references (proves the
+  integration with existing catalogues actually exists);
+- filter / lookup edge cases (unknown kingdom / unknown
+  subtab / case-insensitive search / find walks xref
+  fields);
+- canonical tuples round-trip;
+- `topic_to_dict` exposes all 9 fields.
+
+Discovered + fixed during the test run: cross-reference test
+caught my first draft using `tca-cycle` /
+`oxidative-phosphorylation` / `calvin-cycle` for pathway
+ids — but Phase-42 actually uses underscores
+(`tca_cycle` / `ox_phos` / `calvin_cycle`).  Fixed the 3
+topic xref tuples.  This is exactly the kind of cross-
+catalogue-rot the test was designed to catch.
+
+### Documentation updates
+- INTERFACE.md — added row for `core/biochemistry_by_kingdom.py`
+  with full per-kingdom topic enumeration.
+- ROADMAP.md — Phase 47 marked "IN PROGRESS — 47a SHIPPED
+  round 166" with delivery manifest + a note that 47b
+  (window + per-kingdom widget) and 47c (agent actions)
+  queued for rounds 167-168.
+- PROJECT_STATUS.md — round 166 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 992 passing (up from 1 959 in round 165 — net +33 from
+this round's 33 new test functions).  Doc-coverage test
+green; full suite ~45 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 47b** — `gui/windows/biochemistry_by_kingdom_window.py`
+  + `gui/panels/kingdom_subtab_panel.py` (the reusable
+  per-kingdom 3-sub-tab widget).  Wired through *Window →
+  Biochemistry by Kingdom…* (Ctrl+Shift+K).  Should ship
+  in 1 round given the headless catalogue is already in
+  place.
+- **Phase 47c** — agent actions in a new `kingdom`
+  category (`list_kingdom_topics`, `get_kingdom_topic`,
+  `find_kingdom_topics`, `open_biochemistry_by_kingdom`)
+  + audit map registration.  Ships in 1 round.
+- **Phase 48** — isomers exploration tool (the second new
+  user-flagged phase from round 165).  48a glossary +
+  classify-pair would ship in 1 round.
+- **Phase 31b extension** — 6 more entries to reach the
+  60-target.
+
+A safer next pick is **Phase 47b** to keep the kingdom-
+explorer momentum going + give the user a visible UI
+deliverable for the new feature.
+
+## 2026-04-25 — Round 165 (Phase 31b extension — Robinson annulation + Knoevenagel condensation, catalogue 52/60 → 54/60; +2 new roadmap phases — 47 Biochemistry-by-Kingdom + 48 Isomers)
+
+### Context
+Round 164 opened the Phase 31b extension at 52/60 with
+Wacker + Brown hydroboration to open the alkene-
+functionalisation regio-/stereo-selectivity surface.
+Round 165 ships Robinson annulation + Knoevenagel
+condensation to open the **ring-construction** + **active-
+methylene C-C bond-formation** teaching surfaces.
+Catalogue advances 52/60 → 54/60.
+
+**Mid-round the user added two new roadmap requests** —
+both incorporated into ROADMAP.md as full phase entries
+with sub-phases + design-recommendation language.
+
+### What shipped
+**Two named reactions** added to
+`orgchem/db/seed_reactions.py`:
+
+1. **Robinson annulation (cyclohexanone + methyl vinyl
+   ketone → Δ1,9-octalin-2-one)** — category *Annulation
+   (C-C ring formation cascade)*.  Sir Robert Robinson
+   1935 (Nobel 1947 for alkaloid + morphine structure
+   work).  Description teaches: **3-step cascade in one
+   pot** — (1) Michael addition of an enolate (from the
+   parent ketone, deprotonated by KOH / NaOEt / proline
+   for the asymmetric Hajos-Parrish-Eder-Sauer-Wiechert
+   variant) onto an α,β-unsaturated ketone (canonically
+   methyl vinyl ketone, MVK), giving a 1,5-diketone; (2)
+   intramolecular **aldol condensation** of the
+   1,5-diketone — the new α-carbon of the MVK fragment
+   enolises and attacks the original ketone carbonyl,
+   forming a new 6-membered ring; (3) acid- or base-
+   catalysed **dehydration** of the β-hydroxy intermediate
+   to give the **cyclohexenone ring fused to the original
+   ring**.  Net: two C-C bonds formed + one C-O bond
+   cleaved + a new α,β-unsaturated ring annulated onto the
+   substrate ketone.  **The canonical ring-construction
+   reaction in textbook total synthesis** — the Wieland-
+   Miescher ketone (precursor for cortisone / testosterone
+   / oestrone) is built from 2-methylcyclohexan-1,3-dione
+   + MVK by exactly this cascade.  The asymmetric
+   Hajos-Parrish proline-catalysed variant (1971) is the
+   intellectual ancestor of modern enamine-catalysis
+   (List + Barbas + MacMillan, Nobel 2021).
+
+2. **Knoevenagel condensation (benzaldehyde + diethyl
+   malonate → diethyl benzylidene malonate)** — category
+   *Condensation (active-methylene C-C bond formation)*.
+   Emil Knoevenagel 1894.  Description teaches: **active-
+   methylene compound** between two electron-withdrawing
+   groups — pKa ~ 11-13 for malonate / ~ 11 for
+   cyanoacetate / ~ 10 for nitromethane vs simple ketone
+   α-CH ~ 20 — so a mild secondary-amine base
+   (piperidine, pyridine, or — Doebner variant — an amino
+   acid like proline / glycine in pyridine solvent) is
+   sufficient.  Mechanism: amine deprotonates the active
+   methylene → carbanion attacks the aldehyde → E1cb
+   dehydration → α,β-unsaturated product.  In the
+   **Doebner modification** (with monoacids like
+   cyanoacetic / malonic acid + pyridine), spontaneous
+   decarboxylation of one COOH / COOR group follows the
+   dehydration.  Workhorse for cinnamic-acid + α,β-
+   unsaturated-ester / nitrile syntheses, foundational to
+   materials chemistry (push-pull chromophores) + drug
+   discovery (Michael-acceptor warheads).
+
+**Three intermediate fragments** added: `Δ1,9-Octalin-2-
+one (Robinson annulation product) O=C1C=C2CCCCC2CC1`,
+`Diethyl malonate CCOC(=O)CC(=O)OCC`, `Diethyl benzylidene
+malonate CCOC(=O)/C(=C\\c1ccccc1)C(=O)OCC`.
+
+### Tests
+Four new tests in `tests/test_reactions.py`:
+- `test_robinson_annulation_seeded` — Michael + aldol +
+  dehydration cascade language + Wieland-Miescher /
+  steroid context + Robinson 1947 Nobel attribution +
+  α,β-unsaturated cyclohexenone product (C=C + C=O
+  substrings).
+- `test_knoevenagel_condensation_seeded` — active-
+  methylene + pKa contrast with aldol + piperidine /
+  pyridine base + Doebner modification + aldol
+  comparison.
+- `test_ring_construction_anchors_present` — Robinson +
+  Diels-Alder + 6π electrocyclic ring-construction trio.
+- `test_named_reaction_count_at_least_fifty_four` —
+  catalogue floor at 54/60 for the Phase 31b extension.
+
+Discovered + fixed during the test run:
+- Fragment-consistency audit caught 3 missing fragments
+  on first reaction-add.  Resolved by seeding the 3
+  intermediate rows above.
+- The first version of `test_robinson_annulation_seeded`
+  used a sloppy `'=O' in rhs` substring check that failed
+  because the canonical SMILES form writes `O=C` (O before
+  =), not `=O`.  Fixed to check for `O=C` OR `C=O` (either
+  form valid for a carbonyl).
+
+All 36 reaction-tests pass + all 12 fragment-consistency
+tests pass.
+
+### Two new roadmap phases added (mid-round user requests)
+The user added two new roadmap requests during this round.
+Both are now in ROADMAP.md as full phase entries with
+sub-phases + design-recommendation language:
+
+**Phase 47 — Biochemistry-by-Kingdom explorer
+(Macromolecules-style)**.  User directive: *"Add a new GUI
+in the style of the Macromolecules.  This one is for
+biochemistry, with tabs for the different kingdoms, and
+sub-tabs covering structure, physiology and development,
+genetics and evolution — highlighting the molecules and
+reactions involved."*  Plan: top-level
+`gui/windows/biochemistry_by_kingdom_window.py` opened
+from *Window → Biochemistry by Kingdom…* (Ctrl+Shift+K).
+Outer `QTabWidget` with one tab per kingdom (Eukarya,
+Bacteria, Archaea, Viruses); each kingdom's inner
+`QTabWidget` has 3 sub-tabs (Structure /
+Physiology+Development / Genetics+Evolution).
+Cross-references the existing Phase-43 cell-component
+catalogue + Phase-42 metabolic pathways + Phase-29
+lipids / carbohydrates / nucleic-acids inline rather
+than asking the user to chase them across existing
+tools.  Headless data core
+`core/biochemistry_by_kingdom.py` with `KingdomTopic`
+frozen dataclass + ~60 entries (4 kingdoms × ~5 topics ×
+3 sub-tabs).  Likely 2-3 rounds.
+
+**Phase 48 — Isomers exploration tool**.  User directive:
+*"Isomers (so far there is little mention of them).  What
+is the best way to work this into the app?"*
+Recommendation: **3-pronged integration** rather than a
+single new top-level tool, because isomers are
+fundamentally a *relationship between molecules* not a
+standalone catalogue.  (1) Isomer-relationship explorer
+dialog (Tools → *Isomer relationships…*, Ctrl+Shift+B) —
+SMILES input → 4 result tabs (Constitutional /
+Stereoisomers / Tautomers / Conformers); (2) inline
+'View isomers' button on the molecule workspace; (3)
+glossary expansion with 8-10 isomer terms (constitutional
+/ stereoisomer / enantiomer / diastereomer / meso /
+conformational / tautomer / atropisomer / cis-trans /
+optical activity); (4) tutorial-content cross-link.
+Headless core `core/isomers.py` with RDKit-backed
+enumerators + `classify_isomer_relationship(smi_a, smi_b)`
+that returns `"identical"` / `"constitutional"` /
+`"enantiomer"` / `"diastereomer"` / `"meso"` /
+`"tautomer"` / `"conformer"` / `"different molecule"`.
+Likely 3-4 rounds.
+
+### Documentation updates
+- ROADMAP.md — Phase 31b extension count updated 52/60
+  → 54/60 + Phase 47 + Phase 48 added as full phase
+  entries.
+- PROJECT_STATUS.md — round 165 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 959 passing (up from 1 956 in round 164 — net +3 from
+this round's three new test functions plus a renamed
+catalogue-size floor).  Doc-coverage test green; full
+suite ~45 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 47** — first round would deliver the headless
+  catalogue (`core/biochemistry_by_kingdom.py` with
+  `KingdomTopic` dataclass + ~60 entries spanning 4
+  kingdoms × 3 sub-tabs).
+- **Phase 48** — first round would deliver glossary
+  expansion (8-10 isomer terms) + headless
+  `core/isomers.py` with `classify_isomer_relationship`
+  + RDKit stereoisomer / tautomer enumeration helpers.
+  Lowest-risk part of the 4-pronged plan.
+- **Phase 31b extension** — 6 more entries to reach 60-
+  target.  Priority list: Ramberg-Bäcklund / Shapiro /
+  Oppenauer / Julia / Peterson olefinations / Henry
+  reaction / Hantzsch dihydropyridine synthesis.
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.  Multi-round; the
+  highest-value remaining work.
+
+A safer next pick is **Phase 48a** (isomer glossary +
+headless classify-pair) — low-risk + immediately useful
+to the existing Reaction-workspace glossary autolinker.
+The bigger ambition this round is **Phase 47a** (kingdom-
+explorer headless catalogue) which is the user-flagged
+fresh feature.
+
+## 2026-04-25 — Round 164 (Phase 31b extension — Wacker oxidation + Brown hydroboration-oxidation, catalogue 50/50 → 52/60)
+
+### Context
+Round 157 closed Phase 31b at the original 50/50 milestone.
+Rounds 158-163 closed Phase 31k at 15/15.  Round 164 opens
+the **Phase 31b extension** to a 60-entry curiosity-bucket
+target — first two entries open the **alkene-functionalisation
+regio-/stereo-selectivity teaching surface** that the
+original 50-entry catalogue underserved (the existing
+bromination-of-ethene + catalytic-hydrogenation entries
+covered Markovnikov-Br₂-anti + syn-H₂ but not the
+hydration / hydroboration alcohols).
+
+### What shipped
+**Two named reactions** added to
+`orgchem/db/seed_reactions.py`:
+
+1. **Wacker oxidation (styrene → acetophenone)** —
+   category *Oxidation (Pd-catalysed)*.  Smidt et al. 1959
+   — first Pd-catalysed industrial process.  Description
+   teaches: PdCl₂ + CuCl₂ + O₂ + H₂O catalytic system at
+   ambient T; 5-step catalytic cycle (η²-π-complex
+   activation → external water attack on internal carbon →
+   β-hydride elimination + reductive elimination → Pd(0)
+   reoxidation by Cu(II) → Cu(I) reoxidation by O₂);
+   **Markovnikov regioselectivity** — the oxygen ends up
+   on the more-substituted carbon, giving a methyl ketone
+   from a terminal alkene; the **redox-relay mechanism
+   (Pd ↔ Cu ↔ O₂) is the template for many modern aerobic
+   oxidations**; industrial ethylene → acetaldehyde Wacker
+   process at ~ 2 Mt/yr globally; the Tsuji-Wacker variant
+   (stoichiometric PdCl₂ in DMF / H₂O without Cu / O₂) is
+   the lab-scale benchtop version.  Reaction SMILES
+   `C=Cc1ccccc1.O.O=O >> CC(=O)c1ccccc1.O`.
+
+2. **Brown hydroboration-oxidation (1-methylcyclohexene →
+   trans-2-methylcyclohexanol)** — category *Addition
+   (anti-Markovnikov, syn-addition)*.  H. C. Brown
+   1956-1959, **Nobel 1979** shared with G. Wittig.
+   Description teaches: two-step alkene → alcohol via
+   (1) concerted 4-centre hydroboration with BH₃·THF (or
+   9-BBN, disiamylborane for tighter selectivity)
+   delivering H + BR₂ across the alkene **syn** with B
+   going to the **less-substituted** carbon (steric
+   control over an empty B 2p orbital — opposite
+   regiochemistry to acid-catalysed hydration's
+   Markovnikov + opposite stereochemistry to Br₂
+   addition's anti); then (2) oxidative work-up with
+   alkaline H₂O₂ converts the trialkylborane to the
+   alcohol via [1,2]-alkyl-shift to oxygen with retention
+   of configuration at the migrating carbon.  **Net
+   result: anti-Markovnikov + syn-addition OH** — only
+   Brown's reaction is BOTH anti-Markovnikov AND
+   stereo-controlled.  The trans-2-methylcyclohexanol
+   product locks both selectivity arguments at once.
+   Reaction SMILES `CC1=CCCCC1.B.OO.[Na+].[OH-] >>
+   O[C@@H]1CCCC[C@H]1C.[Na+].O.B(O)(O)O`.
+
+**Three intermediate fragments** added to
+`orgchem/db/seed_intermediates.py`: `1-Methylcyclohexene
+CC1=CCCCC1` (intermediate), `Hydrogen peroxide (H2O2) OO`
+(reagent), `trans-2-Methylcyclohexanol C[C@@H]1CCCC[C@H]1O`
+(intermediate).  Styrene + acetophenone + water + O₂ + BH₃
++ NaOH + boric acid all already seeded.
+
+### Tests
+Four new tests in `tests/test_reactions.py`:
+- `test_wacker_oxidation_seeded` — verifies the entry
+  exists, the SMILES has C=C in substrate + C(=O) in
+  product, the description names Pd + Cu + Markovnikov +
+  methyl ketone teaching anchors.
+- `test_brown_hydroboration_seeded` — verifies the entry
+  exists, the SMILES contains B + OO (BH₃ + H₂O₂), the
+  product carries `@`-style stereochemistry markers, the
+  description names Brown + 1979 Nobel + anti-Markovnikov
+  + syn-addition + H₂O₂ teaching anchors.
+- `test_alkene_functionalisation_pair_present` — locks
+  in the canonical Markovnikov-vs-anti-Markovnikov
+  contrast pair so future regression of either entry
+  surfaces immediately.
+- `test_named_reaction_count_at_least_fifty_two` —
+  catalogue floor at 52/60 for the Phase 31b extension.
+
+Discovered + fixed during the test run: fragment-
+consistency audit caught 3 missing fragments on first
+reaction-add.  Resolved by seeding the 3 intermediate
+rows above.  All 33 reaction-tests pass + all 12
+fragment-consistency tests pass.
+
+### Documentation updates
+- ROADMAP.md — Phase 31b checkbox extended to "COMPLETE
+  (round 157, 2026-04-25); extension to 60 in progress
+  (52/60 after round 164)"; description block extended
+  with the round-164 alkene-functionalisation entries
+  and the new "alkene-functionalisation regio-/stereo-
+  selectivity teaching surface" anchor.
+- PROJECT_STATUS.md — round 164 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 956 passing (up from 1 952 in round 163 — net +4 from
+this round's four new test functions).  Doc-coverage
+test green; full suite ~45 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 31b extension** — 8 more entries to reach the
+  60-target.  Priority list: Ramberg-Bäcklund (α-halosulfone
+  → alkene; one-pot pedagogical curiosity), Shapiro
+  (tosylhydrazone → vinyl-Li → alkene), Oppenauer
+  (Al(OR)₃-catalysed alcohol → ketone, green-chemistry
+  alternative to Cr-based oxidants), Julia / Peterson
+  olefinations (HWE is already seeded; Julia + Peterson
+  would round out the alkene-synthesis toolkit), Henry /
+  Knoevenagel reactions (carbonyl C-C bond formation
+  alternatives), Robinson annulation (Michael + aldol +
+  dehydration cascade — opens the ring-construction
+  teaching surface).
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.  Multi-round; the
+  highest-value remaining work + the only unfinished
+  user-flagged feature still in scope.
+- **Phase 31k extension** — 6 more SAR series for a 21-
+  target (kinase inhibitors, GLP-1-agonists, monoclonal-
+  antibody backbones, biologic-mimetics, vaccines'-
+  adjuvant series, antibiotic-resistance-evading scaffolds).
+
+A safer next pick remains another 1-2 named reactions per
+round on the 31b-extension list.  Robinson annulation
+would open the ring-construction teaching surface in one
+round; Ramberg-Bäcklund + Shapiro would open the
+"unusual-mechanism alkene synthesis" pair.
+
+## 2026-04-25 — Round 163 (🎉 Phase 31k CLOSED at 15/15 — DPP-4 inhibitor SAR series)
+
+### Context
+Rounds 158-162 added 5 SAR series (H1-antihistamines + PPI
+inhibitors + opioid analgesics + anticonvulsants + DOACs)
+advancing the catalogue from 9/15 → 14/15.  Round 163 ships
+the final series — DPP-4 inhibitors (the "gliptin" class) —
+to close Phase 31k at the **15/15 milestone**, the second
+"phase complete" milestone in the 152-163 sprint after
+Phase 31b at 50/50 in round 157.
+
+### What shipped
+**One SAR series** added to `orgchem/core/sar.py`:
+
+**`dpp4-inhibitors` — DPP-4 inhibitor (gliptin) series —
+incretin-pathway antidiabetics.**  Target: dipeptidyl
+peptidase-4 (DPP-4 / CD26).  Source: Deacon 2019 *Front.
+Endocrinol.* 10: 80 + Drucker 2007 *Diabetes Care* 30:
+1335-1343.  Activity columns: `dpp4_ic50_nM`,
+`covalent_reversible` (0/1), `renal_clearance_pct`,
+`half_life_h`, `logp`.
+
+Five variants:
+
+1. **Sitagliptin (Januvia)** — Merck 2006.  First DPP-4
+   inhibitor to market + still best-selling gliptin
+   worldwide.  Non-covalent competitive inhibitor —
+   binds the active site via the β-amino group anchoring
+   to Glu-205 / Glu-206 + Tyr-662 + the trifluoromethyl-
+   triazolopiperazine occupying the S2 pocket.  ~ 80%
+   renal cleared unchanged → requires dose reduction in
+   CKD.  Once-daily.  TECOS 2015 established cardiovascular
+   safety.
+2. **Saxagliptin (Onglyza)** — BMS / AstraZeneca 2009.
+   **Covalent reversible inhibitor** — the nitrile (C#N)
+   of the cyanopyrrolidine warhead is attacked by Ser-630
+   of DPP-4 to form a slowly-reversible imidate adduct.
+   Result: very low IC50 (1.3 nM) but short plasma
+   half-life (~ 2.5 h) — the covalent mechanism gives
+   sustained tissue inhibition despite rapid plasma
+   clearance.  Active metabolite 5-hydroxysaxagliptin
+   contributes ~ 50% of activity.  SAVOR-TIMI 53 2013
+   raised heart-failure-hospitalisation signal — required
+   FDA label update.
+3. **Linagliptin (Tradjenta)** — Boehringer Ingelheim /
+   Lilly 2011.  **Unique among DPP-4 inhibitors: primarily
+   fecal clearance** (~ 95% via the bile, only 5% renal),
+   so **NO dose adjustment in CKD or ESRD** — the only
+   gliptin safe in haemodialysis patients without dose
+   modification.  Xanthine scaffold (purine-2,6-dione with
+   the C8 piperidine + N1 quinazoline + N3 methyl + N7
+   but-2-ynyl) — completely different chemotype from the
+   other gliptins, evolved from natural-product xanthine
+   pharmacology (caffeine / theophylline).  CARMELINA 2018
+   established cardiovascular + renal-protection
+   neutrality.
+4. **Alogliptin (Nesina)** — Takeda 2013.  Uracil-based
+   pyrimidine-2,4-dione scaffold with cyanobenzyl + (R)-3-
+   aminopiperidinyl substituents.  Once-daily.  Renal
+   clearance ~ 76%.  EXAMINE 2013 in post-ACS patients
+   showed non-inferiority to placebo.  Most lipophilicity-
+   balanced gliptin (logP 0.4 — by far the lowest,
+   minimising off-target binding).
+5. **Vildagliptin (Galvus)** — Novartis 2007.  **EU-
+   approved but NOT FDA-approved** (heart-failure concerns
+   + transient liver-enzyme elevations stalled the US
+   filing).  Same **covalent reversible** mechanism as
+   saxagliptin via the cyanopyrrolidine warhead reacting
+   with Ser-630, but connected to the 3-hydroxyadamantyl
+   anchor through a glycyl spacer instead of an α-amino-
+   acyl spacer.  Twice-daily dosing because of short plasma
+   half-life (~ 2 h).  ~ 22% renal cleared, so less dose
+   reduction needed than sitagliptin / saxagliptin /
+   alogliptin.
+
+### Tests
+Three new tests in `tests/test_sar.py` plus the milestone
+closeout test:
+- `test_dpp4_inhibitor_series_landmarks` — seven
+  pedagogical SAR invariants locked in: (a) all 5
+  landmarks present, (b) **covalent-vs-non-covalent
+  split** with exactly 2 covalent + 3 non-covalent
+  inhibitors, (c) linagliptin is the only gliptin with
+  low renal clearance ≤ 10% (the safe-in-CKD anchor),
+  (d) the other 4 gliptins have ≥ 20% renal clearance
+  (require CKD dose adjustment), (e) covalent inhibitors
+  have short half-lives ≤ 3 h (the trade-off compensated
+  by sustained tissue inhibition), (f) **linagliptin +
+  saxagliptin are the two most-potent gliptins ≤ 2 nM**
+  IC50 by very different routes (xanthine deep-S2-pocket
+  fit vs covalent warhead), and the other 3 sit in the
+  2-30 nM band.
+- `test_dpp4_series_count_at_least_five` — variant-count
+  floor.
+- `test_phase_31k_complete_15_of_15` — milestone closeout
+  test that name-matches all 9 baseline SAR series + all 6
+  rounds-158-163 expansion series so any future regression
+  of any single one surfaces immediately.
+- `test_sar_library_size_at_least_fifteen` — catalogue-
+  size floor at the 15-target (renamed from round-162's
+  `_at_least_fourteen`).
+- `test_library_seeded` — extended to assert the new
+  `dpp4-inhibitors` id.
+
+**Test invariant caught a SAR error in my first draft**: I'd
+written 'saxagliptin has the lowest IC50 in the series', but
+the actual literature numbers have linagliptin slightly more
+potent (1.0 nM vs sax's 1.3 nM).  The test failure prompted
+me to rewrite the invariant as 'linagliptin + saxagliptin
+both ≤ 2 nM, the others 2-30 nM' which captures the actual
+two-most-potent-by-very-different-routes teaching point.
+This is the kind of accuracy-improving test feedback that
+catches sloppy SAR claims before they ship.
+
+All 31 SAR tests pass.
+
+### Documentation updates
+- ROADMAP.md — Phase 31k checkbox flipped from `[~]`
+  (in-progress) to `[x]` (COMPLETE round 163, 2026-04-25);
+  Phase 31k entry updated from 14/15 → **15/15** with
+  description of the DPP-4 series + the 7 pedagogical
+  invariants + the milestone closeout language ("Phase
+  31k 15/15 vision realised: rounds 158-163 added 6
+  series in 6 rounds, opened 5 major medicinal-chem
+  teaching themes").
+- PROJECT_STATUS.md — round 163 summary prepended with
+  the 🎉 Phase 31k CLOSED milestone language.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 952 passing (up from 1 949 in round 162 — net +3 from
+this round's three new test functions).  Doc-coverage
+test green; full suite ~45 s wall-clock.
+
+### What's open (next-round candidates)
+**Phase 31k is COMPLETE.**  Both Phase 31b (50/50) and
+Phase 31k (15/15) milestones are now closed; the original
+Phase 31 vision is fully realised.
+
+Remaining roadmap work falls into two buckets:
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.  Multi-round; the
+  highest-value remaining work + the only unfinished
+  user-flagged feature still in scope.  Could be picked
+  up next as a "start phase 38c" round with just the
+  headless `core/lab_setup_canvas.py` scaffolding +
+  drag-drop data model.
+- **Phase 31b extension** — 60-target with curiosity-
+  bucket entries (Ramberg-Bäcklund, Shapiro, Oppenauer,
+  Julia / Peterson olefinations, Wacker oxidation, Henry
+  / Knoevenagel, Brown hydroboration-oxidation).  Lower
+  priority but tight catalogue+test scope as rounds
+  152-157.
+
+A safer next pick is the Phase 31b extension (1-2
+reactions per round on the 60-target curiosity bucket),
+keeping the same tight pattern.  The bigger ambition is
+Phase 38c — the long-promised lab-setup canvas.
+
+## 2026-04-25 — Round 162 (Phase 31k — direct-oral-anticoagulant SAR series, catalogue 13/15 → 14/15)
+
+### Context
+Rounds 158-161 added H1-antihistamines + PPI-inhibitors +
+opioid-analgesics + anticonvulsants, opening four
+medicinal-chem teaching themes: chiral switch, BBB /
+zwitterion, lipophilicity → potency, and different scaffolds
+for the same biology.  Round 162 adds the DOACs — opens the
+**fifth theme: prodrug for bioavailability**.  Catalogue
+advances 13/15 → 14/15; just one more series to close at
+the 15/15 milestone.
+
+### What shipped
+**One SAR series** added to `orgchem/core/sar.py`:
+
+**`doacs` — Direct-oral-anticoagulant (DOAC) series — Xa
+vs IIa inhibitors.**  Target: coagulation cascade — factor
+Xa (apixaban, rivaroxaban, edoxaban) and factor IIa
+thrombin (dabigatran).  Source: Garcia + Crowther 2014
+*N. Engl. J. Med.* 370: 1281-1287 + Yeh + Eikelboom 2014
+*Eur. Heart J.* 35: 2076-2087 (canonical DOAC comparison
+reviews).  Activity columns: `factor_xa` (1 if Xa, 0 if
+IIa), `target_ki_nM`, `oral_bioavailability_pct`,
+`half_life_h`, `logp`.
+
+Five variants:
+
+1. **Apixaban (Eliquis)** — BMS / Pfizer 2012.  Pyrazole-
+   3-carboxamide + fused-bicyclic dihydropyridazinone +
+   N-aryl-piperidinone tail.  Direct factor-Xa inhibitor;
+   **most-potent DOAC on Xa (Ki 0.08 nM)** + reversible
+   binding.  CYP3A4 + P-gp substrate but only 25% renal
+   cleared (safest DOAC in CKD).  Twice-daily dosing;
+   ARISTOTLE 2011 showed superiority to warfarin on stroke
+   prevention + reduced major bleeding in atrial
+   fibrillation.  Andexanet alfa is the specific Xa-
+   inhibitor reversal agent.
+2. **Rivaroxaban (Xarelto)** — Bayer 2008.  2-
+   Chlorothiophene + (S)-oxazolidinone + N-aryl-
+   morpholinone.  **First DOAC to market.**  Once-daily
+   dosing.  Bioavailability is **food-dependent** (66%
+   fasting → 100% with food at 20 mg dose) so must be
+   taken with meals.  CYP3A4 + P-gp substrate; 33% renal
+   cleared.  ROCKET-AF 2011 + EINSTEIN-DVT 2010.
+3. **Edoxaban (Lixiana / Savaysa)** — Daiichi Sankyo 2011.
+   Thiazole-N-methyl-carboxamide + 5-chloro-2-
+   aminonicotinamide + trans-cyclohexyl-1,4-diamine spacer.
+   Once-daily dosing.  Critical PK feature:
+   **bioavailability decreases at high renal clearance** —
+   paradoxically less effective in patients with preserved
+   renal function (CrCl > 95 mL/min).  Boxed warning: NOT
+   for atrial fibrillation when CrCl > 95 mL/min.  ENGAGE
+   AF-TIMI 48 2013.
+4. **Dabigatran (Pradaxa) — active form** — Boehringer
+   Ingelheim 2010.  Benzimidazole + amidine + pyridinyl-
+   N-acyl-β-alanine.  **Only DOAC that targets thrombin
+   (IIa)** instead of factor Xa.  The amidine + carboxylate
+   zwitterion at physiological pH is the IIa-binding
+   pharmacophore — but **destroys oral bioavailability**
+   (only 6.5% as free dabigatran) because the molecule is
+   too polar to cross intestinal membranes.  Solved by the
+   etexilate prodrug.  Idarucizumab is the specific IIa-
+   inhibitor reversal agent.
+5. **Dabigatran etexilate (Pradaxa prodrug)** — caps both
+   polar groups (amidine + carboxylate) of dabigatran with
+   lipophilic prodrug groups (hexyloxy-carbamate +
+   ethyl-ester), raising logP from 3.0 → 5.6 and MW from
+   471 → 628 Da.  Result: oral absorption rises ~ 10×.
+   Esterases in the gut wall + blood hydrolyse both caps
+   in vivo to release the active zwitterionic dabigatran.
+   **Textbook example of a 'double prodrug' / 'sequential
+   prodrug' that masks two polar groups simultaneously.**
+
+### Tests
+Two new tests in `tests/test_sar.py` plus two existing
+tests updated:
+- `test_doac_series_landmarks` — six pedagogical SAR
+  invariants locked in: (a) all 5 landmark entries
+  present, (b) **Xa-vs-IIa target diversity** with exactly
+  3 factor-Xa inhibitors + 2 factor-IIa entries (the IIa
+  count includes the prodrug), (c) apixaban has the lowest
+  factor-Xa Ki in the class, (d) **prodrug logP story** —
+  dabigatran etexilate logP ≥ 2 units higher than active
+  dabigatran's, (e) **prodrug MW story** — dabigatran
+  etexilate ≥ 100 Da heavier than active dabigatran's
+  (both lipophilic caps combined), (f) all 3 Xa inhibitors
+  have higher oral bioavailability than free dabigatran
+  (the whole reason the etexilate prodrug exists).
+- `test_doac_series_count_at_least_five` — variant-count
+  floor.
+- `test_sar_library_size_at_least_fourteen` — catalogue
+  floor bumped from 13 → 14 (renamed from round-161
+  `_at_least_thirteen` version).
+- `test_library_seeded` — extended to assert the new
+  `doacs` id.
+
+All 28 SAR tests pass on first run.
+
+### Documentation updates
+- ROADMAP.md — Phase 31k entry updated from 13/15 →
+  14/15 with description of the DOAC series + the 6
+  pedagogical invariants + the new "prodrug for
+  bioavailability" teaching theme.
+- PROJECT_STATUS.md — round 162 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 949 passing (up from 1 947 in round 161 — net +2 from
+this round's two new test functions).  Doc-coverage test
+green; full suite ~45 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 31k** — 1 more SAR series to close at the 15/15
+  milestone.  Top candidate: oral antidiabetics
+  (sulfonylureas tolbutamide → glyburide → glipizide →
+  glimepiride — generation-by-generation potency
+  progression on the pancreatic K-ATP channel; pairs with
+  the H1 / PPI generation stories).  Alternative: thyroid
+  agents (T3 / T4 / propylthiouracil / methimazole —
+  agonist + biosynthesis-inhibitor arc) or biologic-
+  mimicking small molecules (DPP-4 inhibitors —
+  sitagliptin / saxagliptin / linagliptin / alogliptin —
+  the modern incretin-pathway anti-diabetic class that
+  paired with the round-159 PPI series's chiral-switch
+  story).
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.  Multi-round; the
+  highest-value remaining work.
+- **Phase 31b extension** — 60-target with curiosity-
+  bucket entries.
+
+A safer next pick remains the final SAR series to hit the
+15/15 milestone — closing Phase 31k will be the second
+"phase complete" milestone after Phase 31b at 50/50.
+
+## 2026-04-25 — Round 161 (Phase 31k — anticonvulsant SAR series, catalogue 12/15 → 13/15)
+
+### Context
+Rounds 158-160 added H1-antihistamines + PPI-inhibitors +
+opioid-analgesics, opening three medicinal-chem teaching
+themes: chiral switch, BBB / zwitterion, lipophilicity →
+potency.  Round 161 adds anticonvulsants — the fourth major
+theme: **different scaffolds for the same biology** (the
+complement to the family-walk patterns of the preceding
+rounds, where each variant was a substituted version of the
+same parent template).  Catalogue advances 12/15 → 13/15.
+
+### What shipped
+**One SAR series** added to `orgchem/core/sar.py`:
+
+**`anticonvulsants` — Anticonvulsant series (different
+scaffolds, shared indication).**  Target: multiple — voltage-
+gated Na+ channels, GABA system, voltage-gated Ca++ channels,
+SV2A vesicular protein.  Source: Brodie & Sills 2011 *Lancet
+Neurol.* 10: 1019-1030 (anticonvulsant mechanisms + SAR
+review).  Activity columns: `na_channel_blocker` (0/1),
+`broad_spectrum` (0/1), `cyp_induction_score` (-1 to +1),
+`half_life_h`, `logp`.
+
+Five variants spanning four distinct chemotypes:
+
+1. **Phenytoin (Dilantin)** — 5,5-diphenylhydantoin
+   scaffold.  Heinrich Biltz 1908 (synthesis), Merritt +
+   Putnam 1938 (anticonvulsant activity discovered).  First
+   non-sedating anticonvulsant.  Voltage-gated Na+ channel
+   block in the inactivated state, preferentially silencing
+   rapidly-firing neurons.  **Strong CYP3A4 + CYP2C9 inducer**
+   + autoinducer — driver of many drug-drug interactions
+   (warfarin, OCs, opioids).  Non-linear (saturable)
+   metabolism: small dose increases at the top of the
+   therapeutic range cause disproportionate plasma rises.
+2. **Carbamazepine (Tegretol)** — dibenzazepine + 5-
+   carboxamide tricyclic; structurally close to imipramine
+   TCA.  Schindler 1953 / 1962 EU approval.  Same Na+-
+   channel mechanism as phenytoin via a totally different
+   scaffold.  **Strong CYP3A4 inducer**.  HLA-B*1502
+   carriers (~ 10% of Han Chinese, 2-4% of South Asian)
+   carry markedly elevated risk of Stevens-Johnson syndrome
+   / toxic epidermal necrolysis — FDA boxed warning for
+   HLA testing in at-risk populations.
+3. **Valproate (Depakote)** — branched fatty acid (2-
+   propylpentanoic acid).  Burton 1882 (synthesis as a
+   solvent), Meunier 1962 (anticonvulsant activity
+   discovered serendipitously when used as a vehicle for
+   screening).  **The broad-spectrum anticonvulsant**: Na+-
+   channel block + GABA augmentation (GABA-T inhibition +
+   GAD activation) + T-type Ca++-channel block + HDAC
+   inhibition.  Effective on tonic-clonic, absence, and
+   myoclonic seizures — the only seeded entry covering all
+   three.  **CYP INHIBITOR** (opposite of phenytoin /
+   carbamazepine) — raises lamotrigine + phenobarbital
+   levels.  Hepatotoxic + teratogenic (neural-tube defects
+   ~ 1-2%); contraindicated in women of child-bearing
+   potential without strict contraception.
+4. **Lamotrigine (Lamictal)** — phenyltriazine; 6-(2,3-
+   dichlorophenyl)-1,2,4-triazine-3,5-diamine.  GSK 1990.
+   Same Na+-channel inactivation mechanism as phenytoin /
+   carbamazepine via yet another scaffold.  **No CYP
+   induction** (metabolised by glucuronidation via UGT1A4)
+   — clean drug-drug-interaction profile.  Critical
+   clinical caveat: **Stevens-Johnson syndrome / TEN risk**
+   on rapid titration (~ 1-3% in children, lower in adults)
+   — 6-week slow titration mandatory.  Half-life doubles
+   when co-administered with valproate (UGT inhibition).
+5. **Levetiracetam (Keppra)** — pyrrolidone; (S)-α-ethyl-2-
+   oxo-1-pyrrolidineacetamide.  UCB 1999.  Totally distinct
+   mechanism: **binds the synaptic-vesicle protein SV2A**
+   (Lynch et al. 2004), modulating neurotransmitter release
+   without directly blocking Na+ or Ca++ channels.  **First-
+   in-class.**  No CYP interactions (66% renal-cleared
+   unchanged) — the cleanest interaction profile of any
+   seeded anticonvulsant.  Broad-spectrum on focal +
+   generalised tonic-clonic + myoclonic seizures.
+   Behavioural side effects (irritability, depression) are
+   the dose-limiting trade-off, not hepatotoxicity or drug
+   interactions.  Now first-line in many guidelines for
+   monotherapy.
+
+### Tests
+Two new tests in `tests/test_sar.py` plus two existing
+tests updated:
+- `test_anticonvulsant_series_landmarks` — six
+  pedagogical SAR invariants locked in: (a) all 5 landmark
+  drugs present, (b) **different-scaffolds-for-the-same-
+  biology** theme — molecular weights span > 100 Da (144-
+  256 Da actual), proving chemotype diversity vs the
+  family-walk pattern of H1 / PPI / opioids, (c) phenytoin
+  + carbamazepine both have cyp_induction_score = 1.0
+  (strong CYP3A4 inducers — the older, drug-interaction-
+  heavy generation), (d) valproate has cyp_induction_score
+  < 0 (CYP INHIBITOR, the opposite of the older
+  anticonvulsants), (e) levetiracetam is the only entry
+  that does NOT block Na+ channels — SV2A vesicular-protein
+  mechanism, (f) valproate + levetiracetam are the two
+  broad-spectrum entries.
+- `test_anticonvulsant_series_count_at_least_five` —
+  variant-count floor.
+- `test_sar_library_size_at_least_thirteen` — catalogue
+  floor bumped from 12 → 13 (renamed from round-160
+  `_at_least_twelve` version).
+- `test_library_seeded` — extended to assert the new
+  `anticonvulsants` id.
+
+All 26 SAR tests pass on first run.
+
+### Documentation updates
+- ROADMAP.md — Phase 31k entry updated from 12/15 →
+  13/15 with description of the anticonvulsant series +
+  the 6 pedagogical invariants + the new "different
+  scaffolds for the same biology" teaching theme.
+- PROJECT_STATUS.md — round 161 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 947 passing (up from 1 945 in round 160 — net +2 from
+this round's two new test functions).  Doc-coverage test
+green; full suite ~44 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 31k** — 2 more SAR series to reach 15/15.
+  Priority list: oral antidiabetics (sulfonylureas
+  tolbutamide → glyburide → glipizide → glimepiride —
+  generation-by-generation potency progression on the
+  pancreatic K-ATP channel; pairs with the H1 / PPI
+  generation stories), thyroid agents (T3 / T4 /
+  propylthiouracil / methimazole — agonist + biosynthesis-
+  inhibitor arc), or a direct-oral-anticoagulant series
+  (apixaban / rivaroxaban / dabigatran / edoxaban — the
+  modern Xa- / IIa-inhibitor landscape that displaced
+  warfarin).
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.  Multi-round; the
+  highest-value remaining work.
+- **Phase 31b extension** — 60-target with curiosity-
+  bucket entries.
+
+A safer next pick remains another 1 SAR series per round.
+Oral antidiabetics + thyroid agents in successive rounds
+would close Phase 31k at the 15/15 milestone.
+
+## 2026-04-25 — Round 160 (Phase 31k — opioid analgesic SAR series, catalogue 11/15 → 12/15)
+
+### Context
+Rounds 158-159 added H1-antihistamines + PPI-inhibitors,
+opening the chiral-switch (SSRI + PPI) and zwitterion / BBB
+(H1) medicinal-chem teaching themes.  Round 160 adds opioid
+analgesics — opens the **lipophilicity → potency** theme,
+the third major teaching anchor in the rational-tweak
+medicinal-chem cluster.  Catalogue advances 11/15 → 12/15.
+
+### What shipped
+**One SAR series** added to `orgchem/core/sar.py`:
+
+**`opioid-analgesics` — Opioid analgesic series (μ-receptor
+agonists).**  Target: μ-opioid receptor (MOR).  Source:
+Inturrisi 2002 *Clin. J. Pain* 18 Suppl: S3-S13 +
+Reisine & Pasternak 1996 (Goodman & Gilman ch. 23) — the
+canonical opioid SAR + equianalgesic-dosing reviews.
+Activity columns: `mu_ki_nM`, `equianalgesic_mg_iv`,
+`potency_ratio_vs_morphine`, `logp`.
+
+Five variants spanning natural / semi-synthetic / synthetic
+chemotypes:
+
+1. **Morphine** — Sertürner 1804.  First alkaloid ever
+   isolated (from opium poppy *Papaver somniferum*).
+   Reference compound for opioid potency.  Low logP (1.2)
+   means slow BBB penetration — delays peak analgesic
+   effect ~ 20-30 min after IV.  Glucuronidated to
+   morphine-6-glucuronide (M6G, the active metabolite,
+   more potent than morphine itself) and morphine-3-
+   glucuronide (M3G, neuroexcitatory).
+2. **Codeine** — Robiquet 1832.  **The pro-drug anchor**:
+   direct μ-receptor affinity is 100× weaker than
+   morphine's (Ki ~ 200 nM), but CYP2D6 demethylates
+   ~ 5-10% of an oral dose to morphine in vivo, providing
+   essentially all of the analgesic effect.  CYP2D6-poor
+   metabolisers get little analgesia; ultra-rapid
+   metabolisers get morphine overdose — opposite extremes
+   of the same polymorphism.  FDA boxed-warned for
+   paediatric use after deaths in fast metabolisers.
+3. **Hydromorphone (Dilaudid)** — Knoll 1924, semi-
+   synthetic from morphine.  Two SAR moves: saturate the
+   C7-C8 double bond + oxidise the 6-OH allyl alcohol to
+   a 6-ketone.  **The most-potent direct μ-binder in the
+   series** with Ki ~ 0.4 nM.  ~ 7× more potent than
+   morphine on weight basis with shorter onset; lacks the
+   active glucuronide metabolite of morphine, so cleaner
+   PK in renal-failure patients.
+4. **Oxycodone (OxyContin)** — Freund + Speyer 1916,
+   semi-synthetic from thebaine (third major opium
+   alkaloid).  14-OH + 6-keto + 3-OMe + dihydro
+   combination.  Direct μ-affinity is *lower* than
+   morphine (Ki 18 vs 1.4 nM) but oral bioavailability
+   ~ 60-87% (morphine PO is only ~ 25%).  Major active
+   metabolite oxymorphone (CYP2D6-mediated 3-O-
+   demethylation) is ~ 3× more potent than morphine.
+   OxyContin (1996) — controlled-release oxycodone — is
+   the drug at the centre of the US opioid crisis.
+5. **Fentanyl** — Janssen 1960.  **Total synthetic
+   chemotype switch to 4-anilidopiperidine** — completely
+   different from the morphinan scaffold.  Same μ-receptor
+   affinity as morphine (Ki 1.4 nM) but **~ 100× more
+   potent on weight basis** because logP 4.1 vs morphine's
+   1.2 drives 10-100× faster BBB penetration.  **THE
+   textbook example of lipophilicity → potency in CNS
+   pharmacology** — same target, same intrinsic affinity,
+   vastly different effective dose due to physico-chem
+   alone.  Onset 1-2 min IV vs 20 min for morphine.
+   Carfentanil + sufentanil push the same scaffold to
+   10 000× and 1000× morphine respectively.  The
+   lipophilicity-drives-potency story has driven the
+   current illicit-fentanyl-analogue epidemic — synthetic
+   accessibility + huge molar potency makes safe trafficked-
+   dose calibration impossible.
+
+### Tests
+Two new tests in `tests/test_sar.py` plus two existing
+tests updated:
+- `test_opioid_analgesic_series_landmarks` — six
+  pedagogical SAR invariants locked in: (a) all 5 landmark
+  drugs present, (b) fentanyl is the high-potency anchor
+  (highest potency_ratio_vs_morphine of all 5),
+  (c) codeine is the pro-drug anchor (direct μ-Ki ≥ 50×
+  morphine's), (d) hydromorphone has the lowest direct
+  μ-Ki, (e) **lipophilicity → potency** invariant —
+  fentanyl logP ≥ 2 units higher than morphine AND ≥ 50×
+  potency advantage (the canonical CNS-pharmacology
+  teaching point), (f) codeine MW exceeds morphine MW by
+  exactly one methyl group (~ 14 Da, the 3-OMe ether).
+- `test_opioid_series_count_at_least_five` — variant-
+  count floor.
+- `test_sar_library_size_at_least_twelve` — catalogue
+  floor bumped from 11 → 12 (renamed from round-159
+  `_at_least_eleven` version).
+- `test_library_seeded` — extended to assert the new
+  `opioid-analgesics` id.
+
+All 24 SAR tests pass on first run.
+
+### Documentation updates
+- ROADMAP.md — Phase 31k entry updated from 11/15 →
+  12/15 with description of the opioid series + the 6
+  pedagogical invariants.
+- PROJECT_STATUS.md — round 160 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 945 passing (up from 1 943 in round 159 — net +2 from
+this round's two new test functions).  Doc-coverage test
+green; full suite ~44 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 31k** — 3 more SAR series to reach 15/15.
+  Priority list: oral antidiabetics (sulfonylureas
+  tolbutamide → glyburide → glipizide → glimepiride —
+  generation-by-generation potency progression on the
+  pancreatic K-ATP channel; pairs with the H1 / PPI
+  generation stories), anticonvulsants (phenytoin /
+  carbamazepine / valproate / lamotrigine / levetiracetam
+  — varied chemotypes for the same broad indication; opens
+  a different SAR teaching theme: "different scaffolds for
+  the same biology"), thyroid agents (T3 / T4 /
+  propylthiouracil / methimazole — agonist + biosynthesis-
+  inhibitor arc).
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.  Multi-round; the
+  highest-value remaining work.
+- **Phase 31b extension** — 60-target with curiosity-
+  bucket entries.
+
+A safer next pick remains another 1 SAR series per round.
+Oral antidiabetics would extend the chiral-switch /
+generation-walk theme cluster; anticonvulsants would open
+a new "different scaffolds for the same biology" theme.
+
+## 2026-04-25 — Round 159 (Phase 31k — PPI inhibitor SAR series, catalogue 10/15 → 11/15)
+
+### Context
+Round 158 added the H1-antihistamine series (10/15).  Round
+159 adds the PPI inhibitor series (11/15) — same `core/sar.py`
+catalogue+test pattern; **the chiral-switch story arc** is
+the headline pedagogical anchor that pairs with the round-96
+SSRI series (citalopram → escitalopram).  Three rational-
+tweak themes from rounds 96 / 158 / 159 now form a coherent
+medicinal-chem teaching cluster: chiral switch (SSRI + PPI),
+zwitterion / BBB-blocker (H1), CYP-independence (PPI).
+
+### What shipped
+**One SAR series** added to `orgchem/core/sar.py`:
+
+**`ppi-inhibitors` — Proton-pump inhibitor (PPI) series.**
+Target: gastric H+/K+-ATPase (Cys-813 covalent inhibition).
+Source: Olbe, Carlsson & Lindberg 2003 *Nat. Rev. Drug
+Discov.* 2: 132-139 (the canonical PPI discovery + SAR
+review by the Astra team).  Activity columns: `onset_h`,
+`duration_h`, `cyp_metabolism_dependence` (0-1 scale),
+`logp`.
+
+Five variants spanning the 1988-1999 PPI-development arc:
+
+1. **Omeprazole (Prilosec)** — Astra 1988.  The prototype
+   racemate.  Pro-drug mechanism: at parietal-cell
+   secretory canaliculus pH ~ 1 the pyridine-N protonates,
+   the molecule rearranges via a sulfenamide intermediate,
+   and the activated species covalently traps Cys-813 of
+   H+/K+-ATPase via a -S-S- bond.  Both (R) + (S) sulfoxide
+   enantiomers in commerce; (R) clears faster via CYP2C19
+   so (S) does most of the work — drove the chiral-switch
+   development.
+2. **Esomeprazole (Nexium)** — AstraZeneca 2001.  **The
+   textbook chiral switch**: take racemic omeprazole
+   off-patent, develop the more-active (S)-enantiomer as
+   a new product with fresh patent life.  Same scaffold +
+   same Cys-813 trapping mechanism but locked (S)-sulfoxide
+   chirality eliminates the (R)-elimination pathway →
+   reduced inter-patient CYP2C19-polymorphism variability
+   + longer duration.  Pairs with the SSRI series's
+   citalopram → escitalopram chiral switch as the two
+   textbook examples of single-enantiomer-from-racemic
+   patent-extension.
+3. **Lansoprazole (Prevacid)** — Takeda 1991.  First PPI
+   to use a fluorinated pyridine substituent (2,2,2-
+   trifluoroethoxy raises logP +0.6 vs omeprazole, speeding
+   absorption).  Same Cys-813 mechanism + similar duration.
+4. **Pantoprazole (Protonix)** — Byk Gulden 1985 / approved
+   1995.  The 5-OCHF₂ + 4-OMe combination dramatically
+   lowers CYP-mediated clearance — pantoprazole goes
+   through Phase-II sulfotransferase conjugation as the
+   dominant metabolic pathway.  **Least drug-drug
+   interactions of any PPI**: no clinically-significant
+   interaction with warfarin / clopidogrel / phenytoin /
+   theophylline.  The PPI of choice in polypharmacy elderly
+   + ICU patients.
+5. **Rabeprazole (AcipHex)** — Eisai 1999.  Designed for
+   **fastest onset** of the class.  Higher pKa of the
+   benzimidazole N (5.0 vs 4.0 for omeprazole) means
+   rabeprazole protonates + activates at a higher
+   intracellular pH — works even in patients with chronic
+   gastritis whose secretory canaliculus pH is elevated.
+   Like pantoprazole, mostly non-enzymatic activation +
+   reduction metabolism, so few CYP interactions.
+
+### Tests
+Two new tests in `tests/test_sar.py` plus two existing
+tests updated:
+- `test_ppi_inhibitor_series_landmarks` — five pedagogical
+  SAR invariants locked in: (a) all 5 landmark drugs
+  present, (b) chiral-switch invariant (esomeprazole MW
+  == omeprazole MW because they're the same molecular
+  formula, but esomeprazole CYP dependence < omeprazole
+  AND esomeprazole duration ≥ omeprazole), (c) pantoprazole
+  has the LOWEST CYP-metabolism dependence in the class,
+  (d) rabeprazole has the FASTEST onset, (e) MW band
+  340-390 Da typical for the
+  2-(pyridinylmethylsulfinyl)-1H-benzimidazole template.
+- `test_ppi_series_count_at_least_five` — variant-count
+  floor.
+- `test_sar_library_size_at_least_eleven` — catalogue
+  floor bumped from 10 → 11 (renamed from round-158
+  `_at_least_ten` version).
+- `test_library_seeded` — extended to assert the new
+  `ppi-inhibitors` id.
+
+All 22 SAR tests pass on first run.  No fragment-
+consistency work needed.
+
+### Documentation updates
+- ROADMAP.md — Phase 31k entry updated from 10/15 →
+  11/15 with description of the PPI series + the 5
+  pedagogical invariants locked in by tests.
+- PROJECT_STATUS.md — round 159 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 943 passing (up from 1 941 in round 158 — net +2 from
+this round's two new test functions).  Doc-coverage test
+green; full suite ~44 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 31k** — 4 more SAR series to reach 15/15.
+  Priority list: opioid analgesics (morphine / codeine /
+  hydromorphone / oxycodone / fentanyl — μ-receptor SAR +
+  lipophilicity / potency landscape), oral antidiabetics
+  (sulfonylureas tolbutamide → glyburide → glipizide →
+  glimepiride — generation-by-generation), anticonvulsants
+  (phenytoin / carbamazepine / valproate / lamotrigine /
+  levetiracetam — varied chemotypes), thyroid agents
+  (T3 / T4 / propylthiouracil / methimazole — agonist +
+  biosynthesis-inhibitor arc).
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.  Multi-round; the
+  highest-value remaining work.
+- **Phase 31b extension** — 60-target with curiosity-
+  bucket entries.
+
+A safer next pick remains another 1 SAR series per round.
+Opioid analgesics would extend the pharmacology teaching
+surface to controlled-substances + lipophilicity-drives-
+potency themes.
+
+## 2026-04-25 — Round 158 (Phase 31k — H1-antihistamine SAR series, catalogue 9/15 → 10/15)
+
+### Context
+Round 157 closed Phase 31b at the 50/50 milestone.  Round
+158 switches to Phase 31k SAR-series expansion (was 9/15
+after the round-133 Fluoroquinolone series; now 10/15).
+H1-antihistamines are the natural next pick: a well-defined
+1st-gen → 2nd-gen → 3rd-gen landmark progression that pairs
+pedagogically with the round-96 SSRI chiral-switch series
+and the round-100 β-lactam family-walk story.  The H1
+narrative covers BBB penetration, zwitterion design, P-gp
+substrates, active metabolites, and hERG / cardiac-safety
+withdrawal — a remarkably tight encapsulation of modern
+medicinal-chem trade-offs.
+
+### What shipped
+**One SAR series** added to `orgchem/core/sar.py`:
+
+**`h1-antihistamines` — H1-antihistamine series** (1st-gen
+→ 2nd-gen → 3rd-gen).  Target: histamine H1 receptor.
+Source: Simons & Simons 2008 *J. Allergy Clin. Immunol.*
+121: S30-S36 (canonical H1 SAR review).  Activity columns:
+`h1_ki_nM`, `sedation_score`, `qt_risk`, `logp`.
+
+Six variants spanning the full landmark progression:
+
+1. **Diphenhydramine (Benadryl)** — Rieveschl 1943.
+   1st-gen ethanolamine; benzhydryl ether + dimethylamine
+   tail.  H1 Ki 16 nM, sedation 5/5.  The original H1
+   antihistamine + the OTC-sleep-aid active in
+   ZzzQuil / Tylenol PM.  BBB-penetrant via low TPSA +
+   neutral charge; significant muscarinic-receptor cross-
+   reactivity gives anticholinergic side effects on top of
+   sedation.
+2. **Chlorpheniramine (Chlor-Trimeton)** — Schering 1951.
+   1st-gen alkylamine with one para-Cl + a 3-carbon tether
+   (ethanolamine → propylamine).  H1 Ki 4.6 nM, sedation
+   3/5.  4× more potent than diphenhydramine because the
+   para-Cl + propylamine geometry better fills the H1
+   binding pocket; less sedating but still BBB-penetrant.
+3. **Hydroxyzine (Atarax / Vistaril)** — UCB 1956.  1st-gen
+   piperazine class; benzhydryl + 2-(2-hydroxyethoxy)ethyl
+   tail.  H1 Ki 1.5 nM (the most-potent H1 binder in the
+   series), sedation 4/5.  Adds an anxiolytic + antiemetic
+   profile.  **The pro-drug from which cetirizine emerges**
+   via metabolic oxidation of the terminal -OH to -COOH.
+4. **Loratadine (Claritin)** — Schering-Plough 1989, OTC
+   2002.  2nd-gen tricyclic with rigid exocyclic-
+   piperidinylidene + ethyl-carbamate cap on N.  H1 Ki
+   50 nM (parent), sedation 0.5/5.  Itself a pro-drug —
+   CYP3A4 / CYP2D6 cleaves the carbamate to give
+   desloratadine (Clarinex), the actual H1 antagonist with
+   Ki ~ 0.4 nM.  Carbamate cap + P-gp substrate prevent
+   BBB entry.  The 2nd-gen template that opened the
+   $10B+ non-sedating-antihistamine market.
+5. **Cetirizine (Zyrtec)** — UCB 1987.  2nd-gen carboxylic-
+   acid metabolite of hydroxyzine — direct development:
+   oxidise the terminal hydroxyethyl tail to a carboxylic
+   acid, get a zwitterion at physiological pH that can NOT
+   cross the BBB despite the same diaryl-piperazine
+   pharmacophore.  H1 Ki 6 nM, sedation 1/5.  The
+   (R)-enantiomer levocetirizine (Xyzal) is the active
+   component.
+6. **Fexofenadine (Allegra)** — Hoechst Marion Roussel
+   1996.  **The 3rd-generation breakthrough** — carboxylic-
+   acid metabolite of terfenadine (CYP3A4 oxidation of one
+   tert-butyl methyl).  H1 Ki 10 nM, sedation 0/5.
+   Terfenadine (Seldane, 1985) was the first non-sedating
+   H1, but it blocked the cardiac hERG K⁺ channel —
+   sudden deaths from torsades de pointes when co-
+   administered with CYP3A4 inhibitors (grapefruit juice,
+   ketoconazole, erythromycin) led to 1998 withdrawal.
+   Fexofenadine's COOH adds a zwitterion that blocks BBB
+   entry AND eliminates hERG affinity.  The textbook
+   example of an active metabolite displacing its parent
+   drug.
+
+### Tests
+Three new tests in `tests/test_sar.py`:
+- `test_h1_antihistamine_series_landmarks` — five
+  pedagogical SAR invariants locked in: (a) all 6 textbook
+  landmark drugs present, (b) 1st-gen drugs encoded as
+  sedating (sedation_score ≥ 3), (c) 2nd/3rd-gen drugs
+  encoded as non-sedating (sedation_score ≤ 1),
+  (d) fexofenadine sedation_score = 0 (the truly non-
+  sedating anchor), (e) cetirizine sedation_score <
+  hydroxyzine sedation_score (the zwitterion-vs-free-OH
+  BBB-penetration story), (f) MW band 250-510 Da with
+  fexofenadine the largest.
+- `test_h1_series_count_at_least_six` — variant-count
+  floor.
+- `test_sar_library_size_at_least_ten` — catalogue floor
+  at 10/15.
+- `test_library_seeded` updated to assert `h1-antihistamines`
+  + `fluoroquinolones` ids are present.
+
+All 20 SAR tests pass on first run.  No fragment-
+consistency work needed (SAR series don't go through the
+reaction-fragment audit; SMILES are validated via
+`compute_descriptors` invoking `drug_likeness_report`).
+
+### Documentation updates
+- ROADMAP.md — Phase 31k entry updated from 9/15 →
+  10/15 with description of the H1-antihistamine series
+  and the 5 pedagogical invariants locked in by tests.
+- PROJECT_STATUS.md — round 158 summary prepended.
+- SESSION_LOG.md — this entry.
+
+(No INTERFACE.md changes needed — `core/sar.py` row in
+INTERFACE.md is generic over the catalogue contents.)
+
+### Test suite status
+1 941 passing (up from 1 938 in round 157 — net +3 from
+this round's three new test functions).  Doc-coverage
+test green; full suite ~44 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 31k** — 5 more SAR series to reach 15/15.
+  Priority list: PPI-inhibitor series (omeprazole / "
+  esomeprazole / lansoprazole / pantoprazole / rabeprazole
+  — the chiral-switch story like SSRIs but with
+  benzimidazole + sulfoxide chemistry; pH-activated
+  pro-drugs; idem-acid-blocker biology), oral-anti-
+  diabetics (sulfonylureas tolbutamide → glyburide →
+  glipizide → glimepiride), anticonvulsants
+  (phenytoin / carbamazepine / valproate / lamotrigine /
+  levetiracetam — varied chemotypes for the same broad
+  indication), thyroid hormones (T3 / T4 / propylthiouracil
+  / methimazole — agonist + biosynthesis-inhibitor
+  arc), opioid analgesics (morphine / codeine /
+  hydromorphone / oxycodone / hydrocodone / fentanyl —
+  μ-receptor SAR + lipophilicity / potency landscape).
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.  Multi-round;
+  highest-value remaining work.
+- **Phase 31b extension** — 60-target with curiosity-
+  bucket entries (Ramberg-Bäcklund, Shapiro, Oppenauer,
+  Julia / Peterson olefinations, Wacker oxidation, Henry /
+  Knoevenagel, Brown hydroboration-oxidation).
+
+A safer next pick remains another 1 SAR series per round
+(or 1 named-reaction round on the 31b-extension).  PPI
+inhibitors fit the H1 / SSRI 'rational physical-chem
+tweak' story arc cleanly and would ship in one round.
+
+## 2026-04-25 — Round 157 (🎉 Phase 31b CLOSED at 50/50 — Appel reaction + Jones oxidation)
+
+### Context
+Rounds 152-156 progressed Phase 31b from 38/50 → 48/50 in
+just 5 rounds, opening the asymmetric-catalysis (6 entries),
+asymmetric C-C bond-formation, and sulfur-ylide methylene-
+transfer teaching surfaces, plus closing the Pd-coupling
+family at 5/5.  Round 157 ships the final two pedagogical
+anchors needed to close Phase 31b at the **50/50 milestone**:
+Appel pairs naturally with the seeded Mitsunobu (both
+PPh₃-mediated alcohol-OH activation paths) and Jones
+provides the over-oxidation counterpoint to the seeded
+PCC + Swern + Dess-Martin entries.  Phase 31b is now
+complete.
+
+### What shipped
+**Two named reactions** added to
+`orgchem/db/seed_reactions.py`:
+
+1. **Appel reaction (1-octanol → 1-chlorooctane)** —
+   category *Functional-group interconversion*.  Appel 1975.
+   Description teaches: PPh₃ + a tetrahalomethane (CCl₄
+   for chloride, CBr₄ for bromide, CI₄ for iodide) in CH₂Cl₂
+   or DMF at 0 °C → rt; the four-step mechanism (PPh₃
+   attacks one Cl of CCl₄ to displace CCl₃⁻ giving
+   chlorotriphenylphosphonium chloride [Ph₃PCl]⁺Cl⁻; the
+   alcohol substitutes one Cl on phosphorus to give the
+   alkoxytriphenylphosphonium R-O-P⁺Ph₃ + HCCl₃ + Cl⁻;
+   chloride performs an SN2 displacement of the excellent
+   OPPh₃ leaving group, delivering R-Cl with **inversion of
+   configuration** at the carbon and Ph₃P=O as the second
+   by-product).  **Pedagogical pairing with the seeded
+   Mitsunobu reaction** is the headline teaching anchor:
+   both Appel and Mitsunobu activate an alcohol's OH as a
+   phosphonium leaving group via PPh₃ and both deliver SN2
+   inversion at the carbon — but Appel uses CCl₄/CBr₄/CI₄
+   as the halide-source co-reagent (gives R-X), while
+   Mitsunobu uses DIAD/DEAD + a soft pronucleophile (gives
+   R-O-CO-R', R-N-CO-R', R-O-Ar, etc.).  Workhorse for
+   halogenation of alcohols where harsher SOCl₂ / PCl₃
+   conditions would touch other functional groups.  Reaction
+   SMILES `CCCCCCCCO.c1ccc(P(c2ccccc2)c2ccccc2)cc1.
+   ClC(Cl)(Cl)Cl >> CCCCCCCCCl.O=P(c1ccccc1)(c1ccccc1)
+   c1ccccc1.ClC(Cl)Cl`.
+
+2. **Jones oxidation (1-octanol → octanoic acid)** —
+   category *Oxidation*.  Jones 1946.  Description teaches:
+   Cr(VI) reagent (CrO₃ + dilute H₂SO₄ in acetone, added
+   drop-wise to substrate at 0–25 °C until the
+   characteristic orange-red Cr(VI) colour persists);
+   mechanism (alcohol forms chromate ester R-O-CrO₃H, α-H
+   removed in cyclic E2-like TS giving carbonyl + reduced
+   Cr(IV); for 1° alcohols the resulting aldehyde is
+   hydrated by aqueous acetone to a gem-diol that gets
+   oxidised AGAIN by Cr(VI) to the carboxylic acid — **the
+   over-oxidation step that defines Jones**).  **Critical
+   pedagogical role in the catalogue**: every other seeded
+   oxidation (PCC + Swern + Dess-Martin) was specifically
+   designed to STOP at the aldehyde — Jones is the
+   *counterpoint* that shows what happens when you don't.
+   Modern green-chemistry trend to replace Jones with
+   TEMPO/NaOCl or NaIO₄/RuCl₃ to avoid the Cr(VI) carcinogen
+   + heavy-metal waste called out in the description, but
+   Jones remains teaching-essential as the historical
+   default + the over-oxidation example.  Reaction SMILES
+   `CCCCCCCCO.O=[Cr](=O)=O >> CCCCCCCC(=O)O.O=[Cr]=O.O`.
+
+**Six intermediate fragments** added to
+`orgchem/db/seed_intermediates.py`: `Carbon tetrachloride
+(CCl4) ClC(Cl)(Cl)Cl` (reagent), `1-Chlorooctane
+CCCCCCCCCl` (intermediate), `Chloroform (CHCl3) ClC(Cl)Cl`
+(intermediate), `Chromium trioxide (CrO3, Jones reagent)
+O=[Cr](=O)=O` (reagent), `Octanoic acid (caprylic acid)
+CCCCCCCC(=O)O` (intermediate), `Chromium dioxide (CrO2)
+O=[Cr]=O` (intermediate).  Triphenylphosphine + Ph₃P=O
+already covered by the Mitsunobu / HWE entries; bromobenzene
++ benzaldehyde + 1-octanol all already seeded.
+
+### Tests
+Three new tests in `tests/test_reactions.py` plus the
+catalogue-size floor bumped to the 50 milestone:
+- `test_appel_reaction_seeded` — verifies the entry exists,
+  the SMILES contains both PPh₃ + CCl₄, the description
+  names PPh₃ / triphenylphosphine + CCl₄ + SN2 + inversion
+  + the Mitsunobu pairing.
+- `test_jones_oxidation_seeded` — verifies the entry
+  exists, the SMILES has the 1-octanol substrate side and
+  octanoic-acid product side (the over-oxidation product —
+  the headline teaching point), the SMILES contains a Cr
+  atom, and the description names the Cr(VI) / CrO₃
+  reagent + over-oxidation language + comparison with the
+  seeded PCC / Swern / Dess-Martin entries.
+- `test_phase_31b_complete_50_of_50` — milestone closeout
+  test that name-matches every one of the 12 round-152-157
+  expansion entries (Birch + Dess-Martin + Sharpless AE +
+  CBS + Sharpless AD + Jacobsen + Mukaiyama + Evans +
+  Stille + Corey-Chaykovsky + Appel + Jones) so any future
+  regression of any single entry surfaces immediately.
+- `test_named_reaction_count_at_least_fifty` — catalogue-
+  size floor bumped to 50 (renamed from the round-156
+  _forty_eight version) — Phase 31b CLOSED at the original
+  50-target.
+
+Discovered + fixed during the test run: fragment-consistency
+audit caught 6 missing fragments on first reaction-add.
+Resolved by seeding the 6 intermediate rows above.  All 29
+reaction-tests pass + all 12 fragment-consistency tests
+pass.
+
+### Documentation updates
+- ROADMAP.md — Phase 31b checkbox flipped from `[~]`
+  (in-progress) to `[x]` (COMPLETE round 157, 2026-04-25);
+  Phase 31b entry updated from 48/50 → **50/50** with
+  descriptions of both new reactions + the six new
+  intermediate fragments + the milestone closeout
+  language ("Phase 31b 50/50 vision realised after rounds
+  152-157 — 12 new entries in 6 rounds").
+- PROJECT_STATUS.md — round 157 summary prepended with
+  the 🎉 Phase 31b CLOSED milestone language.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 938 passing (up from 1 935 in round 156 — net +3 from
+this round's three new test functions).  Doc-coverage test
+green; full suite ~44 s wall-clock.
+
+### What's open (next-round candidates)
+**Phase 31b is COMPLETE.**  The original Phase 31 vision
+of 50 named reactions is now fully realised; the
+asymmetric-catalysis (6 entries) + asymmetric C-C bond-
+formation (2 entries) + sulfur-ylide methylene-transfer
+(1 entry) teaching surfaces are open; the Pd-coupling
+family is closed at 5/5; the over-oxidation context is
+cemented with Jones alongside PCC / Swern / Dess-Martin.
+
+Remaining roadmap work falls into three buckets:
+- **Phase 38c** — equipment-palette + QGraphicsScene
+  canvas for the lab-setup simulator.  Multi-round, biggest
+  open scope; arguably the highest-value remaining work.
+  Could be picked up next as a "start phase 38c" round
+  with just the headless `core/lab_setup_canvas.py`
+  scaffolding.
+- **Phase 31k** — more SAR series (8/15; 7 to go).  Same
+  catalogue+dialog pattern as the just-shipped Phase 31b
+  rounds; H1-antihistamine series + PPI-inhibitor series
+  + ACE-inhibitor series + β-blocker series would each
+  ship cleanly in 1 round.
+- **Phase 31b extension** — beyond 50 to a 60-target with
+  curiosity-bucket entries (Ramberg-Bäcklund, Shapiro,
+  Oppenauer, Julia / Peterson olefinations, Wacker
+  oxidation, Henry / Knoevenagel reactions, Brown
+  hydroboration-oxidation, etc.).  Lower priority than
+  Phase 38c, but same tight catalogue+fragment+test scope
+  as rounds 152-157.
+
+A safer next pick is the Phase 31k SAR-series expansion
+(low-risk catalogue work, immediate teaching surface).
+The bigger ambition is Phase 38c.
+
+## 2026-04-25 — Round 156 (Phase 31b — Stille coupling + Corey-Chaykovsky epoxidation, catalogue 46/50 → 48/50, Pd-coupling family now 5/5)
+
+### Context
+Rounds 152-155 progressed Phase 31b from 38/50 → 46/50,
+opening the asymmetric-catalysis teaching surface (6
+entries) and the asymmetric C-C bond-formation sub-surface
+(2 entries: Mukaiyama + Evans).  Round 156 delivers two
+final pedagogical milestones: closing the Pd-coupling
+family at 5/5 textbook canon entries (Stille is the missing
+piece alongside Suzuki + Negishi + Heck + Sonogashira) and
+opening the sulfur-ylide methylene-transfer surface
+(Corey-Chaykovsky pairs naturally with the existing Wittig
+entry as 'same carbonyl substrate, different product class').
+Catalogue advances 46/50 → 48/50; just 2 more entries until
+the 50-target.
+
+### What shipped
+**Two named reactions** added to
+`orgchem/db/seed_reactions.py`:
+
+1. **Stille coupling (bromobenzene + tributyl(vinyl)stannane
+   → styrene + Bu₃SnBr)** — category *Cross-coupling
+   (Pd-catalysed)* (matches the existing Suzuki / Negishi /
+   Heck / Sonogashira category — the Pd-coupling family is
+   now consistently tagged).  Migita-Kosugi-Stille 1978.
+   Description teaches: Pd(0)-catalysed C(sp²)-C(sp²) (or
+   C(sp²)-C(sp³)) coupling between an aryl/vinyl halide
+   (or pseudohalide — triflate, iodonium) and an
+   organostannane R₃Sn-R'; the classical OA → transmetalation
+   → RE catalytic cycle (Bu₃Sn-X is the by-product); the
+   distinctive **air-, moisture-, pH-stability** of the Sn
+   reagent — Stille tolerates water, acidic and basic
+   conditions, and a huge range of polar functional groups
+   that other Pd-couplings can't touch; the **toxicity +
+   environmental persistence** of tributyltin as the
+   trade-off that pushed Suzuki ahead for commercial work;
+   still indispensable in total synthesis where Sn's
+   functional-group tolerance + ability to make
+   C(sp²)-C(sp³) bonds is irreplaceable.  Reaction SMILES
+   `Brc1ccccc1.C=C[Sn](CCCC)(CCCC)CCCC >>
+   C=Cc1ccccc1.CCCC[Sn](CCCC)(CCCC)Br`.
+
+2. **Corey-Chaykovsky epoxidation (benzaldehyde +
+   dimethylsulfonium methylide → styrene oxide + DMS)** —
+   category *Methylene transfer (sulfur ylide)*.
+   E. J. Corey + M. Chaykovsky 1965.  Description covers
+   BOTH ylide flavours: (a) the **dimethylsulfonium
+   methylide** Me₂S=CH₂ (from trimethylsulfonium iodide +
+   n-BuLi or NaH; kinetic, irreversible, 1,2-addition to
+   carbonyls and enones giving the terminal epoxide) and
+   (b) the **dimethylsulfoxonium methylide** Me₂S(O)=CH₂
+   (from trimethylsulfoxonium iodide + NaH; thermodynamic,
+   reversible, prefers 1,4-addition to α,β-unsaturated
+   carbonyls giving cyclopropanes).  Mechanism for (a):
+   ylide carbon attacks the carbonyl C → betaine → alkoxide
+   displaces Me₂S in an intramolecular SN2 → epoxide.  The
+   **Wittig comparison** is the headline pedagogical anchor:
+   same overall C=O → C-X transformation, but Wittig gives
+   an alkene via R₃P=CR₂ ylide (O ends up on phosphorus)
+   while Corey-Chaykovsky gives an epoxide via R₂S=CR₂
+   ylide (S leaves as DMS).  Distinct from the
+   C=C-oxidising Sharpless / Jacobsen epoxidations: it's
+   the only catalogue entry that builds a brand-new oxirane
+   CH₂ ring atom from a non-alkene C=O substrate.  Reaction
+   SMILES `O=Cc1ccccc1.C[S+](C)[CH2-] >>
+   C1OC1c1ccccc1.CSC`.
+
+**Four intermediate fragments** added to
+`orgchem/db/seed_intermediates.py`:
+`Tributyl(vinyl)stannane C=C[Sn](CCCC)(CCCC)CCCC` (reagent),
+`Tributyltin bromide (Bu3SnBr) CCCC[Sn](CCCC)(CCCC)Br`
+(intermediate), `Dimethylsulfonium methylide (Corey ylide)
+C[S+](C)[CH2-]` (reagent), `Dimethyl sulfide (DMS) CSC`
+(intermediate).  Bromobenzene + benzaldehyde + styrene +
+styrene oxide already seeded.
+
+### Tests
+Three new tests in `tests/test_reactions.py`:
+- `test_stille_coupling_seeded` — verifies the entry
+  exists, the reaction SMILES contains `[Sn]` (the
+  defining stannane reagent), and the description names
+  Pd / transmetalation / stannane / toxicity (the
+  trade-off that distinguishes Stille from the other
+  Pd-couplings).
+- `test_corey_chaykovsky_seeded` — verifies the entry
+  exists, the reaction SMILES contains both `[S+]` and
+  `[CH2-]` (the ylide reagent), the description names the
+  sulfur-ylide reagent class + the Wittig comparison +
+  the sulfoxonium-variant mention.
+- `test_pd_coupling_family_at_least_five` — name-based
+  catalogue floor for the Pd-coupling family (Suzuki +
+  Negishi + Heck + Sonogashira + Stille); guards against
+  future regression of any of these by name match (more
+  robust than category match given category-string drift).
+- `test_named_reaction_count_at_least_forty_eight` —
+  catalogue-size floor bumped from 46 → 48 (renamed from
+  the round-155 _forty_six version).
+
+Discovered + fixed during the test run: fragment-consistency
+audit caught 4 missing fragments on first reaction-add.
+Resolved by seeding the 4 intermediate rows above.  All 26
+reaction-tests pass + all 12 fragment-consistency tests
+pass.
+
+### Documentation updates
+- ROADMAP.md — Phase 31b entry updated from 46/50 →
+  48/50 with descriptions of both new reactions + the
+  four new intermediate fragments + the Pd-coupling-
+  family completion milestone.
+- PROJECT_STATUS.md — round 156 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 935 passing (up from 1 932 in round 155 — net +3 from
+this round's three new test functions).  Doc-coverage test
+green; full suite ~44 s wall-clock.
+
+### What's open (next-round candidates)
+**Phase 31b is now at 48/50 — just 2 more entries to
+close the original 50-target.**  Top priority list:
+- **Appel reaction** (PPh₃ / CCl₄ alcohol → alkyl chloride;
+  workhorse functional-group interconversion that pairs
+  pedagogically with Mitsunobu — both PPh₃-mediated
+  alcohol-activation paths; SN2 inversion of stereochemistry).
+- **Jones oxidation** (CrO₃ / H₂SO₄ in acetone, the
+  classic chromic-acid 1°-alcohol → carboxylic-acid /
+  2°-alcohol → ketone — pedagogically essential as the
+  *over-oxidising* counterpoint to the seeded
+  PCC / Swern / Dess-Martin entries).
+- **Birch reduction follow-up entry — anisole substrate**
+  to teach the EDG / sp²-carbon regiochemistry rule
+  alongside the existing benzene → 1,4-cyclohexadiene
+  entry.
+- **Ramberg-Bäcklund** (α-halosulfone → alkene; one-pot
+  pedagogical curiosity).
+- **Corey-Bakshi-Shibata follow-up — substrate variation**
+  (e.g. phenyl trifluoromethyl ketone) to extend the
+  CBS-reduction teaching surface.
+- **Phase 38c** lab-setup canvas + **Phase 31k** SAR
+  series remain the bigger open work.
+
+A safer pick remains another 1-2 named reactions per
+round.  Appel + Jones in one round would close Phase 31b
+at 50/50 and complete the original Phase 31 vision.
+
+## 2026-04-25 — Round 155 (Phase 31b — Mukaiyama aldol + Evans aldol, catalogue 44/50 → 46/50, asymmetric-catalysis cat now 6/6 textbook-canon entries)
+
+### Context
+Rounds 153-154 opened the asymmetric-catalysis teaching
+surface and rounded out the asymmetric-oxygen-installation
+toolkit (Sharpless AE + CBS + Sharpless AD + Jacobsen, 4
+entries).  Round 155 opens the **asymmetric C-C
+bond-formation** teaching surface, complementing the
+existing C-O / C=O entries: Mukaiyama aldol (sub-
+stoichiometric Lewis-acid catalyst + open TS) and Evans
+aldol (stoichiometric chiral auxiliary + closed
+Zimmerman-Traxler chair TS) cover the two main paradigms
+of asymmetric aldol.  Catalogue advances 44/50 → 46/50;
+asymmetric-catalysis category 4 → 6 entries.
+
+### What shipped
+**Two named reactions** added to
+`orgchem/db/seed_reactions.py`:
+
+1. **Mukaiyama aldol (TMS enol ether of acetone +
+   benzaldehyde → 4-hydroxy-4-phenyl-2-butanone)** —
+   category *Asymmetric catalysis (C-C bond formation)*
+   (NEW sub-category, expanding the asymmetric-catalysis
+   teaching surface beyond C-O / C=O).  Mukaiyama 1973.
+   Description teaches: pre-formation of the silyl enol
+   ether (or silyl ketene acetal) from a ketone via TMSCl
+   / TMSOTf + base; Lewis-acid activator (TiCl₄ / BF₃·OEt₂
+   for the achiral version, chiral Ti-BINOL / Cu-BOX /
+   oxazaborolidinone for the asymmetric — Mukaiyama 1990,
+   Carreira 1994); the **open TS** mechanism (Lewis acid
+   binds aldehyde carbonyl, silyl enol ether attacks
+   without forming a Zimmerman-Traxler chair; silyl group
+   blocks the cyclic geometry); the pedagogical advantages
+   over base-catalysed aldol (regiochemistry pre-set by the
+   enol-ether choice, anti-aldol with simple substrates,
+   tolerance of Lewis-basic functional groups).  Reaction
+   SMILES `C=C(O[Si](C)(C)C)C.O=Cc1ccccc1 >>
+   O[C@H](c1ccccc1)CC(=O)C.O[Si](C)(C)C` — the (R) product
+   carries explicit tetrahedral chirality marker.
+
+2. **Evans aldol (N-propionyl-(S)-4-benzyloxazolidinone +
+   propanal → syn-(2S,3R)-aldol)** — same C-C bond-
+   formation category.  D. A. Evans 1981.  Description
+   teaches: the (S)-4-benzyl-2-oxazolidinone chiral
+   auxiliary, acylated onto the carboxylic acid via mixed-
+   anhydride / DCC chemistry; soft enolisation with Bu₂BOTf
+   + i-Pr₂NEt at −78 °C in CH₂Cl₂ to form the (Z)-boron
+   enolate; addition through a tightly constrained
+   **Zimmerman-Traxler chair TS** (aldehyde R group
+   equatorial, boron's two butyl ligands shield one
+   enolate face, auxiliary's benzyl group shields the
+   other); > 95:5 dr Evans-syn product; LiOH/H₂O₂ auxiliary
+   cleavage liberates the carboxylic acid without
+   epimerisation.  **Pedagogical contrast with Mukaiyama**
+   is called out explicitly: Evans uses a stoichiometric
+   chiral *auxiliary* + a closed Zimmerman-Traxler TS
+   (gives syn-aldol), whereas Mukaiyama uses a sub-
+   stoichiometric Lewis-acid *catalyst* + an open TS
+   (gives anti-aldol when uncatalysed; many stereo-outcomes
+   possible with chiral catalysts).  Reaction SMILES
+   `CCC(=O)N1[C@@H](Cc2ccccc2)COC1=O.CCC=O >>
+   CC[C@H](O)[C@@H](C)C(=O)N1[C@@H](Cc2ccccc2)COC1=O` —
+   product carries both new stereocentre markers.
+
+**Five intermediate fragments** added to
+`orgchem/db/seed_intermediates.py`: `Trimethylsilyl enol
+ether of acetone C=C(C)O[Si](C)(C)C` (intermediate),
+`(R)-4-Hydroxy-4-phenylbutan-2-one CC(=O)C[C@H](O)c1ccccc1`
+(intermediate), `Trimethylsilanol (TMS-OH) C[Si](C)(C)O`
+(intermediate), `N-Propionyl-(S)-4-benzyl-2-oxazolidinone
+CCC(=O)N1C(=O)OC[C@@H]1Cc1ccccc1` (reagent), `Evans
+syn-aldol CC[C@H](O)[C@@H](C)C(=O)N1C(=O)OC[C@@H]1Cc1ccccc1`
+(intermediate).
+
+### Tests
+Four new tests in `tests/test_reactions.py`:
+- `test_mukaiyama_aldol_seeded` — verifies the entry
+  exists, the description names the Lewis-acid activator
+  family + the open-TS teaching point + the silyl-enol-
+  ether substrate class, and the product SMILES carries
+  `@`-style chirality markers.
+- `test_evans_aldol_seeded` — verifies the entry exists,
+  the description names the oxazolidinone auxiliary class
+  + Bu₂BOTf boron enolate + Zimmerman-Traxler chair TS +
+  syn-aldol product, and the product SMILES carries TWO
+  stereocentre markers (the new C-C bond sets two new
+  stereocentres simultaneously, the headline pedagogical
+  point).
+- `test_asymmetric_catalysis_count_at_least_six` —
+  asymmetric-catalysis category floor bumped from
+  round-154's 4 → 6 entries.
+- `test_asymmetric_c_c_bond_formation_present` — confirms
+  the new C-C bond-formation sub-category is wired up so
+  future re-categorisation can't silently regress.
+- `test_named_reaction_count_at_least_forty_six` —
+  catalogue-size floor bumped from 44 → 46 (renamed from
+  the round-154 _forty_four version).
+
+Discovered + fixed during the test run: fragment-consistency
+audit caught 5 missing fragments on first reaction-add.
+Resolved by seeding the 5 intermediate rows above.  All 23
+reaction-tests pass + all 12 fragment-consistency tests
+pass.
+
+### Documentation updates
+- ROADMAP.md — Phase 31b entry updated from 44/50 →
+  46/50 with descriptions of both new aldol reactions +
+  the five new intermediate fragments + the new
+  asymmetric-C-C-bond-formation sub-category.
+- PROJECT_STATUS.md — round 155 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 932 passing (up from 1 928 in round 154 — net +4 from
+this round's four new test functions).  Doc-coverage test
+green; full suite ~44 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 31b** — 4 more named reactions to reach the 50
+  target.  Priority list: Stille coupling (would close
+  the Pd-coupling family alongside Suzuki / Negishi /
+  Heck / Sonogashira), Corey-Chaykovsky epoxidation
+  (sulfur-ylide addition to a ketone — a useful
+  pedagogical complement to Wittig + Sharpless AE),
+  Appel reaction (PPh₃ / CCl₄ alcohol → alkyl halide,
+  a workhorse functional-group interconversion),
+  Ramberg-Bäcklund (α-halosulfone → alkene, a stunning
+  one-pot pedagogical curiosity), Shapiro reaction
+  (tosylhydrazone → vinyl-Li → alkene), Oppenauer
+  oxidation (Al(OR)₃-catalysed alcohol → ketone, a
+  green-chemistry alternative to Cr-based oxidants),
+  Jones oxidation (the chromic-acid version that the
+  modern Dess-Martin / Swern / PCC entries displaced —
+  still teaching-relevant for over-oxidation context),
+  Julia / Peterson / Horner-Wadsworth-Emmons olefinations
+  (HWE is already seeded; Julia + Peterson would round
+  out the alkene-synthesis toolkit).
+- **Phase 38c** — equipment-palette + QGraphicsScene canvas
+  for the lab-setup simulator.  Multi-round; biggest open
+  scope.
+- **Phase 31k** — more SAR series (8/15; 7 to go).
+
+A safer next pick remains another 1-2 named reactions per
+round.  Stille coupling + Corey-Chaykovsky in one round
+would close the Pd-coupling family AND open the sulfur-
+ylide addition teaching surface.
+
+## 2026-04-25 — Round 154 (Phase 31b — Sharpless asymmetric dihydroxylation + Jacobsen-Katsuki epoxidation, catalogue 42/50 → 44/50)
+
+### Context
+Round 153 added Sharpless asymmetric epoxidation + CBS
+reduction (catalogue 40/50 → 42/50) and **opened the
+asymmetric-catalysis teaching surface**.  Round 154 rounds
+out the asymmetric-oxygen-installation toolkit: AD complements
+the AE entry by working on any alkene without an allylic-OH
+restriction, and Jacobsen complements both Sharpless entries
+by handling cis-disubstituted aryl alkenes that neither
+Sharpless reaction touches.  Together with CBS this brings
+the asymmetric-catalysis category to **4 textbook canon
+entries**.
+
+### What shipped
+**Two named reactions** added to
+`orgchem/db/seed_reactions.py`:
+
+1. **Sharpless asymmetric dihydroxylation
+   (trans-stilbene → (R,R)-1,2-diphenylethane-1,2-diol)** —
+   category *Asymmetric catalysis (oxidation)*.  K. B.
+   Sharpless 1988-1996 (the second half of the Nobel-2001
+   asymmetric-oxidation toolkit alongside the AE).
+   Description teaches: catalytic K₂OsO₄·2H₂O + bis-cinchona
+   PHAL chiral ligand pre-mixed as **AD-mix-α** (DHQ)₂PHAL or
+   **AD-mix-β** (DHQD)₂PHAL + K₃Fe(CN)₆ stoichiometric
+   terminal oxidant + K₂CO₃ + tBuOH/H₂O at 0 °C; the
+   mechanism cycle (OsO₄ + alkene → [3+2] osmate ester →
+   ferricyanide-driven hydrolysis liberates the syn-diol +
+   reduced Os(VI) → re-oxidation back to OsO₄); the Sharpless
+   face-selectivity mnemonic (alkene drawn left-to-right with
+   larger substituent at upper-left, AD-mix-β attacks from
+   below for (R,R), AD-mix-α from above for (S,S)).  **The
+   pedagogical contrast with Sharpless asymmetric epoxidation**
+   is called out explicitly in the description: AD works on
+   ANY alkene (no allylic-OH restriction), and delivers a
+   syn-diol rather than an epoxide.  Reaction SMILES
+   `c1ccc(/C=C/c2ccccc2)cc1.O=[Os](=O)(=O)=O.O >>
+   O[C@@H](c1ccccc1)[C@H](O)c1ccccc1.O=[Os]=O` — the (R,R)
+   product carries explicit tetrahedral chirality markers.
+
+2. **Jacobsen-Katsuki epoxidation
+   (cis-β-methylstyrene → (2R,3S)-2-methyl-3-phenyloxirane)**
+   — category *Asymmetric catalysis (oxidation)*.  Jacobsen
+   1990 + Katsuki 1990 independent reports.  Description
+   teaches: chiral Mn(III)(salen) complex catalyst —
+   canonical (R,R)-/(S,S)-N,N'-bis(3,5-di-tert-butyl-
+   salicylidene)-1,2-cyclohexanediamine-Mn(III)Cl 'Jacobsen
+   catalyst' — + NaOCl bleach (cheapest), PhIO, NMO, or
+   mCPBA terminal oxidant; mechanism (NaOCl oxidises Mn(III)
+   → Mn(V)=O oxo-intermediate, alkene approaches over the
+   chiral salen ligand from the less-hindered face, concerted
+   or radical oxygen transfer gives the epoxide and
+   regenerates Mn(III)).  **Critical pedagogical complement to
+   Sharpless asymmetric epoxidation**: Jacobsen does NOT
+   require an allylic OH because Mn coordinates the oxidant
+   not the substrate, making cis-disubstituted aryl alkenes
+   (cis-β-methylstyrene, cis-stilbene, indene,
+   dihydronaphthalene) the sweet-spot substrates that
+   Sharpless cannot touch.  Together with Sharpless
+   asymmetric epoxidation + Sharpless asymmetric
+   dihydroxylation, completes the asymmetric-oxygen-
+   installation toolkit.  Reaction SMILES `C/C=C\\c1ccccc1.
+   [Na+].[O-]Cl >> C[C@H]1O[C@@H]1c1ccccc1.[Na+].[Cl-]`.
+
+**Six intermediate fragments** added to
+`orgchem/db/seed_intermediates.py`: `Osmium tetroxide
+(OsO4) O=[Os](=O)(=O)=O` (reagent), `Osmium dioxide (OsO2)
+O=[Os]=O` (intermediate), `(1R,2R)-1,2-Diphenylethane-1,2-
+diol O[C@@H](c1ccccc1)[C@H](O)c1ccccc1` (intermediate),
+`cis-β-Methylstyrene (Z-1-phenyl-1-propene) C/C=C\\c1ccccc1`
+(intermediate), `Hypochlorite (OCl-) [O-]Cl` (reagent),
+`(2R,3S)-2-Methyl-3-phenyloxirane C[C@H]1O[C@@H]1c1ccccc1`
+(intermediate).  trans-Stilbene was already seeded under
+that name — see SMILES backfill below.
+
+**One-shot SMILES backfill** added to
+`seed_intermediates.py::seed_intermediates()`.  The pre-
+existing `trans-Stilbene` row stored cis-stilbene SMILES
+(`C(/c1ccccc1)=C/c1ccccc1`) under the trans name — a real
+historical bug.  Fragment-consistency audit caught it on
+first run because the round-154 Sharpless AD reaction needs
+the actual E-isomer.  Resolution: a new `_SMILES_FIXES`
+dict at module top + a follow-up pass in
+`seed_intermediates()` that walks every named row whose
+stored SMILES doesn't canonicalise to the source-of-truth
+SMILES, then updates the row with fresh
+`smiles + inchi + inchikey + formula + properties_json`.
+Idempotent (no-op when SMILES already matches), gentle
+(only touches names listed in `_SMILES_FIXES`), backward-
+compatible (silent when DB already correct).  This pattern
+will let future rounds fix more buggy historical rows
+without race conditions.
+
+### Tests
+Three new tests in `tests/test_reactions.py`:
+- `test_sharpless_asymmetric_dihydroxylation_seeded` —
+  verifies the entry exists, the description names AD-mix-α
+  / AD-mix-β + PHAL / cinchona-alkaloid ligand class + the
+  no-allylic-OH distinction from Sharpless asymmetric
+  epoxidation, and the product SMILES carries `@`-style
+  chirality markers.
+- `test_jacobsen_katsuki_epoxidation_seeded` — verifies
+  the entry exists, the description names the salen
+  catalyst class + NaOCl/bleach oxidant + Mn(III)/Mn(V)
+  oxo-intermediate + the no-allylic-OH distinction from
+  Sharpless, and chirality markers on the product.
+- `test_asymmetric_catalysis_count_at_least_four` —
+  catalogue-floor for the asymmetric-catalysis category
+  (4 entries: Sharpless AE + CBS + Sharpless AD +
+  Jacobsen).
+- `test_named_reaction_count_at_least_forty_four` —
+  catalogue-size floor bumped from 42 → 44 (renamed from
+  the round-153 _forty_two version).
+
+Discovered + fixed during the test run: fragment-consistency
+audit caught 7 missing fragments on first reaction-add.
+Resolved by seeding 6 new intermediate rows + one-shot
+SMILES backfill of the buggy trans-Stilbene row.  All 19
+reaction-tests pass + all 12 fragment-consistency tests
+pass.
+
+### Documentation updates
+- ROADMAP.md — Phase 31b entry updated from 42/50 →
+  44/50 with descriptions of both new asymmetric-catalysis
+  reactions + the six new intermediate fragments + the
+  trans-Stilbene SMILES backfill.
+- PROJECT_STATUS.md — round 154 summary prepended.
+- SESSION_LOG.md — this entry.
+
+(No INTERFACE.md changes needed — `db/seed_intermediates.py`
+gained a function but its top-level row description still
+covers the intent.)
+
+### Test suite status
+1 928 passing (up from 1 925 in round 153 — net +3 from
+this round's three new test functions).  Doc-coverage test
+green; full suite ~44 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 31b** — 6 more named reactions to reach the 50
+  target.  Priority list: Stille coupling (would close the
+  Pd-coupling family alongside Suzuki / Negishi / Heck /
+  Sonogashira), Mukaiyama aldol, Evans aldol (asymmetric
+  aldol — would extend the asymmetric-catalysis category to
+  enantioselective C-C bond formation, a substantive new
+  teaching surface), Corey-Chaykovsky epoxidation, Appel
+  reaction, Ramberg-Bäcklund, Shapiro, Oppenauer, Jones
+  oxidation, Julia / Peterson olefination.
+- **Phase 38c** — equipment-palette + QGraphicsScene canvas
+  for the lab-setup simulator.  Multi-round; biggest open
+  scope.
+- **Phase 31k** — more SAR series (8/15; 7 to go).
+
+A safer next pick remains another 1-2 named reactions per
+round.  Mukaiyama aldol + Evans aldol in one round would
+extend the asymmetric-catalysis category from 4 → 6 entries
+and open the C-C bond-formation teaching surface alongside
+the C-O / C=O entries shipped in rounds 153-154.
+
+## 2026-04-25 — Round 153 (Phase 31b — Sharpless asymmetric epoxidation + CBS reduction, catalogue 40/50 → 42/50)
+
+### Context
+Round 152 added Birch reduction + Dess-Martin oxidation
+(catalogue 38/50 → 40/50).  Round 153 continues Phase 31b
+with two more entries chosen to **open the asymmetric-
+catalysis teaching surface** — until this round, every
+seeded reaction in the catalogue ran on achiral or racemic
+substrates (or, for chiral enzyme-catalysed entries like
+Chymotrypsin, didn't depend on a small-molecule chiral
+catalyst).  Sharpless + CBS are the two textbook
+asymmetric-catalysis entry points and together cover both
+oxidation and reduction.
+
+### What shipped
+**Two named reactions** added to
+`orgchem/db/seed_reactions.py`:
+
+1. **Sharpless asymmetric epoxidation
+   (trans-crotyl alcohol → 2,3-epoxybutan-1-ol)** —
+   category *Asymmetric catalysis (oxidation)* (a NEW
+   category for the catalogue).  K. B. Sharpless 1980,
+   Nobel 2001 (shared with Knowles + Noyori).  The
+   description walks through the practical setup
+   (catalytic Ti(OiPr)₄ + chiral diethyl tartrate (DET)
+   ligand + tert-butyl hydroperoxide oxidant in CH₂Cl₂
+   with 4 Å molecular sieves at −20 °C); the
+   mechanism (two Ti(OiPr)₄ + two DET self-assemble into
+   a dimeric Ti₂(tartrate)₂ complex, allylic alcohol
+   coordinates one Ti through its OH, TBHP coordinates
+   the same Ti as a peroxide, intramolecular oxygen
+   transfer from η²-peroxide to the alkene face dictated
+   by the tartrate ligand); the **substrate restriction**
+   (the alcohol MUST be allylic — the OH is the anchor
+   that binds substrate to Ti); and the **face-selectivity
+   mnemonic** ((R,R)-(+)-DET delivers oxygen from below;
+   (S,S)-(−)-DET from above, with the allylic alcohol
+   drawn with OH at lower right).  Reaction SMILES
+   `C/C=C/CO.CC(C)(C)OO >> C[C@@H]1O[C@H]1CO.CC(C)(C)O`
+   — the (2R,3R) product carries explicit tetrahedral
+   chirality markers so the asymmetric-synthesis teaching
+   point survives any future copy-edits.
+
+2. **CBS reduction (acetophenone → (R)-1-phenylethanol)**
+   — category *Asymmetric catalysis (reduction)*.  Corey +
+   Bakshi + Shibata 1987.  Description walks through the
+   sub-stoichiometric chiral oxazaborolidine catalyst
+   (derived from (S)- or (R)-α,α-diphenylprolinol + a
+   borane) + the stoichiometric BH₃·THF / BH₃·SMe₂ /
+   catecholborane hydride source; the cis-fused
+   six-membered chair-like TS where catalyst nitrogen
+   Lewis-binds borane while catalyst boron Lewis-binds
+   the ketone oxygen, bringing hydride + carbonyl into a
+   geometry that delivers H from the face opposite the
+   *larger* ketone substituent (so (S)-CBS + ArC(=O)R
+   with Ar > R → (R)-alcohol).  Functional-group
+   tolerance is called out (esters / halides / alkenes
+   that NaBH₄ would touch are preserved).  Reaction
+   SMILES `CC(=O)c1ccccc1.B >> O[C@@H](C)c1ccccc1` (B is
+   the BH₃ hydride source).  **Pedagogical distinction
+   from the seeded NaBH₄ entry**: same overall
+   transformation (C=O → C-OH), but with a chiral
+   catalyst that controls absolute configuration — the
+   description names NaBH₄ explicitly so future
+   copy-edits can't strip the comparison.
+
+**Five intermediate fragments** added to
+`orgchem/db/seed_intermediates.py`: `trans-Crotyl alcohol
+(E-2-buten-1-ol) C/C=C/CO`, `tert-Butyl hydroperoxide (TBHP)
+CC(C)(C)OO`, `(2R,3R)-2,3-Epoxybutan-1-ol C[C@@H]1O[C@H]1CO`,
+`Borane (BH3) B`, `(R)-1-Phenylethanol C[C@H](O)c1ccccc1`.
+The Sharpless by-product `tert-Butanol CC(C)(C)O` was
+already seeded under that name, so no fragment work needed
+on the byproduct side.
+
+### Tests
+Three new tests in `tests/test_reactions.py` plus the
+`test_named_reaction_count_at_least_forty` from round 152
+renamed and bumped to `_forty_two`:
+- `test_sharpless_asymmetric_epoxidation_seeded` — verifies
+  the entry exists, the description names the Nobel year
+  + tartrate ligand + the allylic-OH substrate restriction,
+  and the product SMILES carries `@`-style tetrahedral
+  chirality markers.
+- `test_cbs_reduction_seeded` — verifies the entry exists,
+  the description names all three originators (Corey +
+  Bakshi + Shibata), the oxazaborolidine catalyst class +
+  BH₃ hydride source, the NaBH₄ comparison (which makes
+  the entry pedagogically distinct from the seeded
+  non-asymmetric ketone reduction), and chirality markers
+  on the product.
+- `test_asymmetric_catalysis_category_present` — confirms
+  at least one reaction row is now tagged with an
+  asymmetric-catalysis category, so the new teaching
+  surface stays open against future re-categorisation.
+- `test_named_reaction_count_at_least_forty_two` —
+  catalogue-size floor bumped from 40 → 42.
+
+Discovered + fixed during the test run: the
+fragment-consistency audit caught all 5 new fragments
+(`C/C=C/CO`, `CC(C)(C)OO`, `C[C@@H]1O[C@H]1CO`, `B`,
+`C[C@H](O)c1ccccc1`) on first run.  Resolved by adding
+the 5 intermediate rows above; audit now clean.  All 16
+reaction-tests pass + all 12 fragment-consistency tests
+pass.
+
+### Documentation updates
+- ROADMAP.md — Phase 31b entry updated from 40/50 →
+  42/50 with descriptions of both new asymmetric-catalysis
+  reactions + the five new intermediate fragments.
+- PROJECT_STATUS.md — round 153 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 925 passing (up from 1 922 in round 152 — net +3 from
+this round's three new test functions).  Doc-coverage test
+green; full suite ~44 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 31b** — 8 more named reactions to reach the 50
+  target.  Priority list: Stille coupling, Jones oxidation,
+  Sharpless dihydroxylation (the K-osmium variant — fits
+  cleanly with the Sharpless asymmetric epoxidation just
+  shipped), Mukaiyama aldol, Evans aldol, Jacobsen
+  epoxidation, Corey-Chaykovsky epoxidation, Appel reaction,
+  Ramberg-Bäcklund, Shapiro, Oppenauer.  Sharpless
+  dihydroxylation + Jacobsen would extend the asymmetric-
+  catalysis teaching surface; Stille would close the
+  Pd-coupling-family alongside Suzuki / Negishi / Heck /
+  Sonogashira.
+- **Phase 38c** — equipment-palette + QGraphicsScene canvas
+  for the lab-setup simulator.  Multi-round.  Highest-value
+  but biggest-scope remaining work.
+- **Phase 31k** — more SAR series (8/15; 7 to go).
+
+A safer next pick remains another 1-2 named reactions per
+round on the 31b list — same pattern.  Sharpless
+dihydroxylation + Jacobsen epoxidation in one round would
+push the asymmetric-catalysis category to 4/4 textbook
+canon entries.
+
+## 2026-04-25 — Round 152 (Phase 31b — Birch reduction + Dess-Martin oxidation, catalogue 38/50 → 40/50)
+
+### Context
+Round 151 closed Phase 43 (cell-component explorer) end-to-
+end, completing the user-flagged biology cluster (40/41/42/
+43/44/45/46 all shipped across rounds 144-151).  With all
+the multi-round catalogue features delivered, round 152 picks
+up Phase 31b — the long-running named-reaction expansion that
+had stalled at 38/50 since round 134 (CuAAC click).  This is
+a tightly-scoped piece of work that fits in a single round
+without scope creep into a new feature surface.
+
+### What shipped
+**Two named reactions** added to
+`orgchem/db/seed_reactions.py`:
+
+1. **Birch reduction (benzene → 1,4-cyclohexadiene)** —
+   category *Reduction (single-electron transfer)*.  Birch
+   1944 dissolving-metal reduction of an aromatic ring with
+   Na (or Li / K) in liquid ammonia at ~ −33 °C with EtOH /
+   t-BuOH as proton source.  This is the **first SET-mechanism
+   reduction in the entire catalogue** — every other seeded
+   reduction (NaBH₄, catalytic hydrogenation) goes through
+   concerted / two-electron polar bonds.  The description
+   walks through the 4-step ladder: (1) Na donates one
+   electron to benzene → radical anion; (2) EtOH protonates
+   at the highest-electron-density carbon → cyclohexadienyl
+   radical; (3) a second Na donates an electron → pentadienyl-
+   stabilised carbanion; (4) EtOH protonates at the central
+   carbon → **non-conjugated** 1,4-cyclohexadiene.  Critical
+   regioselectivity argument: 1,4 (not 1,3) because protonation
+   at the central carbon of the 5-atom pentadienyl anion
+   avoids the cross-conjugated diene that protonation at the
+   ends would give.  Substituent rule for total-synthesis
+   use: EDG (OMe, NR₂) → land on sp²-carbon (un-reduced ring
+   position); EWG (COOH, CO-R) → land on sp³.  Reaction
+   SMILES `c1ccccc1.[Na].[Na].CCO.CCO >> C1=CCC=CC1.[Na+]
+   .[Na+].[O-]CC.[O-]CC` (the canonical `C1=CCC=CC1` is RDKit's
+   1,4-cyclohexadiene canonical form).
+
+2. **Dess-Martin oxidation (1-octanol → octanal)** —
+   category *Oxidation*.  Dess + Martin 1983 — modern mild
+   hyper-valent-iodine(V) oxidation of a 1° alcohol to an
+   aldehyde (or 2° alcohol to a ketone) using Dess-Martin
+   periodinane (DMP, 1,1,1-tris(acetyloxy)-1,1-dihydro-
+   1,2-benziodoxol-3-(1H)-one).  Run in CH₂Cl₂ at room
+   temperature, complete in minutes, aqueous bicarbonate /
+   thiosulfate workup.  Mechanism described: alcohol-acetate
+   ligand exchange at the I(V) centre, intramolecular
+   β-acetate-assisted hydride / proton removal via cyclic
+   TS, I(V) → I(III) reduction with carbonyl + 2 AcOH +
+   IBX by-product.  Critical advantage over Swern: no
+   cryogenic temperature, no foul-smelling Me₂S by-product,
+   and the reagent is bench-stable as a white powder.
+   Critical advantage over Jones / KMnO₄: does NOT
+   over-oxidise to carboxylic acid (matches Swern + PCC).
+   The now-default 1°→aldehyde oxidation in modern total-
+   synthesis labs.  Reaction SMILES `CCCCCCCCO >> CCCCCCCC=O`
+   (same product as the existing Swern entry — the teaching
+   contrast lives in the descriptions, not the SMILES).
+
+**Three intermediate fragments** added to
+`orgchem/db/seed_intermediates.py` so the
+fragment-consistency audit stays clean: `Sodium metal [Na]`
+(reagent), `Sodium cation [Na+]` (intermediate),
+`1,4-Cyclohexadiene C1=CCC=CC1` (intermediate).  The
+existing `Ethoxide [O-]CC` entry already covered the
+EtO⁻ Birch by-product.
+
+### Tests
+Three new tests in `tests/test_reactions.py`:
+- `test_birch_reduction_seeded` — verifies the entry exists
+  by substring lookup, the canonical `C1=CCC=CC1` 1,4-
+  cyclohexadiene appears in the SMILES, the description
+  mentions SET / single-electron-transfer (so future
+  copy-edits can't strip the mechanistic-class teaching
+  point), and the description calls out 1,4-regioselectivity.
+- `test_dess_martin_oxidation_seeded` — verifies the entry
+  exists, the description mentions I(V) / hyper-valent
+  iodine (mechanism class), Swern / Jones (the comparison
+  that makes the entry pedagogically distinct from the
+  existing oxidations), and the no-over-oxidation argument.
+- `test_named_reaction_count_at_least_forty` — catalogue-
+  size floor at 40 entries so future regressions surface
+  immediately.
+
+Discovered + fixed during the test run: the
+fragment-consistency audit
+(`tests/test_fragment_consistency.py::
+test_every_reaction_fragment_is_in_db`) caught
+`[Na]`, `[Na+]`, `C1=CCC=CC1` as uncovered Birch fragments
+on first run.  Resolved by adding the three intermediate
+rows above; audit now clean.  All 13 reaction-tests pass +
+all 12 fragment-consistency tests pass.
+
+### Documentation updates
+- ROADMAP.md — Phase 31b entry updated from 38/50 → 40/50
+  with description of both new reactions and the three new
+  intermediate fragments.
+- PROJECT_STATUS.md — round 152 summary prepended.
+- SESSION_LOG.md — this entry.
+
+(No INTERFACE.md changes needed — the existing rows for
+`db/seed_reactions.py` + `db/seed_intermediates.py` cover
+the additive seeding pattern.)
+
+### Test suite status
+1 922 passing (up from 1 918 in round 151 — net +4: 3 new
+test cases + 1 from doc-coverage flipping back to green
+after rebuild).  Doc-coverage test green; full suite
+~44 s wall-clock.
+
+### What's open (next-round candidates)
+- **Phase 31b** — 8 more named reactions to reach the
+  50 target (Stille / Jones / Birch follow-ups / CBS /
+  Sharpless asymmetric epoxidation / Sharpless
+  dihydroxylation / Mukaiyama aldol / Evans aldol /
+  Jacobsen / Corey-Chaykovsky / Appel / Ramberg-Bäcklund
+  / Shapiro / Oppenauer).  Sharpless asymmetric epoxidation
+  would be the highest-value next pick because the catalogue
+  currently has zero asymmetric-catalysis entries.
+- **Phase 38c** — equipment-palette + QGraphicsScene canvas
+  for the lab-setup simulator.  Multi-round.  Highest-value
+  but biggest-scope remaining work.
+- **Phase 31k** — more SAR series (8/15; 7 to go).
+
+A safer next pick remains another 1-2 named reactions per
+round on the 31b list — same pattern, no scope explosion.
+Sharpless asymmetric epoxidation + CBS reduction would
+together open the asymmetric-catalysis teaching surface in
+the catalogue.
+
+## 2026-04-25 — Round 151 (Phase 43 end-to-end — cell-component explorer)
+
+### Context
+Round 150 closed Phase 44 (microscopy across resolution
+scales) end-to-end.  Round 151 ships Phase 43 (cell-component
+explorer for Eukarya / Bacteria / Archaea) — completing the
+user-flagged biology cluster (40 lab analysers + 41
+centrifugation + 42 metabolic pathways + 43 cell components +
+44 microscopy + 45 lab reagents + 46 pH explorer all shipping
+in succession).  This is also the last entry in the queued
+catalogue-style features; remaining roadmap work is Phase 38c
+(lab-setup canvas, biggest open work) and the Phase 31
+stretch buckets.
+
+### What shipped
+**Headless data core** — `orgchem/core/cell_components.py`
+(~870 lines).  `CellComponent` frozen dataclass: id / name /
+domain ∈ {eukarya, bacteria, archaea} / sub_domains tuple /
+category / location / function / constituents tuple of
+`MolecularConstituent` / notable_diseases / notes.  Nested
+`MolecularConstituent` frozen dataclass: name / role / notes /
+cross_reference_molecule_name (links a constituent back to a
+Phase-6 molecule-DB row when one is seeded).  Three canonical
+tuples: `DOMAINS` (3), `SUB_DOMAINS` (6 — animal / plant /
+fungus / protist / gram-positive / gram-negative), `CATEGORIES`
+(9 — membrane / organelle / nuclear / cytoskeleton / envelope
+/ appendage / extracellular / ribosome / genome).
+
+41 components total.  **24 eukaryotic** spanning every major
+sub-cellular system: eukaryotic plasma membrane (cholesterol
++ sphingomyelin + PE/PC/PS — fluid-mosaic teaching anchor);
+RER (BiP / calnexin / PDI); SER (CYP450 + HMG-CoA reductase
++ SERCA); Golgi (glycosyltransferases + M6P receptor + COPI/
+COPII); mitochondrion (cardiolipin + ETC complexes I-V + ATP
+synthase + mtDNA + 55S ribosomes — endosymbiotic origin
+explicit); chloroplast (chlorophyll a/b + PS-I/II + RuBisCO
++ carotenoids); lysosome (V-ATPase + ~50 acid hydrolases +
+LAMP-1/2 — Gaucher / Tay-Sachs / Pompe / Hurler all named);
+plant vacuole; peroxisome (catalase + acyl-CoA oxidase —
+Zellweger); 26S proteasome (20S core barrel + 19S regulatory
++ ubiquitin — bortezomib teaching hook); 80S cytoplasmic
+ribosome.  Nuclear: nuclear envelope (NPC + lamin A/B/C —
+Hutchinson-Gilford progeria); nucleolus (RNA Pol I + snoRNA +
+fibrillarin — phase-separated condensate teaching example);
+chromatin (histone octamer + H1 linker + HATs/HDACs/KMTs/KDMs
+— vorinostat teaching hook); telomere (shelterin + telomerase
++ 2009 Nobel context); centromere/kinetochore (CENP-A
+nucleosome + Ndc80 / MIS12 / KNL1).  Cytoskeleton: G/F-actin
+(myosin II + Arp2/3 + cofilin — phalloidin death-cap-toxin
+fluorescent stain); microtubule (α/β-tubulin + γ-TuRC +
+kinesin/dynein motors — taxol vs vincristine
+opposite-mechanism mitotic-arrest teaching hook);
+intermediate filament (keratin / vimentin / neurofilament /
+lamin); centrosome / MTOC; eukaryotic cilium/flagellum (9+2
+axoneme + dynein arms — primary ciliary dyskinesia /
+Kartagener).  Extracellular: animal ECM (collagen + fibronectin
++ laminin + elastin + GAGs + proteoglycans — Ehlers-Danlos);
+plant cell wall (cellulose + hemicellulose + pectin +
+lignin); fungal cell wall (chitin + β-1,3/β-1,6-glucan +
+mannoproteins — echinocandin selective antifungal target).
+
+**11 bacterial**: bacterial plasma membrane (no cholesterol;
+hopanoid sterol-analogues); gram+ peptidoglycan (NAG/NAM +
+pentaglycine cross-bridge + teichoic acid — β-lactam +
+vancomycin teaching hooks); gram- peptidoglycan (thin
+single-layer in periplasm + direct meso-DAP cross-link); gram-
+outer membrane (LPS endotoxin + porins + Braun's lipoprotein —
+septic-shock TLR4 teaching hook); bacterial nucleoid (single
+circular chromosome + DNA gyrase fluoroquinolone target +
+NAPs); plasmid (β-lactamase as the prototype antibiotic-
+resistance cassette); bacterial flagellum (FliC + FlgE +
+MotA/B + FliG/M/N — Behe's irreducible-complexity rebuttal);
+pilus/fimbria (FimH UPEC adhesin); capsule (pneumococcal
+polysaccharide as PCV13/PCV20 vaccine target); biofilm EPS
+(exopolysaccharides + eDNA + amyloid-like fimbriae); 70S
+ribosome (50S+30S subunits + 23S/5S/16S rRNAs — selectively
+targeted by macrolides, tetracyclines, aminoglycosides,
+oxazolidinones, chloramphenicol).
+
+**6 archaeal** capturing the lipid divide + the
+eukaryote-like translation machinery: archaeal plasma membrane
+(ether-linked isoprenoid lipids + glycerol-1-phosphate
+backbone + tetraether monolayer in hyperthermophiles — the
+strongest single-marker argument for the three-domain
+phylogeny); pseudopeptidoglycan (NAT instead of NAM, β-1,3 in
+place of β-1,4, L-amino acids — explains lysozyme + β-lactam
+resistance); S-layer (self-assembling p1/p2/p3/p4/p6 lattice);
+archaeal 70S ribosome (sensitive to anisomycin + diphtheria
+toxin like eukaryotes; resistant to bacterial-targeting
+antibiotics); archaeal nucleoid (with HMfA/B archaeal histones
+forming tetrameric mini-nucleosomes — evolutionary precursor
+to (H3-H4)₂); archaellum (ATP-driven, evolutionarily distinct
+from bacterial flagellum — homologous to Type-IV pili).
+
+Lookup helpers `list_components(domain, sub_domain)` (sub-
+domain query: components with empty `sub_domains` tuple match
+ANY sub-domain query within their domain — so mitochondrion
+appears under sub_domain="animal" without being animal-
+specific), `get_component(id)`, `find_components(needle)`
+(case-insensitive substring across id + name + function +
+location + notes + notable_diseases + every constituent name +
+every constituent role), `components_for_category(category)`,
+`domains()`, `sub_domains()`, `categories()`,
+`component_to_dict(c)`.
+
+**Dialog** — `orgchem/gui/dialogs/cell_components.py` (~245
+lines).  Singleton modeless `QDialog` with a **triple-combo +
+free-text filter + list + HTML detail card** layout — domain
+combo + sub-domain combo + category combo give the student
+fine-grained drill-down (e.g. *all cytoskeleton components in
+eukarya / animal*).  Detail card sections: **Location** /
+**Function** / **Molecular constituents** (rendered as a
+2-column table — name + role; constituent name italicised +
+tagged "→ Molecule DB: <name>" when a cross-reference is set)
+/ **Notable diseases** (only when set) / **Notes** (only when
+set).  `select_component(id)` programmatic API.
+
+**Agent actions** — `orgchem/agent/actions_cell_components.py`
+(~120 lines).  5 actions in a new `cell` category:
+- `list_cell_components(domain="", sub_domain="")`
+- `get_cell_component(component_id)`
+- `find_cell_components(needle)`
+- `cell_components_for_category(category)`
+- `open_cell_components(component_id="")`
+
+Lookup actions are pure-headless; the dialog opener marshals
+onto the Qt main thread.  Validation: unknown domain /
+sub-domain / category return clean `{"error": str}` dicts;
+empty category → `[]` (parity with the catalogue helper).
+
+**Wiring**:
+- `orgchem/agent/__init__.py` — added `from orgchem.agent
+  import actions_cell_components`.
+- `orgchem/gui/main_window.py` — added Tools menu entry
+  *Cell components…* with **Ctrl+Shift+J** shortcut + slot.
+- `orgchem/gui/audit.py` — registered all 5 actions.
+
+### Tests
+68 new tests in `tests/test_cell_components.py` covering:
+- catalogue size ≥ 35 (actual 41) + every domain populated
+  + Eukarya ≥ 20 entries + bacteria + archaea must-have
+  ID lists + 27 user-requested needles (plasma membrane,
+  nuclear envelope, ER, Golgi, mitochondrion, chloroplast,
+  lysosome, peroxisome, ribosome, nucleolus, chromatin,
+  telomere, centrosome, actin, microtubule, IF, cilium, ECM,
+  plant cell wall, fungal cell wall, peptidoglycan, outer
+  membrane, bacterial flagellum, pilus, capsule, biofilm,
+  ether-linked);
+- every entry has all required fields + non-empty
+  constituents + every id unique + every id matches
+  `^[a-z0-9][a-z0-9-]*$` + every domain / sub-domain /
+  category in the canonical set + every constituent has a
+  non-empty role;
+- per-row teaching invariants for the lipid divide
+  (cholesterol on eukaryotic-PM, hopanoid on bacterial-PM,
+  ether-linked isoprenoid on archaeal-PM); ATP synthase +
+  mtDNA on mitochondrion; chloroplast plant-only; chromatin
+  histone octamer; telomerase on telomere; lysosome animal-
+  only; cellulose on plant-cell-wall; chitin on fungal-
+  cell-wall; pentaglycine bridge on gram+ peptidoglycan; LPS
+  on gram- outer membrane; L-amino acids / β-lactam
+  resistance on pseudopeptidoglycan; archaellum ATP-driven;
+  ribosomes present for all 3 domains;
+- **cross-references to the molecule database resolve** —
+  every constituent that carries a `cross_reference_molecule_name`
+  must point to a real seeded molecule row.  Caught my first
+  draft using POPC / POPE / Sphingomyelin / 2'-Deoxyadenosine /
+  Cellulose β-1,4 fragment — none of which are seeded as
+  Molecule rows (they're separate Lipid / Carbohydrate /
+  Nucleic-acid catalogues).  Resolution: kept only the
+  Cholesterol cross-reference (verified resolves), removed
+  the others; xref test now permanent rot-detector;
+- filter / lookup edge cases: sub-domain query includes pan-
+  domain components (mitochondrion under sub_domain="animal");
+  unknown domain / sub-domain → empty; case-insensitive
+  search; constituent-name search (cellulose finds
+  plant-cell-wall);
+- `component_to_dict` serialises nested constituents as a
+  list-of-dicts with all 4 MolecularConstituent fields;
+- 11 agent-action tests across all 5 entry points + the
+  unknown-domain / unknown-sub-domain / unknown-category /
+  empty-category error paths;
+- 13 dialog tests covering construction (41 rows) /
+  singleton / domain-combo filter / sub-domain-combo with
+  pan-domain inclusion (chloroplast + plant-cell-wall under
+  plant; lysosome excluded under plant) / category-combo /
+  text-filter / no-match state / select_component /
+  unknown-id select / default-row detail-card sections /
+  constituents-table-shown for mitochondrion / agent open
+  paths (no-id + with-id + with-unknown-id).
+
+### Documentation updates
+- INTERFACE.md — added rows for `core/cell_components.py`,
+  `agent/actions_cell_components.py`,
+  `gui/dialogs/cell_components.py`.
+- ROADMAP.md — Phase 43 marked SHIPPED with delivery
+  manifest at the top of the section; original scope kept
+  for reference.
+- PROJECT_STATUS.md — round 151 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 918 passing (up from 1 850 in round 150 — net +68 from
+this round's `test_cell_components.py`); doc-coverage test
+green; full suite ~44 s wall-clock.
+
+### What's open (next-round candidates)
+**The user-flagged biology cluster is now fully shipped:**
+40 lab analysers (round 146) + 41 centrifugation (round 144)
++ 42 metabolic pathways (round 147) + 43 cell components
+(this round) + 44 microscopy (round 150) + 45 lab reagents
+(round 149) + 46 pH explorer (round 148) — all delivered
+end-to-end across rounds 144-151.
+
+The remaining roadmap items are:
+- **Phase 38c** — equipment-palette + QGraphicsScene canvas
+  for the lab-setup simulator.  Biggest open work; multi-
+  round; likely 3-5 rounds.
+- **Phase 31b** — more named reactions (38/50; 12 to go).
+- **Phase 31k** — more SAR series (8/15; 7 to go).
+
+Phase 38c (lab-setup canvas) is the highest-value remaining
+work but it's a multi-round build that needs careful scope.
+A safer next pick is one of the Phase 31 stretch buckets
+(31b is closer to the 50 target and adds named-reaction +
+mechanism content the tutor panel can immediately use).
+
+## 2026-04-25 — Round 150 (Phase 44 end-to-end — microscopy across resolution scales)
+
+### Context
+Round 149 closed Phase 45 (lab reagents reference) end-to-end.
+Round 150 ships Phase 44 (microscopy across resolution scales)
+— same catalogue + dialog pattern but with a teaching-anchored
+twist: the entries are organised by **resolution scale + sample
+type**, so a user can jump straight from *"I have live cells, I
+want sub-cellular detail"* to the right shortlist
+(STORM / PALM / STED / SIM / Airyscan / TIRF live-cell-compatible
+subset).  Cross-references from this catalogue to Phase-40a
+`lab_analysers.py` close the loop between the resolution-anchored
+teaching view and the manufacturer-anchored instrument view of
+the same hardware (Zeiss LSM 980 / Lattice Lightsheet / Krios /
+Bruker Biotyper).
+
+### What shipped
+**Headless data core** — `orgchem/core/microscopy.py` (~620
+lines).  `MicroscopyMethod` frozen dataclass: id / name /
+abbreviation / resolution_scale / sample_types tuple /
+typical_resolution / light_source / contrast_mechanism /
+typical_uses / strengths / limitations /
+representative_instruments / cross_reference_lab_analyser_ids /
+notes.  Two canonical tuples: `RESOLUTION_SCALES` (6 scales,
+coarsest first) + `SAMPLE_TYPES` (8 sample types).
+
+30 entries across all 6 resolution scales:
+- **whole-organism** (4): stereo dissecting microscope,
+  intra-vital microscopy, OCT, small-animal MRI.
+- **tissue** (5): brightfield histology (H&E + IHC + special
+  stains), multiplex IHC (CODEX / Vectra Polaris), light-sheet
+  fluorescence, MALDI-MSI, polarised-light microscopy.
+- **cellular** (6): phase contrast, DIC Nomarski, widefield
+  epifluorescence, laser-scanning confocal, spinning-disk
+  confocal, two-photon multi-photon.
+- **sub-cellular** (6): SIM, STORM/dSTORM, PALM, STED,
+  Airyscan, TIRF.
+- **single-molecule** (5): smFRET, cryo-EM, cryo-ET, AFM, STM.
+- **clinical-histology** (4): clinical light microscope (the
+  pathology workhorse), frozen-section cryostat, clinical IHC,
+  digital-pathology slide scanner (WSI).
+
+Each entry is a long-form reference card capturing the
+technique's resolution + light source + contrast mechanism + the
+strengths-vs-limitations trade-off.  Cross-references to
+Phase-40a `lab_analysers.py` for instruments that appear both
+as an *instrument* and a *resolution-anchored teaching view*:
+- `confocal` → `zeiss_lsm_980`
+- `airyscan` → `zeiss_lsm_980`
+- `light-sheet` → `zeiss_lattice_lightsheet`
+- `cryo-em` → `thermo_krios_g4`
+- `cryo-et` → `thermo_krios_g4`
+- `maldi-imaging` → `bruker_biotyper`
+
+Lookup helpers `list_methods(resolution_scale)`,
+`get_method(id)`, `find_methods(needle)` (case-insensitive
+substring across id + name + abbreviation + typical_uses +
+representative_instruments), `methods_for_sample_type(sample)`
+(returns the methods listing the given sample type as
+typical), `resolution_scales()`, `sample_types()`,
+`method_to_dict(m)`.  No Qt imports; fully headless-testable.
+
+**Dialog** — `orgchem/gui/dialogs/microscopy.py` (~230 lines).
+Singleton modeless `QDialog` with the **resolution-scale combo
++ sample-type combo + free-text filter + list + HTML detail
+card** layout — same shape as the Phase-37/40/45 catalogue
+dialogs but with TWO filter combos, so the user can ask
+*"super-resolution methods for fixed cells"* and get exactly
+the right shortlist.  Detail card sections: Typical resolution
+/ Light source / Contrast mechanism / Sample types / Typical
+uses / Strengths / Limitations / Representative instruments /
+Cross-reference (Phase 40a Lab analysers) — last section
+shown only when the method has cross-references.
+`select_method(id)` programmatic API.
+
+**Agent actions** — `orgchem/agent/actions_microscopy.py`
+(~115 lines).  5 actions in a new `microscopy` category:
+- `list_microscopy_methods(resolution_scale="")`
+- `get_microscopy_method(method_id)`
+- `find_microscopy_methods(needle)`
+- `microscopy_methods_for_sample(sample_type)`
+- `open_microscopy(method_id="")`
+
+Lookup actions are pure-headless; the dialog opener marshals
+onto the Qt main thread via `_gui_dispatch.run_on_main_thread_sync`.
+Validation: unknown resolution-scales / sample-types return
+clean `{"error": str}` dicts rather than raising; empty
+sample-type returns `[]` (parity with the catalogue helper).
+
+**Wiring**:
+- `orgchem/agent/__init__.py` — added `from orgchem.agent
+  import actions_microscopy`.
+- `orgchem/gui/main_window.py` — added Tools menu entry
+  *Microscopy techniques…* with **Ctrl+Alt+M** shortcut + slot.
+- `orgchem/gui/audit.py` — registered all 5 actions.
+
+### Tests
+52 new tests in `tests/test_microscopy.py` covering:
+- catalogue size ≥ 25 (actual 30) + every resolution scale
+  populated + every sample type used by at least one method
+  + every entry has all required fields + every id unique +
+  every id matches `^[a-z0-9][a-z0-9-]*$`;
+- presence of every must-have user-requested method (19
+  needles: stereo, intravital, OCT, histology, light-sheet,
+  confocal, two-photon, SIM, STORM, PALM, STED, TIRF,
+  smFRET, cryo-EM, AFM, STM, frozen, IHC, digital-pathology);
+- per-row teaching invariants (confocal pinhole / sectioning;
+  STORM nm-scale resolution; cryo-EM near-atomic resolution;
+  AFM force spectroscopy; STM individual-atom imaging;
+  frozen-section intra-op rapid-diagnosis; two-photon deep
+  penetration; OCT clinical / ophthalmology mention);
+- clinical-histology workflow includes the 4 routine items
+  (LM + FS + IHC + WSI);
+- sub-cellular includes all 6 super-resolution + TIRF;
+- single-molecule includes smFRET + cryo-EM + cryo-ET + AFM
+  + STM;
+- **Phase-40a cross-references all resolve to real
+  lab_analyser ids** — this caught 3 real id mismatches in
+  my first draft (`zeiss_lattice_lightsheet_7` →
+  `zeiss_lattice_lightsheet`, `zeiss_lsm980` → `zeiss_lsm_980`,
+  `bruker_maldi_biotyper` → `bruker_biotyper`); now
+  permanently guarded against rot;
+- list / get / find / methods_for_sample_type edge cases
+  (unknown scale → empty; unknown id → None;
+  case-insensitive search; empty needle → empty;
+  unknown sample-type → empty);
+- canonical ordering: scales tuple starts with
+  `whole-organism` and ends with `clinical-histology`;
+- `method_to_dict` exposes all 14 fields incl. tuple
+  fields;
+- 9 agent-action tests across all 5 entry points + the
+  unknown-scale / unknown-sample / empty-sample error paths;
+- 11 dialog tests covering construction (30 rows) /
+  singleton / scale-combo filter / sample-combo filter /
+  text-filter / no-match state / select_method /
+  unknown-id select / default-row detail-card sections /
+  cross-reference-section-shown for cryo-EM / agent open
+  paths (no-id + with-id + with-unknown-id).
+
+### Documentation updates
+- INTERFACE.md — added rows for `core/microscopy.py`,
+  `agent/actions_microscopy.py`, `gui/dialogs/microscopy.py`.
+- ROADMAP.md — Phase 44 marked SHIPPED with delivery
+  manifest at the top of the section; original scope kept
+  for reference.
+- PROJECT_STATUS.md — round 150 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 850 passing (up from 1 798 in round 149 — net +52 from
+this round's `test_microscopy.py`); doc-coverage test
+green; full suite ~45 s wall-clock.
+
+### What's open (next-round candidates)
+Two user-flagged phases remain unfinished:
+- **Phase 43** — cell-component explorer (Eukarya / Bacteria
+  / Archaea).  Visually striking; bigger scope than the
+  catalogue rounds — likely 2 rounds.
+- **Phase 38c** — equipment-palette + QGraphicsScene canvas
+  for the lab-setup simulator.  Biggest open work in the
+  whole roadmap.
+
+The two stretch buckets remain:
+- **Phase 31b** — more named reactions (38/50).
+- **Phase 31k** — more SAR series (8/15).
+
+Phase 43 (cell-component explorer) is the natural next pick
+because it completes the user-flagged biology cluster
+(40 lab analysers + 41 centrifugation + 42 metabolic
+pathways + 43 cell components + 44 microscopy + 45 lab
+reagents + 46 pH explorer all ship in succession).  Phase
+38c is technically the highest-value but it's a multi-round
+build that needs careful scope.
+
+## 2026-04-25 — Round 149 (Phase 45 end-to-end — lab-reagents reference catalogue)
+
+### Context
+Round 148 closed Phase 46 (pH + buffer explorer) end-to-end.
+Round 149 ships Phase 45 (lab reagents reference) — the
+natural neighbour: same catalogue + dialog pattern, and the
+new `reagent` category cross-references the buffer designer
+in the just-shipped pH explorer (Tris / HEPES / MOPS / MES /
+BIS-TRIS now have full bench cards under *Tools → Lab
+reagents…*).
+
+### What shipped
+**Headless data core** — `orgchem/core/lab_reagents.py` (~1 250
+lines).  `LabReagent` frozen dataclass (id / name / category /
+typical_concentration / storage / hazards / preparation_notes
+/ cas_number / typical_usage / notes).  75 entries across 10
+categories:
+
+- **buffer** (11): Tris-HCl, HEPES, MOPS, MES, PBS, TBS,
+  citrate, carbonate, glycine-HCl, McIlvaine, BIS-TRIS.
+- **acid-base** (7): HCl 1 M / 6 N, conc. H₂SO₄, conc. HNO₃,
+  glacial AcOH, NaOH, KOH, conc. NH₄OH.
+- **detergent** (6): SDS, Triton X-100, Tween 20,
+  NP-40 / Igepal CA-630, CHAPS, n-octyl-glucoside.
+- **reducing-agent** (4): DTT, β-mercaptoethanol, TCEP, GSH.
+- **salt** (8): NaCl, KCl, MgCl₂, CaCl₂, MgSO₄, ammonium
+  sulfate, EDTA, EGTA.
+- **protein-prep** (3): BSA, protease-inhibitor cocktail,
+  phosphatase-inhibitor cocktail.
+- **stain** (7): Coomassie R-250, Coomassie G-250 (Bradford
+  reagent), ethidium bromide, SYBR Safe, AgNO₃, methylene
+  blue, crystal violet.
+- **solvent** (10): DMSO, DMF, ethanol abs., methanol,
+  acetone, chloroform, hexane, THF, DCM, acetonitrile.
+- **cell-culture** (9): DMEM, RPMI-1640, MEM, Ham's F-12,
+  Opti-MEM, FBS, trypsin-EDTA, Pen-Strep, L-glutamine.
+- **molecular-biology** (10): dNTPs, agarose, Taq + Phusion
+  polymerases, EcoRI + BamHI restriction enzymes, T4 DNA
+  ligase, RNase A, RNase-free DNase I, proteinase K.
+
+Every entry is a long-form bench card with the practical
+handling tips that bite junior lab members:
+- Tris pH-drifts ~0.03/°C — always pH at the use temperature.
+- HEPES generates H₂O₂ under intense light + Fe²⁺ — store
+  solutions away from light.
+- SDS precipitates < 15 °C — rewarm before pipetting; weigh
+  powder in a fume hood (respiratory sensitiser).
+- DMSO freezes at 18.5 °C; carries chemicals across skin —
+  change gloves frequently.
+- Vanadate must be activated (boil + adjust pH 10 → cool) for
+  max phosphatase-inhibition potency.
+- EtBr is a mutagen / suspected carcinogen — use SYBR Safe
+  for cloning workflows.
+- TCEP is the modern DTT replacement: odourless, stable,
+  MS-friendly, maleimide-compatible.
+- Phusion has ~50× lower error rate than Taq; blunt-end
+  product for cloning vs Taq's A-overhang for TA.
+- McIlvaine buffer spans pH 2.2–8.0 — wide-range enzyme
+  kinetics in one buffer.
+
+Each entry carries a CAS number so the lookup
+`find_reagents("67-68-5")` lands on DMSO directly (not just
+on name-matches).
+
+Lookup helpers `list_reagents(category)`, `get_reagent(id)`,
+`find_reagents(needle)` (case-insensitive substring across
+id + name + category + typical_usage + cas_number),
+`categories()`, `reagent_to_dict(r)`.  No Qt imports;
+fully headless-testable.
+
+**Dialog** — `orgchem/gui/dialogs/lab_reagents.py` (~210
+lines).  Singleton modeless `QDialog` with the same shape as
+the Phase-40a *Lab analysers* dialog: category combo + free-
+text filter on the left, list of `name — category` rows,
+HTML detail card on the right with sections **Typical
+concentration** / **Storage** / **Hazards** / **Preparation
+notes** / **Typical usage** / **Notes**.  CAS shown in the
+sub-title meta line for quick reference.  `select_reagent(id)`
+programmatic API for the agent open path.
+
+**Agent actions** — `orgchem/agent/actions_lab_reagents.py`
+(~85 lines).  4 actions in a new `reagent` category:
+- `list_lab_reagents(category="")`
+- `get_lab_reagent(reagent_id)`
+- `find_lab_reagents(needle)`
+- `open_lab_reagents(reagent_id="")`
+
+Lookup actions are pure-headless; the dialog opener marshals
+onto the Qt main thread via `_gui_dispatch.run_on_main_thread_sync`.
+
+**Wiring**:
+- `orgchem/agent/__init__.py` — added `from orgchem.agent
+  import actions_lab_reagents`.
+- `orgchem/gui/main_window.py` — added Tools menu entry
+  *Lab reagents…* with **Ctrl+Shift+R** shortcut + slot.
+- `orgchem/gui/audit.py` — registered all 4 actions in
+  `GUI_ENTRY_POINTS`.
+
+### Tests
+45 new tests in `tests/test_lab_reagents.py` covering:
+- catalogue size ≥ 50 (actual 75) + every category populated
+  + every entry has all required fields + every id unique +
+  every id matches `^[a-z0-9][a-z0-9-]*$`;
+- canonical CAS values for Tris (77-86-1) + DMSO (67-68-5);
+- presence of every must-have user-requested reagent (24
+  needles: tris, hepes, mops, mes, pbs, tbs, sds, triton,
+  tween, dtt, tcep, edta, bsa, coomassie, ethidium, dmso,
+  dmf, dmem, rpmi, trypsin, agarose, taq, ecori, rnase);
+- per-row teaching invariants (TCEP odourless / stable /
+  MS-friendly mention; DMSO freezing-point warning at 18 °C;
+  EtBr mutagen warning; Phusion high-fidelity / blunt-end
+  mention; Taq no-proofreading / TA cloning mention; DMEM
+  mentions FBS + Pen-Strep supplementation; SDS anionic /
+  denaturing; Triton non-ionic; HEPES pKa mention);
+- buffer category includes all 7 Good's buffers used in
+  Phase-46 pH explorer (Tris / HEPES / MOPS / MES / PBS /
+  TBS / BIS-TRIS);
+- solvent category covers the 6 most-common (DMSO, ethanol,
+  methanol, acetone, chloroform, acetonitrile);
+- list / get / find edge cases (unknown category → empty;
+  unknown id → None; case-insensitive search; empty needle
+  → empty; CAS-number search direct hit);
+- `reagent_to_dict` exposes all 10 fields;
+- 6 agent-action tests across all 4 entry points (with the
+  unknown-category error path);
+- 11 dialog tests covering construction (75 rows) /
+  singleton / category-combo filter / text-filter / no-match
+  state / select_reagent / unknown-id select / default-row
+  detail-card sections / CAS-in-meta-line / agent open path
+  with id / agent open path with unknown id.
+
+One small alignment during the test run:
+- `list_reagents(category="not-a-real-category")` initially
+  raised `ValueError`; switched to "return empty" to match
+  the sibling Phase-40a `list_analysers` API and let the
+  agent action own the user-facing error path.
+
+### Documentation updates
+- INTERFACE.md — added rows for `core/lab_reagents.py`,
+  `agent/actions_lab_reagents.py`, `gui/dialogs/lab_reagents.py`.
+- ROADMAP.md — Phase 45 marked SHIPPED with delivery
+  manifest at the top of the section; original scope kept
+  for reference.
+- PROJECT_STATUS.md — round 149 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 798 passing (up from 1 753 in round 148 — net +45 from
+this round's `test_lab_reagents.py`); doc-coverage test
+green; full suite ~43 s wall-clock.
+
+### What's open (next-round candidates)
+Three user-flagged phases remain unfinished:
+- **Phase 43** — cell-component explorer (Eukarya / Bacteria
+  / Archaea).  Visually striking; bigger scope than 45.
+- **Phase 44** — microscopy across resolution scales.  Same
+  catalogue + dialog pattern as 40a / 45.
+- **Phase 38c** — equipment-palette + QGraphicsScene canvas
+  for the lab-setup simulator.  Biggest open work.
+
+The two stretch buckets (31b more named reactions, 31k more
+SAR series) remain easy wins.  Phase 44 (microscopy) is a
+natural pick to follow 45 because it shares the catalogue +
+dialog pattern, and the resolution-scale framing
+(super-resolution → cryo-EM → AFM → STM) makes a tidy
+combo + filter tab.
+
+## 2026-04-25 — Round 148 (Phase 46 end-to-end — pH + buffer explorer)
+
+### Context
+Round 147 closed Phase 42a (metabolic-pathways explorer)
+end-to-end + added Phases 45 (lab reagents) and 46 (pH +
+buffer explorer) to the roadmap.  Round 148 ships Phase 46
+end-to-end — the freshest user-flagged content and a natural
+fit for a single round because the underlying solvers are
+tight (Henderson-Hasselbalch + buffer capacity + titration
+curve) and the pKa catalogue size (~46 acids) maps cleanly
+onto a 7-category combo.
+
+### What shipped
+**Headless data core** — `orgchem/core/ph_explorer.py` (~700
+lines):
+- `AcidEntry` frozen dataclass (id / name / formula /
+  category / pka_values tuple / notes).
+- `ReferenceCard` frozen dataclass (id / title / body
+  markdown).
+- 46-acid pKa catalogue across 7 categories:
+  - **mineral** (8): HCl, H₂SO₄, H₃PO₄, HNO₃, HF, H₂CO₃,
+    H₂S, HClO₄.
+  - **carboxylic** (11): formic, acetic, propionic, lactic,
+    citric (3 pKa), oxalic, malonic, malic, tartaric (all
+    di-protic), benzoic, ascorbic.
+  - **amine** (6): NH₄⁺, MeNH₃⁺, Me₂NH₂⁺, Me₃NH⁺,
+    pyridinium, imidazolium.
+  - **amino-acid** (9): gly, ala, asp, glu, his, lys, arg,
+    cys, tyr — α-COOH + α-NH₃⁺ + sidechain pKas.
+  - **phenol** (3): phenol, p-nitrophenol, picric acid.
+  - **biological-buffer** (7): Tris 8.10, HEPES 7.55, MES
+    6.10, MOPS 7.20, BIS-TRIS 6.50, PIPES 6.76, CHES 9.30 —
+    a Good's-buffer + zwitterion picker.
+  - **other** (2): HCN, H₂O₂.
+- 6 reference cards: ph_definition, strong_weak,
+  henderson_hasselbalch, buffer_capacity, polyprotic,
+  biological_buffers.
+- 3 solvers:
+  - `design_buffer(target_pH, pKa, total_concentration_M,
+    volume_L=1.0)` — Henderson-Hasselbalch ratio + [HA] /
+    [A⁻] split + moles + ΔpH-vs-pKa capacity verdict
+    (warning if |ΔpH| > 1).
+  - `buffer_capacity(total_concentration_M, pH, pKa)` →
+    β = 2.303 · C · α · (1 − α) + α + fraction-of-max.
+  - `titration_curve(weak_acid_pKa, acid_initial_M,
+    volume_acid_mL, base_concentration_M, n_points=50)` →
+    full (vol_mL, pH) curve with charge-balance solve +
+    equivalence-point extraction.
+- Lookup helpers: `list_acids(category)`, `get_acid(id)`,
+  `find_acids(needle)`, `categories()`, `acid_to_dict(a)`.
+- Sanity-tested in Python: phosphate buffer at pH 7.4 / pKa
+  7.20 → 38.7 / 61.3 mM split; β maxes at 0.0576 M/pH for
+  0.1 M total at pH=pKa; 25 mL of 0.1 M NaOH titrates 25 mL
+  of 0.1 M acetic acid to pH 8.72.
+
+**Dialog** — `orgchem/gui/dialogs/ph_explorer.py` (~370
+lines).  Singleton modeless 4-tab `QDialog`:
+- **Reference** — 6 teaching cards rendered as HTML.
+- **Buffer designer** — pKa-acid combo auto-fills the pKa
+  spinbox; target pH / total concentration / volume
+  spinboxes drive `design_buffer`; result pane shows ratio +
+  [HA] / [A⁻] split + moles + colour-coded capacity verdict
+  (red `Capacity warning:` when ΔpH > 1, green `OK:`
+  otherwise).
+- **Titration curve** — weak-acid pKa + initial M + volume
+  mL + base M spinboxes drive `titration_curve`; result
+  pane renders the (vol_mL, pH) points as an HTML table
+  with the equivalence-point row highlighted.
+- **pKa lookup** — category combo + free-text filter +
+  `QTableWidget` of name / formula / category / pKa values.
+- `select_tab(label)` + `tab_labels()` programmatic API
+  for the agent open path.
+
+**Agent actions** — `orgchem/agent/actions_ph_explorer.py`
+(~140 lines).  7 actions in a new `ph` category:
+- `list_pka_acids(category="")`
+- `get_pka_acid(acid_id)`
+- `find_pka_acids(needle)`
+- `design_buffer(target_pH, pKa, total_concentration_M,
+  volume_L=1.0)`
+- `buffer_capacity(total_concentration_M, pH, pKa)`
+- `simulate_titration(weak_acid_pKa, acid_initial_M,
+  volume_acid_mL, base_concentration_M, n_points=50)`
+- `open_ph_explorer(tab="")`
+
+Each solver-wrapping action converts `ValueError` → `{"error":
+str}`; the dialog opener marshals onto the Qt main thread via
+`_gui_dispatch.run_on_main_thread_sync`.
+
+**Wiring**:
+- `orgchem/agent/__init__.py` — added `from orgchem.agent
+  import actions_ph_explorer`.
+- `orgchem/gui/main_window.py` — added Tools menu entry
+  *pH explorer…* with **Ctrl+Alt+H** shortcut + slot.
+- `orgchem/gui/audit.py` — registered all 7 actions in
+  `GUI_ENTRY_POINTS`.
+
+### Tests
+54 new tests in `tests/test_ph_explorer.py` covering:
+- pKa catalogue size + every category populated + canonical
+  pKa values for histidine (sidechain near physiological
+  pH), Tris (8.10), phosphate (3-way 2.15 / 7.20 / 12.35),
+  acetic acid (4.76).
+- All 6 reference cards present with markdown body.
+- `design_buffer`: pH=pKa unity ratio, phosphate at 7.4
+  matches HH textbook split, far-from-pKa warning fires,
+  `[HA] + [A⁻] = total` invariant, moles track volume,
+  error paths (negative total / negative volume).
+- `buffer_capacity`: max at pH=pKa, drop-off at distance.
+- `titration_curve`: acetic-acid initial pH 2.88,
+  equivalence at 25 mL, eq pH > 7.
+- `acid_to_dict` round-trip.
+- 12 agent-action tests across all 7 entry points.
+- 13 dialog tests covering construction / singleton /
+  select_tab / buffer designer runs (success + warning) /
+  capacity / titration / lookup table / filter narrowing /
+  agent action open path.
+
+Two minor adjustments during the test run:
+- `buffer_capacity` `beta_max` tightened from `0.576 · C` to
+  `2.303 · C · 0.25` so `fraction_of_max == 1.0` at α=0.5
+  instead of `0.99957…`.
+- Test buffer-designer assertion adjusted from `38.7 / 61.3
+  mM` to `38.686 / 61.314 mM` to match the dialog's
+  3-decimal display format.
+
+### Documentation updates
+- INTERFACE.md — added rows for `core/ph_explorer.py`,
+  `agent/actions_ph_explorer.py`, `gui/dialogs/ph_explorer.py`.
+- ROADMAP.md — Phase 46 marked SHIPPED with delivery
+  manifest at the top of the section; original scope kept
+  for reference.
+- PROJECT_STATUS.md — round 148 summary prepended.
+- SESSION_LOG.md — this entry.
+
+### Test suite status
+1 753 passing (up from 1 699 in round 147 — net +54 from
+this round's `test_ph_explorer.py`); doc-coverage test
+green; full suite ~43 s wall-clock.
+
+### What's open (next-round candidates)
+The roadmap still has 4 unfinished user-flagged
+phases (43 cell-component, 44 microscopy, 45 lab
+reagents — all "queued, ~2 rounds each") plus
+Phase 38c (lab-setup canvas, the biggest open work)
+and the 31b / 31k stretch goals.  Phase 45 (lab
+reagents reference) is a natural next pick because
+it shares the catalogue + dialog pattern with the
+just-shipped pH explorer and unlocks cross-references
+from the buffer designer (Tris / HEPES / MOPS… ↔
+the reagent entries).  Phase 43 is bigger but more
+visually striking.
+
+## 2026-04-25 — Round 147 (Phase 42a end-to-end — metabolic pathways + 2 new roadmap phases)
+
+### Context
+Round 146 closed Phase 40a (lab analysers) end-to-end +
+added Phases 42 / 43 / 44 to the roadmap.  Round 147
+ships Phase 42a (the freshest user-flagged content)
+end-to-end.  Mid-round, two more user-flagged feature
+requests came in and were added to the roadmap as Phases
+45 (lab reagents) + 46 (pH + buffer explorer).
+
+### What shipped (Phase 42a)
+- **`orgchem/core/metabolic_pathways.py`** — three
+  frozen dataclasses + 11 seeded pathways:
+    - **Frozen dataclasses**: `RegulatoryEffector` (name
+      / mode ∈ {activator, inhibitor} / mechanism free-
+      text), `PathwayStep` (step_number / substrates /
+      enzyme_name / ec_number / products / reversibility
+      ∈ {reversible, irreversible} / delta_g_kjmol /
+      regulatory_effectors / notes), `Pathway` (id /
+      name / category / cellular_compartment / overview
+      / overall_delta_g_kjmol / textbook_reference /
+      steps).
+    - **Central-carbon (4)**: glycolysis (10 steps —
+      every step from hexokinase to pyruvate kinase
+      with regulatory effectors per step), TCA cycle
+      (8 steps incl. Krebs's original regulatory
+      story), oxidative phosphorylation (5 complexes
+      I-V with Q-cycle + Mitchell chemiosmotic notes),
+      pentose phosphate (5 steps with G6PD-deficiency
+      anaemia clinical note).
+    - **Lipid (3)**: β-oxidation Lynen helix (4 steps
+      with VLCAD/MCAD/SCAD chain-length isoforms),
+      fatty-acid biosynthesis (3 stages — ACC + FAS
+      multi-enzyme rate-limited by acetyl-CoA
+      carboxylase), cholesterol biosynthesis (6 stages
+      from acetyl-CoA → mevalonate → squalene →
+      lanosterol → cholesterol with HMG-CoA reductase
+      as the statin target).
+    - **Amino-acid (1)**: urea cycle (5 steps —
+      mitochondrial CPS-I + OTC then cytoplasmic
+      synthetase + lyase + arginase, with N-acetyl-
+      glutamate allosteric activator).
+    - **Specialised (3)**: heme biosynthesis (8 steps
+      with one porphyria per enzyme deficiency), Calvin
+      cycle photosynthetic carbon fixation (5 stages —
+      RuBisCO carboxylation + reduction + regeneration),
+      glycogen synthesis + breakdown (5 steps with
+      full PKA cascade hormonal regulation).
+    - `nucleotide` category reserved for purine +
+      pyrimidine de novo (42a.1 polish round).
+  ΔG values from Nelson & Cox 8e; EC numbers from
+  IUBMB / BRENDA.  Each step's `regulatory_effectors`
+  list captures the textbook-canonical regulators
+  (e.g. PFK-1 step 3: ATP / Citrate / AMP / Fructose-
+  2,6-bisphosphate; HMG-CoA reductase step 2:
+  cholesterol + oxysterols / AMPK / Statins).
+- **`orgchem/gui/dialogs/metabolic_pathways.py`** —
+  singleton modeless dialog wired to *Tools →
+  Metabolic pathways…* (Ctrl+Alt+P).  Three-pane
+  horizontal splitter:
+    - **Left**: category combo + free-text filter +
+      pathway list.
+    - **Middle**: pathway title + meta block (category
+      / compartment / step count / overview / overall
+      ΔG / textbook reference) + per-step
+      `QTableWidget` (#, Enzyme, EC, Rev?, ΔG).
+      Reversibility uses ↔ / → glyphs.
+    - **Right**: step-detail pane showing substrates /
+      products / regulatory effectors (as a `<ul>`
+      list) / notes for the currently-selected step.
+  `select_pathway(id)` + `select_step(step_number)`
+  programmatic API for the agent open path.
+- **`orgchem/agent/actions_metabolic_pathways.py`** —
+  5 actions in a new `biochem` category:
+  `list_metabolic_pathways(category)` /
+  `get_metabolic_pathway(id)` /
+  `find_metabolic_pathways(needle)` /
+  `list_pathway_steps(pathway_id)` /
+  `open_metabolic_pathways(pathway_id, step_number)`.
+- **Auto-loader, Tools menu (Ctrl+Alt+P), GUI audit**
+  all updated; coverage stays at 100 %.
+
+### Tests
+- **`tests/test_metabolic_pathways.py`** — 41 cases:
+    - Catalogue size ≥ 10 + 11 canonical pathways
+      present + every-pathway-required-fields +
+      every-step-required-fields.
+    - **Step-count invariants**: glycolysis = 10, TCA
+      = 8, ox-phos = 5 complexes (with each step
+      enzyme name containing the right Roman numeral),
+      urea = 5, heme = 8.
+    - **Per-pathway teaching invariants**:
+        - Glycolysis step 1 (hexokinase) lists G6P
+          product feedback.
+        - Glycolysis step 3 (PFK-1) is irreversible +
+          has ≥ 3 regulatory effectors with both
+          inhibitors AND activators (the textbook
+          rate-limiting allosteric story).
+        - TCA cycle's succinate-dehydrogenase notes
+          mention "membrane" (the only TCA enzyme
+          embedded in the inner mitochondrial membrane).
+        - Ox-phos Complex IV products / notes
+          reference H₂O (the terminal electron
+          acceptor — the whole point of aerobic
+          respiration).
+        - Cholesterol step 2 (HMG-CoA reductase) lists
+          statin + cholesterol effectors (the
+          medicinal-chem teaching anchor that ties
+          back to Phase 19a SAR series).
+        - Pentose phosphate step 1 (G6PD) notes
+          mention deficiency / anaemia (the most-
+          common human enzyme deficiency at ~400 M
+          people).
+        - Glycogen phosphorylase has hormonal
+          regulators (glucagon / epinephrine / insulin /
+          AMP / ATP).
+    - List filter by category + unknown-category
+      empty + get-unknown-none + find-substring +
+      case-insensitive + empty-needle.
+    - to_dict serialisation has all 9 expected
+      pathway keys + 9 expected step keys.
+    - 8 agent-action tests covering happy-path +
+      every error path.
+    - 8 pytest-qt dialog tests: construction,
+      singleton, default first-pathway populates step
+      table, programmatic select_pathway, select_step
+      shows detail with Substrates / Products /
+      Regulatory-effectors sections, text filter, no-
+      match blank state, agent-action open path with
+      pathway + step focus.
+- All 41 pass on first run.
+- Full suite: **1 700 / 1 700 pass, 0 skipped** (was
+  1 659).
+
+### Roadmap additions (mid-round, user-flagged)
+- **Phase 45** — lab reagents reference.  ~50 entries
+  across 10 categories (buffers / acids+bases /
+  detergents / reducing agents / salts / protein-prep /
+  stains+dyes / solvents / cell-culture media /
+  molecular-biology reagents).  Each: typical
+  concentration, storage, hazards, preparation,
+  CAS, typical usage.  3 sub-phases (45a catalogue,
+  45b dialog, 45c agent actions).
+- **Phase 46** — pH + buffer explorer.  Reference
+  cards (pH definition, autoionisation, weak vs
+  strong, Henderson-Hasselbalch, buffer capacity,
+  polyprotic) + buffer designer widget (target pH +
+  pKa + total conc → mass / volume of HA + A⁻
+  stock) + titration-curve plotter + pKa lookup
+  table (~30-50 acids).  Cross-references the Phase-
+  39a Henderson-Hasselbalch action.  3 sub-phases
+  (46a catalogue + solver, 46b dialog, 46c agent
+  actions).
+
+### Design notes
+- **Why ship 42a / 42b / 42c bundled in one round?**
+  Same reasoning as Phase 41 + Phase 40a — the
+  pattern is fully nailed, the catalogue stays
+  tight at 11 pathways (~300 lines), and splitting
+  three trivial dialog/action rounds across three
+  iterations would be padding.  When the catalogue
+  expands (42a.1 nucleotide), the 1-round pattern
+  scales fine.
+- **Why frozen dataclasses for `Pathway` /
+  `PathwayStep` / `RegulatoryEffector`?**  Same
+  pattern as Phase 38b's `Setup` / `SetupConnection`
+  + Phase 37b's `LabAnalyte` / `LabPanel`.  Frozen
+  guarantees the catalogue is immutable from the
+  consumer side; if a regulatory effector needs to
+  be shared across multiple pathway steps, the
+  identity-equality semantic guarantees data
+  consistency.  The dataclass + Tuple-of-dataclass
+  composition gives JSON-serialisability via
+  `dataclasses.asdict` (used by the `to_dict`
+  helpers).
+- **Why ΔG values for some steps but not others?**
+  The Lehninger 8e textbook gives ΔG° (standard
+  state) values for the canonical glycolysis +
+  TCA + ox-phos steps; less-routine pathways (heme
+  biosynth, Calvin cycle regen phase) only have ΔG
+  values for the rate-limiting steps in primary
+  literature.  Where literature values are missing,
+  `delta_g_kjmol` is left as `None` — the dialog
+  renders "—" so the absence is honest.
+- **Why a 3-pane splitter for the dialog?**  Each
+  pathway has substantial detail at three levels:
+  pathway-overview (compartment, ΔG, textbook), step-
+  table (10 rows × 5 columns for glycolysis), and
+  per-step regulator list (PFK-1 has 4 effectors
+  with mechanism notes).  Cramming all three into
+  one card would either overflow vertically or hide
+  the regulator detail.  Three panes scale gracefully
+  + match the user's drill-down intent.
+
+### Phase 42 status — 1 / 3 sub-phases complete
+- 42a ✅ catalogue + dialog + agent actions (round
+  147).
+- 42a.1 ⏳ nucleotide-category fill-out (purine +
+  pyrimidine de novo) — polish.
+- 42b / 42c originally split as 3 sub-phases were
+  bundled into 42a in this round.
+
+### Next
+Round 148 candidates:
+- **Phase 43a** — cell-component explorer for
+  Eukarya / Bacteria / Archaea (still queued from
+  round 146).
+- **Phase 44a** — microscopy by resolution scale.
+- **Phase 45a** — lab reagents catalogue (just-
+  added user-flagged item).
+- **Phase 46a** — pH + buffer explorer (just-added
+  user-flagged item).
+- **Phase 38c** — lab-setup canvas (biggest remaining
+  work in the lab simulator).
+- **Phase 39d** — short docs close-out for Phase 39.
+
+---
+
+## 2026-04-25 — Round 146 (Phase 40a end-to-end — major-lab-analyser reference + 3 new roadmap phases)
+
+### Context
+Round 145 closed Phase 39c.  Round 146 picks up Phase
+40a — the major-lab-analyser catalogue (capital-equipment-
+tier instruments) the user flagged a few rounds back.
+Same Phase-37c shape (catalogue + dialog + agent
+actions); shipped end-to-end in one round because the
+catalogue stayed tight at 28 entries.  Mid-round, three
+more user-flagged feature requests came in and were
+added to the roadmap as Phases 42 / 43 / 44 (metabolic
+pathways, cell-component explorer, microscopy by
+resolution scale).
+
+### What shipped (Phase 40a)
+- **`orgchem/core/lab_analysers.py`** —
+  `LabAnalyser` frozen dataclass (id / name /
+  manufacturer / category / function /
+  typical_throughput / sample_volume /
+  detection_method / typical_assays / strengths /
+  limitations / notes).  28 entries across 10
+  categories:
+    - **clinical-chemistry (4)**: Roche cobas c702,
+      Siemens Atellica CH 930, Beckman AU5800, Abbott
+      Alinity c.
+    - **hematology (2)**: Sysmex XN-1000, Beckman
+      DxH 900.
+    - **coagulation (2)**: Stago STA R Max 3, Sysmex
+      CS-5100.
+    - **immunoassay (3)**: Roche cobas e801, Abbott
+      Alinity i, Siemens Atellica IM 1600.
+    - **molecular (5)**: Roche cobas 8800, Hologic
+      Panther + Panther Fusion, Cepheid GeneXpert,
+      Illumina NovaSeq X / X Plus, Oxford Nanopore
+      PromethION.
+    - **mass-spec (2)**: SCIEX QTRAP 7500
+      (LC-MS/MS clinical), Bruker MALDI Biotyper
+      (microbial ID).
+    - **functional (2)**: Molecular Devices FLIPR
+      Penta (Ca²⁺ / membrane-potential GPCR
+      screening), PerkinElmer Operetta CLS
+      (high-content imager).
+    - **microscopy (3)**: Zeiss LSM 980 + Airyscan
+      2 (confocal), Zeiss Lattice Lightsheet 7,
+      Thermo Krios G4 (cryo-TEM).
+    - **automation (3)**: Hamilton STAR / STARplus
+      (industry workhorse), Tecan Fluent, Opentrons
+      OT-2 / Flex (open-source low-cost).
+    - **storage (2)**: Hamilton BiOS L (-80 °C
+      automated), Thermo Galileo (LN₂ vapor
+      cryogenic).
+  Each entry is a long-form reference card (200-500
+  words) capturing instrument purpose + strengths-vs-
+  limitations trade-off; throughput numbers + sample
+  volumes + detection methods sourced from manufacturer
+  data sheets.  Lookup helpers + `to_dict`.
+- **`orgchem/gui/dialogs/lab_analysers.py`** —
+  singleton modeless dialog wired to *Tools → Lab
+  analysers…* (Ctrl+Shift+A).  Same shape as the
+  Phase-37c chromatography dialog: category combo +
+  free-text filter on the left, list of
+  `name — manufacturer` rows, 8-section HTML detail
+  card on the right (Function / Typical throughput /
+  Sample / Detection method / Typical assays /
+  Strengths / Limitations / Notes).
+  `select_analyser(id)` programmatic API for the
+  agent open path.
+- **`orgchem/agent/actions_lab_analysers.py`** — 4
+  actions in a new `instrumentation` category:
+  `list_lab_analysers(category="")`,
+  `get_lab_analyser(analyser_id)`,
+  `find_lab_analysers(needle)`,
+  `open_lab_analysers(analyser_id="")`.  Lookup
+  actions are pure-headless; the dialog opener
+  marshals onto the Qt main thread.
+- **`orgchem/agent/__init__.py`** — auto-loader
+  registers the new module.
+- **`orgchem/gui/main_window.py`** — Tools menu
+  entry added.
+- **`orgchem/gui/audit.py`** — all 4 actions
+  registered; GUI coverage stays at 100 %.
+
+### Tests
+- **`tests/test_lab_analysers.py`** — 35 cases:
+    - Catalogue size ≥ 25 + all 10 categories
+      represented + every-id-unique + every-required-
+      field-present.
+    - **User-requested-systems-present** — substring
+      search verifies cobas, Atellica, Sysmex, Stago,
+      Alinity, Panther, GeneXpert, NovaSeq, Nanopore,
+      Biotyper, FLIPR, Krios, Hamilton, Tecan all hit
+      at least one entry.
+    - 8 per-row teaching invariants:
+        - cobas c702 mentions BMP / panel.
+        - Sysmex XN-1000 mentions CBC / differential.
+        - GeneXpert mentions cartridge format.
+        - NovaSeq throughput in terabases.
+        - Nanopore mentions long reads.
+        - FLIPR mentions Ca²⁺ or membrane potential.
+        - Krios mentions cryo-EM or single-particle.
+        - Opentrons mentions low cost / academic /
+          open-source.
+    - List-by-category + unknown-category-empty +
+      get-unknown-none + find-substring-case-insensitive.
+    - `to_dict` keys.
+    - 6 agent-action wrappers (list / list-filtered /
+      list-unknown-error / get / get-unknown-error /
+      find).
+    - 8 dialog tests: construction, singleton,
+      category combo filter, text filter, no-match
+      shows blank, programmatic `select_analyser`,
+      default first-row auto-selected with all
+      sections in detail HTML, agent-action open path
+      with + without analyser_id focus.
+- All 35 pass on first run after one trivial fix
+  (test was checking for "Throughput" but the actual
+  HTML heading is "Typical throughput").
+- Full suite: **1 659 / 1 659 pass, 0 skipped** (was
+  1 624).
+
+### Roadmap additions (mid-round, user-flagged)
+Three new phases added to `ROADMAP.md` based on user
+requests this round:
+
+- **Phase 42** — metabolic pathways explorer.
+  `Pathway` + `PathwayStep` + `RegulatoryEffector`
+  frozen dataclasses + ~25 pathway entries (glycolysis
+  + TCA + ox-phos + β-oxidation + FAS + cholesterol
+  biosynth + urea cycle + photosynthesis + heme
+  biosynth + nucleotide metabolism + signalling
+  cascades).  Each step: substrate(s) / enzyme + EC
+  number / product(s) / reversibility / ΔG kJ/mol /
+  regulatory effectors.  3 sub-phases (42a catalogue,
+  42b dialog, 42c agent actions).
+- **Phase 43** — cell-component explorer for
+  Eukarya / Bacteria / Archaea.  `CellComponent` +
+  `MolecularConstituent` frozen dataclasses + ~40
+  components keyed by domain + sub-domain (animal /
+  plant / fungus / gram+ / gram-).  Each:
+  compartment, function, key molecules
+  (cross-references to Molecule rows where SMILES
+  exists), notable diseases / experimental hooks.  3
+  sub-phases (43a / 43b / 43c).
+- **Phase 44** — microscopy across resolution scales.
+  Cross-cuts the Phase-37d spectrophotometry +
+  Phase-40a lab-analysers catalogues but organised
+  by resolution scale + sample type rather than
+  instrument family.  `MicroscopyMethod` +
+  `ResolutionScale` frozen dataclasses + ~30 entries
+  across 5 resolution tiers (whole-organism / tissue
+  / cellular / sub-cellular / single-molecule).
+  Cross-references existing 40a entries (Zeiss LSM,
+  Lattice Lightsheet, Krios) without duplication.
+  3 sub-phases (44a / 44b / 44c).
+
+### Design notes
+- **Why a new `instrumentation` agent category
+  rather than reusing `lab`?**  The Phase-38a/b
+  `lab` category covers bench-glassware setups; the
+  Phase-40a category covers capital-equipment-tier
+  *instruments*.  Different mental model + different
+  use case in the tutor's tool-use schema — keeping
+  them separate makes the action-space cleaner.
+- **Why ship 40a / 40b / 40c bundled in one round
+  instead of three?**  The catalogue stayed at 28
+  entries (vs the originally-planned 30-40), and
+  the dialog + agent-action pattern is fully nailed
+  by Phase 37c / 41 / etc.  Splitting them across
+  rounds would mean three trivial rounds instead of
+  one substantive one.
+- **Why include ~$10k Opentrons OT-2 alongside the
+  $500k Hamilton STAR?**  Different cost tiers serve
+  different lab use cases.  The OT-2 has democratised
+  lab automation for academic / single-PI labs in
+  the past 5 years and shipping a "lab analysers"
+  catalogue without it would be an oversight.
+- **Why the manufacturer catalogue choice (cobas vs
+  Roche cobas)?**  Throughout the catalogue, the
+  `name` field uses the manufacturer-published
+  product name verbatim ("Roche cobas c 702", "Sysmex
+  XN-1000") so it matches what a user would search
+  on Google or read in a marketing brochure.  The
+  separate `manufacturer` field handles the parent
+  company.
+
+### Phase 40 status — 1 / 1 visible sub-phase complete
+- 40a ✅ catalogue + dialog + agent actions (round
+  146).
+- (40b / 40c originally split as 3 sub-phases were
+  bundled into 40a in this round.)
+
+### Next
+Round 147 candidates:
+- **Phase 42a** — metabolic pathways catalogue
+  (the freshest user-flagged content).  Catalogue
+  size + per-step depth is the design call.
+- **Phase 43a** — cell components catalogue.
+- **Phase 44a** — microscopy by resolution catalogue.
+- **Phase 38c** — lab-setup canvas (still the
+  biggest open work in the lab simulator strand).
+- **Phase 39d** — short cross-references docs round
+  to formally close Phase 39.
+
+---
+
+## 2026-04-25 — Round 145 (Phase 39c — per-solver agent actions for the lab calculator)
+
+### Context
+Round 144 closed Phase 41 (centrifugation reference +
+g↔RPM calculator) end-to-end.  Round 145 picks up Phase
+39c — the mechanical wrapper round that exposes every
+Phase-39a solver to the agent registry.  Bringing Phase 39
+to 3/4 (only docs in 39d remain) and giving the tutor /
+scripts / stdio bridge direct access to all 31 calculator
+functions.
+
+### What shipped
+- **`orgchem/agent/actions_calc.py`** — 31 new
+  `@action(category="calc")` wrappers, one per Phase-39a
+  solver:
+    - **Solution (6)**: `molarity` / `dilution` /
+      `serial_dilution` / `molarity_from_mass_percent` /
+      `ppm_to_molarity` / `molarity_to_ppm`.
+    - **Stoichiometry (4)**: `limiting_reagent` /
+      `theoretical_yield` / `percent_yield` /
+      `percent_purity`.
+    - **Acid-base (5)**: `ph_from_h` / `h_from_ph` /
+      `pka_to_ka` / `ka_to_pka` /
+      `henderson_hasselbalch`.
+    - **Gas laws (3)**: `ideal_gas` / `combined_gas_law`
+      / `gas_density`.
+    - **Colligative (3)**: `boiling_point_elevation` /
+      `freezing_point_depression` / `osmotic_pressure`.
+    - **Thermo + kinetics (6)**: `heat_capacity` /
+      `hess_law_sum` / `first_order_half_life` /
+      `first_order_integrated` / `arrhenius` /
+      `eyring_rate_constant`.
+    - **Equilibrium (4)**: `equilibrium_constant` /
+      `ksp_from_solubility` / `solubility_from_ksp` /
+      `ice_solve_a_plus_b`.
+  Total: 32 calc actions (31 per-solver wrappers + the
+  round-143 `open_lab_calculator` dialog opener).
+- **Common `_wrap(solver, **kwargs)` helper** — calls the
+  solver, returns its result on success, returns
+  `{"error": str(e)}` when the solver raises
+  `ValueError` (bad input).  The agent never sees a
+  Python traceback.
+- **`orgchem/gui/audit.py`** — every new action
+  registered with a path back to its UI panel ("Tools →
+  Lab calculator… → Solution tab → Molarity panel") OR
+  "agent-only convenience" when the solver's list-shaped
+  input doesn't fit the spin-box dialog pattern (e.g.
+  `limiting_reagent`, `equilibrium_constant`,
+  `hess_law_sum`).  GUI coverage stays at 100 %.
+
+### Tests
+- **`tests/test_calc_actions.py`** — 33 cases:
+    - **Registry-membership invariant**: all 31 expected
+      action names present in the `calc` category +
+      `open_lab_calculator` = 32 total.
+    - **Happy-path verifications** mirroring the same
+      textbook values used in Phase 39a's solver tests:
+      NaCl 29.22 g for 0.5 M × 1 L; dilution 1 M × 10
+      mL → 0.1 M × 100 mL; serial dilution 1 M / 10× ×
+      3 → 0.001 M; concentrated HCl 37 % w/w →
+      11.97 M; ppm round-trip; limiting reagent
+      identifies B with 1:2 stoichiometry; theoretical
+      yield 200 g; percent yield 80 %; pH 7 at 1e-7
+      [H⁺]; pH 3 at 1e-3; pKa↔Ka round-trip at
+      acetic acid; HH at unity ratio gives pH = pKa;
+      STP volume 22.414 L; Boyle's law; O₂ density
+      1.428 g/L; ΔTb 0.512 °C for 1 m sucrose; ΔTf
+      3.72 °C for 1 m NaCl (i=2); 7.63 atm osmotic
+      pressure for isotonic saline; q = 4184 J for
+      water 20→30 °C; Hess sum -75 kJ; t½ = ln 2 / k;
+      first-order [A]_t = e^-1; Arrhenius; Eyring
+      forward; K_eq = 2 for [A]=1, [B]=2; AgCl K_sp =
+      1.69e-10; PbI₂ K_sp = 4·s³; ICE x = 0.5 at K = 1.
+    - **Error-path coverage**: percent-purity > 100,
+      missing-count != N for any solver, unknown
+      solvent name, ICE both-reactants-zero.
+    - All 33 pass on the first run.
+- Full suite: **1 624 / 1 624 pass, 0 skipped** (was
+  1 591).
+
+### Design notes
+- **Why one wrapper per solver, not one generic
+  "call_calc(solver_name, **kwargs)" action?**  Each
+  wrapper has a distinct typed signature visible to the
+  tutor's tool-use schema generator (Anthropic /
+  OpenAI).  A generic action would force every call
+  through string-matching on `solver_name`, losing the
+  parameter-validation + autocomplete benefits.  The
+  tutor sees `molarity(mass_g, molarity_M, volume_L,
+  molecular_weight_gmol)` as a typed tool, not a
+  free-form dispatcher.
+- **Why the `_wrap` helper rather than `try/except`
+  per-action?**  31 try/except blocks would be 90 lines
+  of duplicated code.  `_wrap(solver, **kwargs)` is a
+  single 5-line helper that handles all of them
+  uniformly.
+- **Why some solvers are "agent-only" with no widget
+  panel?**  Three solvers take list-shaped input
+  (`limiting_reagent` takes a list of reagent dicts,
+  `equilibrium_constant` takes a list of species,
+  `hess_law_sum` takes a list of step ΔH values) that
+  doesn't map cleanly to a spin-box panel.  The
+  agent-action surface is the right entry point for
+  these — a tutor / script can build the list
+  programmatically.  A future polish round could add
+  spreadsheet-style table widgets for the dialog if
+  there's demand.
+- **Why match the same textbook values as Phase 39a's
+  solver tests?**  Two reasons: (1) the wrapper layer
+  shouldn't introduce numerical differences from the
+  solvers, and (2) repeating the verification at the
+  agent layer means the wiring (kwargs name match,
+  return-dict pass-through) is exercised end-to-end.
+
+### Phase 39 status — 3 / 4 sub-phases complete
+- 39a ✅ headless solvers (round 142).
+- 39b ✅ tabbed dialog (round 143).
+- 39c ✅ per-solver agent actions (round 145).
+- 39d ⏳ cross-references to Beer-Lambert / atom-economy
+  / formula calculator (docs only).
+
+### Next
+Round 146 candidates:
+- **Phase 39d** — short docs round, mostly cross-ref
+  links in INTERFACE.md / ROADMAP.md / glossary.
+- **Phase 40a** — major lab analysers catalogue (~30
+  entries; clinical chemistry / hematology /
+  immunoassay / molecular / mass spec / FLIPR /
+  microscopy / liquid-handling).  Same shape as the
+  Phase 37c chromatography catalogue.
+- **Phase 38c** — equipment palette + canvas (biggest
+  remaining work in the lab simulator).
+- **Phase 31 long-running content** — chip another SAR
+  series, named reaction, or seeded protein.
+
+---
+
+## 2026-04-25 — Round 144 (🎉 Phase 41 CLOSED in one round — centrifugation + g↔RPM calculator)
+
+### Context
+Round 143 closed Phase 39b (tabbed lab-calculator
+dialog).  Round 144 picked up Phase 41 instead of Phase
+39c (per-solver agent actions) since Phase 41 is the
+more interesting unit of work — both reference catalogue
++ a quantitative widget the user explicitly asked for.
+The catalogue stayed tight enough that all 3 sub-phases
+(41a + 41b + 41c) shipped in one round.
+
+### What shipped
+- **`orgchem/core/centrifugation.py`** — three
+  `frozen=True` dataclasses + 3 catalogues + 2 solvers:
+    - **Centrifuge (9 entries)** across all 4 classes:
+      Eppendorf 5424 / 5425 / 5810/5810R / 5910 Ri,
+      Beckman Allegra X-15R, Beckman Avanti J-26 XPI,
+      Sorvall RC-6 Plus, Beckman Optima XPN, Sorvall
+      WX 100.
+    - **Rotor (10 entries)**: FA-45-24-11 microfuge,
+      A-4-81 + FA-45-30-11 benchtop, JA-25.50 + JA-10
+      + JLA-8.1000 high-speed, Ti-70 + SW 41 Ti +
+      TLA-100 + VTi 50 ultracentrifuge.  Each carries
+      `max_radius_cm` + `min_radius_cm` (swinging-
+      bucket arms-out vs arms-in range) + `max_speed_rpm`.
+    - **Application (8 entries)**: mammalian cell
+      pelleting, E. coli harvest, differential
+      organelle prep, sucrose density-gradient
+      (polysomes), CsCl plasmid isopycnic, Amicon
+      centrifugal-filter concentration, exosome
+      isolation, serum separation.
+  - **`G_FORCE_CONSTANT = 1.118e-5`** + solvers
+    `rpm_to_g(rpm, radius_cm)` / `g_to_rpm(g_force,
+    radius_cm)`.  Verified against the Eppendorf 5424
+    data sheet: 15 000 RPM @ 8.4 cm = 21 130 × g
+    exactly.
+- **`orgchem/gui/dialogs/centrifugation.py`** —
+  singleton modeless dialog wired to *Tools →
+  Centrifugation…* (Ctrl+Shift+F).  4 tabs:
+    - **Centrifuges / Rotors / Applications** — three
+      catalogue tabs sharing a reusable `_CatalogueTab`
+      helper class.  Each: category combo + filter +
+      list + HTML detail card.  The helper takes the
+      enumeration + detail-renderer + row-label
+      callables, so all 3 tabs share one
+      implementation.
+    - **g ↔ RPM calculator** — the headline UX
+      feature.  Rotor `QComboBox` whose selection
+      auto-fills the radius spin from
+      `rotor.max_radius_cm` AND surfaces "Max RPM for
+      this rotor: <N>" so overspeed is visible up
+      front.  Two direction buttons (RPM→×g and
+      ×g→RPM) + Clear.  Status line displays the
+      rearranged formula in human form, e.g.
+      `"g = 1.118e-5 · 15000² · 8.40 = 21,130 × g"`.
+      Entering an RPM above the rotor's max appends
+      `OVERSPEED: exceeds rotor max <N> RPM!` to the
+      status line in red.
+  Programmatic API: `select_tab(label)` /
+  `select_centrifuge(id)` / `select_rotor(id)` /
+  `select_application(id)`.
+- **`orgchem/agent/actions_centrifugation.py`** — 8
+  actions in the `centrifugation` category:
+    - `list_centrifuges_action(centrifuge_class="")` /
+      `get_centrifuge_action(centrifuge_id)`.
+    - `list_rotors_action(rotor_type="")` /
+      `get_rotor_action(rotor_id)`.
+    - `list_centrifugation_applications(protocol_class="")`.
+    - `rpm_to_g_action(rpm, radius_cm)` /
+      `g_to_rpm_action(g_force, radius_cm)` —
+      `{"error": ...}` on bad input.
+    - `open_centrifugation(tab, rotor_id,
+      centrifuge_id, application_id)` — opens dialog +
+      optionally focuses tab + entry.
+- **`orgchem/agent/__init__.py`** — auto-loader
+  registers the new module.
+- **`orgchem/gui/main_window.py`** — Tools menu entry
+  added.
+- **`orgchem/gui/audit.py`** — all 8 actions
+  registered; GUI coverage stays at 100 %.
+
+### Tests
+- **`tests/test_centrifugation.py`** — 37 cases:
+    - g↔RPM round-trip + Eppendorf 5424 data-sheet
+      match (15 000 RPM @ 8.4 cm = 21 130 × g) +
+      common 13 000 × g @ 8.4 cm → 11 766 RPM.
+    - Catalogue: every centrifuge class represented,
+      ultracentrifuges ≥ 50 000 RPM invariant,
+      canonical rotors / models present, every entry
+      has required fields.
+    - Swinging-bucket has min < max radius for at
+      least one entry (arms-in/out range).
+    - Filtered enumeration + unknown-category empty.
+    - to_dict serialisation has all expected keys.
+    - 13 agent-action tests covering every action +
+      every error path (zero RPM / radius / g; unknown
+      ids; unknown class; rpm_to_g + g_to_rpm
+      data-sheet validation through the action layer).
+- **`tests/test_centrifugation_dialog.py`** — 17
+  pytest-qt cases:
+    - 4-tab construction; all expected labels present.
+    - Singleton identity.
+    - Centrifuges tab list + category filter
+      (ultracentrifuge → Optima + WX 100).
+    - `select_centrifuge("ultra_optima_xpn")` works.
+    - Rotors + Applications tabs analogous.
+    - Calculator: rotor-dropdown auto-fills radius
+      from `rotor_fa_45_24_11` → 8.4 cm; RPM→×g
+      button gives 21 130 at 15 000 RPM × 8.4 cm; ×g→RPM
+      button gives 11 766 RPM at 13 000 × g; OVERSPEED
+      warning fires when RPM > rotor max; Clear
+      resets; zero-RPM error path surfaces.
+    - Agent-action open path with + without tab +
+      with rotor focus.
+- All 54 pass on the first run.
+- Full suite: **1 591 / 1 591 pass, 0 skipped** (was
+  1 537).
+
+### Design notes
+- **Why a rotor dropdown, not a radius-only spin?**
+  The "wrong rotor → wrong RPM" failure mode is the
+  single most-common centrifuge protocol error.  The
+  dropdown forces the user to think "which rotor am I
+  using?" rather than typing a number that has no
+  context.  The label showing "Max RPM for this
+  rotor" closes the second-most-common error
+  (overspeeding past the rotor's rated limit).
+- **Why share `_CatalogueTab` across 3 tabs?**  All
+  three (Centrifuges / Rotors / Applications) have
+  identical UX (category combo + filter + list +
+  detail).  Sharing one widget class keeps the
+  dialog short + means a UI tweak (search styling,
+  list font) happens in one place.
+- **Why include `Application` (protocol) entries
+  alongside Centrifuge + Rotor?**  Centrifuges +
+  rotors are the *equipment*; applications are the
+  *use cases*.  A student who knows they want to
+  pellet mammalian cells doesn't need to dig through
+  centrifuge data sheets — the Applications tab tells
+  them "200-300 × g for 5 min on a swinging-bucket
+  rotor".  Cross-reference: each application
+  recommends a rotor TYPE (not a specific id) so
+  any matching rotor in the catalogue would work.
+- **Why no per-rotor max-g-force derivation?**  Each
+  rotor's max RPM × radius derives a max ×g, but
+  it's not always the rated-max ×g (some rotors are
+  speed-limited below the radius limit for tube-
+  strength reasons).  The catalogued
+  `centrifuge.max_g_force` is the data-sheet rating;
+  computing it from RPM × radius would mislead.
+- **Why `1.118e-5` rather than the more-precise
+  `1.118468e-5`?**  Every Beckman / Eppendorf data
+  sheet uses 1.118e-5 to 4 sig figs.  Matching
+  industry practice + giving exact agreement with
+  the user's expected calculator results is more
+  important than 5th-decimal accuracy.
+
+### Phase 41 status — COMPLETE 🎉
+- 41a ✅ catalogue + g↔rpm solver (round 144).
+- 41b ✅ dialog + calculator widget (round 144).
+- 41c ✅ agent actions (round 144).
+
+### Next
+Round 145 candidates:
+- **Phase 39c (per-solver agent actions for the lab
+  calculator)** — ~30 thin wrapper functions, each
+  exposing a Phase-39a solver as a registered
+  `@action` in the `calc` category.  Closes Phase 39
+  (only 39d docs left).
+- **Phase 40a (major lab analysers catalogue)** —
+  user-flagged earlier; same shape as Phase 37c
+  chromatography catalogue.  Likely 1 round for the
+  catalogue + dialog; could fit alongside the agent
+  actions in 1.5 rounds.
+- **Phase 38c (lab-setup canvas)** — biggest open
+  work from the lab-simulator strand.
+
+---
+
+## 2026-04-25 — Round 143 (Phase 39b — tabbed lab-calculator dialog)
+
+### Context
+Round 142 shipped Phase 39a (~30 headless solvers across
+7 sibling modules).  Round 143 wraps those in a tabbed
+QDialog so they're user-facing.  Pattern follows the
+Phase-37d Beer-Lambert calculator widget — extended to
+multi-tab + multi-panel.
+
+### What shipped
+- **`orgchem/gui/dialogs/lab_calculator.py`** — singleton
+  modeless tabbed dialog wired to *Tools → Lab
+  calculator…* (Ctrl+Shift+C).  7 tabs (one per Phase-39a
+  module): Solution / Stoichiometry / Acid-base / Gas
+  law / Colligative / Thermo + kinetics / Equilibrium.
+  Each tab is a `QScrollArea` containing a stack of
+  `QGroupBox` solver panels.  Total: 16 solver panels +
+  2 button-driven custom panels (pH↔[H⁺], pKa↔Ka)  + 1
+  K_sp↔s panel + 1 ICE solver panel.
+- **`_SolverPanel` helper class** — the round's
+  reusable abstraction.  Constructor takes:
+    - `title` for the group box.
+    - `fields` — list of dicts ``{name, label, suffix,
+      decimals?, min?, max?, default?}``.
+    - `solver` — callable taking the field names as
+      kwargs and returning a result dict.
+    - `zero_means_unknown` — when True (default), spin
+      value 0.0 is passed to the solver as `None`; the
+      solver fills in the missing field.  Some solvers
+      (e.g. `theoretical_yield_g`) require ALL inputs;
+      pass `zero_means_unknown=False` to skip the
+      None-substitution.
+    - `status_help` — initial status-line text.
+  Methods: `_on_solve` packages the spin values into
+  kwargs, calls the solver, populates result spins,
+  formats the status line as `"label = value · …"` for
+  every field; `_on_clear` zeros every spin; `add_widget`
+  registers an extra widget (e.g. a `QComboBox` for
+  solvent selection) and folds its value into the
+  solver kwargs via `extra_value`.
+- **Custom non-`_SolverPanel` panels** for cases where
+  the symmetric-solve pattern doesn't fit cleanly:
+    - **pH ↔ [H⁺]** — two spins + two buttons (`[H⁺]→pH`,
+      `pH→[H⁺]`); each button calls a separate solver.
+    - **pKa ↔ Ka** — same shape.
+    - **K_sp ↔ molar solubility** — 4 spins (s, K_sp, n,
+      m as integer) + two direction buttons.
+    - **ICE solver A + B ⇌ C + D** — 5 input spins (K,
+      A₀, B₀, C₀, D₀) + 1 Solve button + status line
+      that displays all 5 equilibrium concentrations +
+      the reaction extent x.
+- **Colligative tab solvent dropdown** — both the BP
+  elevation and FP depression `_SolverPanel`s register
+  a `QComboBox` (via `add_widget("solvent", combo)`)
+  whose selection auto-fills the matching K_b / K_f
+  from `core/calc_colligative.SOLVENT_CONSTANTS` when
+  the solver runs.  User can leave the K_b spin at 0 +
+  pick "water" → the solver gets `solvent="water"` as
+  a kwarg and uses the lookup.
+- **`orgchem/agent/actions_calc.py`** — single new
+  action `open_lab_calculator(tab="")` that opens the
+  dialog and optionally focuses one of the 7 tabs.
+  Returns `{"opened", "selected", "tab",
+  "available_tabs"}`.  Per-solver agent actions
+  (`molarity_solve`, etc.) defer to Phase 39c.
+- **`orgchem/agent/__init__.py`** — auto-loader
+  registers the new module.
+- **`orgchem/gui/main_window.py`** — Tools menu entry
+  added (Ctrl+Shift+C).
+- **`orgchem/gui/audit.py`** — `open_lab_calculator`
+  registered; GUI coverage stays at 100 %.
+
+### Tests
+- **`tests/test_lab_calculator_dialog.py`** — 15
+  pytest-qt cases:
+    - Construction (7 tabs present, all expected
+      labels).
+    - Singleton identity.
+    - `select_tab` matches + returns False for
+      unknown.
+    - **Solution tab: molarity solver**: 0.5 M × 1 L ×
+      58.44 g/mol (NaCl) → 29.22 g.  Dilution: 1 M ×
+      10 mL → 0.1 M × 100 mL.
+    - Clear button resets all spins.
+    - Error path: 2 fields blank → "error" appears in
+      status text.
+    - **Gas law tab: ideal gas**: 1 atm × 1 mol ×
+      273.15 K → 22.414 L.
+    - **Colligative tab: solvent dropdown** auto-fills
+      K_f when "water" is picked + 1 m + i=2 → ΔTf =
+      3.72 °C, AND the K_f spin shows the auto-filled
+      1.86 value.
+    - **Acid-base tab custom**: H→pH button maps
+      [H⁺] = 1e-3 → pH = 3.0.
+    - **Equilibrium tab custom**: K_sp from solubility
+      AgCl s=1.3e-5 (n=m=1) → K_sp = 1.69e-10.
+    - Agent action: `open_lab_calculator()` fires +
+      returns `available_tabs` list.  Open with `tab="Gas
+      law"` focuses it.  Open with unknown tab returns
+      `selected=False` but still opens.
+- All 15 pass on the first run.
+- Full suite: **1 537 / 1 537 pass, 0 skipped** (was
+  1 522).
+
+### Design notes
+- **Why `_SolverPanel` as a class rather than a factory
+  function?**  The widget needs to remember its spin /
+  extra-widget references for the Solve / Clear slots.
+  A class encapsulates that state cleanly.
+- **Why spin value 0 = unknown rather than disabled /
+  empty?**  `QDoubleSpinBox` doesn't have a clean
+  "blank" state — it's always a number.  Conventionally
+  treating 0 as "unknown" is the cheapest UX path that
+  matches the Phase-37d Beer-Lambert pattern.  Edge
+  case: solving for a quantity whose answer is genuinely
+  0 isn't supported, but no real lab calculation has
+  exactly-zero answer for any of the fields here.
+- **Why a `QScrollArea` per tab?**  Some tabs have 3-4
+  panels stacked vertically; on smaller screens the
+  full panel stack doesn't fit.  Wrapping each tab in
+  a scroll area keeps the dialog compact.
+- **Why no custom-widget validation in `_SolverPanel`?**
+  Spin boxes already enforce min/max ranges; the solver
+  itself validates positivity + missing-count.  Doubling
+  the validation is just code duplication.  Errors
+  bubble up through the status line.
+- **Why custom (not `_SolverPanel`-based) panels for
+  pH↔[H⁺] etc.?**  `_SolverPanel` assumes a single
+  solver function with a "leave-one-blank" semantics.
+  H↔pH has two distinct solvers (one each direction)
+  with no shared "blank field" model — the user picks
+  the direction explicitly.  Same for pKa↔Ka, K_sp↔s.
+  The factory could be extended to handle this case
+  but the resulting API would be more complex than
+  just writing the custom panels (~40 lines each).
+
+### Phase 39 status — 2 / 4 sub-phases complete
+- 39a ✅ headless solvers (round 142).
+- 39b ✅ tabbed dialog (round 143).
+- 39c ⏳ per-solver agent actions (one thin wrapper
+  per `core/calc_*` solver function).
+- 39d ⏳ cross-references to Beer-Lambert / atom-economy
+  / formula calculator (docs only).
+
+### Next
+Round 144: **Phase 39c — per-solver agent actions** is
+the natural next pick.  ~30 small wrapper functions —
+each maps a Phase-39a solver to a registered `@action`,
+following the same `{result | error}` pattern as the
+existing `beer_lambert` action.  Mostly mechanical work;
+ships in 1 round.
+
+---
+
+## 2026-04-25 — Round 142 (Phase 39a — lab-calculator solvers + Phase 40/41 roadmap additions)
+
+### Context
+Round 141 closed Phase 38b (lab-setup catalogue +
+validator) AND added Phase 39 (lab calculator) to the
+roadmap.  Round 142 starts Phase 39 with 39a (headless
+solvers).  Mid-round, two more user-flagged items came
+in: a major-analysers reference and a centrifugation
+tool — both added to the roadmap as Phase 40 + Phase 41
+respectively.
+
+### What shipped (Phase 39a)
+Seven sibling modules in `orgchem/core/`, each carrying
+3-7 solver functions in the Phase-37d
+`beer_lambert_solve` style (pass any N-1 of N quantities,
+get the Nth filled in; `ValueError` on bad input):
+
+- **`calc_solution.py`** (5 solvers):
+    - `molarity_solve(mass_g, molarity_M, volume_L,
+      molecular_weight_gmol)` — m = M·V·MW.
+    - `dilution_solve(M1, V1, M2, V2)` — M₁V₁ = M₂V₂.
+    - `serial_dilution(initial, factor, n_steps)` —
+      n-step serial dilution table.
+    - `molarity_from_mass_percent(%w/w, density,
+      MW)` — concentrated-acid → molarity.
+    - `ppm_to_molarity` / `molarity_to_ppm`.
+- **`calc_stoichiometry.py`** (4 solvers):
+    - `limiting_reagent([{name, moles, stoich_coeff},
+      …])` — index + name + per-reagent equivalent
+      units.
+    - `theoretical_yield_g`.
+    - `percent_yield(actual, theoretical, percent)` —
+      any 2 of 3.
+    - `percent_purity` (rejects > 100 %).
+- **`calc_acid_base.py`** (5 solvers):
+    - `ph_from_h` / `h_from_ph` — return full pH /
+      pOH / [H⁺] / [OH⁻] tuple.
+    - `pka_to_ka` / `ka_to_pka`.
+    - `henderson_hasselbalch(pH, pKa, base_acid_ratio)`
+      — any 2 of 3 — buffer-design entry point.
+- **`calc_gas_law.py`** (3 solvers + 1 constant):
+    - `R_L_ATM_PER_MOL_K = 0.0820573661`.
+    - `ideal_gas_solve(P, V, n, T)` — any 3 of 4.
+    - `combined_gas_law(P1, V1, T1, P2, V2, T2)` —
+      any 5 of 6.
+    - `gas_density(P, MW, T)` — ρ = PM / RT.
+- **`calc_colligative.py`** (3 solvers + 1 table):
+    - `SOLVENT_CONSTANTS` table — K_b + K_f for water /
+      benzene / chloroform / acetic acid / ethanol /
+      CCl₄ / cyclohexane / camphor (Atkins / de Paula).
+    - `boiling_point_elevation` / `freezing_point_depression`
+      — any 3 of 4 OR pass `solvent="water"` to
+      auto-fill K_b / K_f.
+    - `osmotic_pressure(M, T, i, P)` — Π = MRT·i.
+- **`calc_thermo_kinetics.py`** (6 solvers + 3
+  constants):
+    - `R_J_PER_MOL_K`, `K_B`, `H_PLANCK` constants.
+    - `heat_capacity_solve` — q = mcΔT (q + ΔT can be
+      negative; m + c must be positive).
+    - `hess_law_sum([step ΔH])`.
+    - `first_order_half_life(k OR t½)`.
+    - `first_order_integrated([A]_0, [A]_t, k, t)`.
+    - `arrhenius_solve(k, A, Ea, T)` — k = A·exp(-Ea/RT).
+    - `eyring_rate_constant(ΔG‡, T)`.
+- **`calc_equilibrium.py`** (4 solvers):
+    - `equilibrium_constant_from_concentrations` —
+      K = Π[product]^coeff / Π[reactant]^coeff for any
+      species list.
+    - `ksp_from_solubility(s, n, m)` /
+      `solubility_from_ksp(K_sp, n, m)` — closed form
+      for AnBm salts (`s = (K_sp / (n^n · m^m))^(1/(n+m))`).
+    - `ice_solve_a_plus_b(K, A₀, B₀, C₀, D₀)` —
+      closed-form quadratic ICE solver for A + B ⇌
+      C + D with all coeffs = 1, with a `_pick_chem_root`
+      helper that selects the chemically-sensible root.
+
+Total: ~30 solvers + 4 module-level constants + 1
+solvent-properties table.
+
+### Tests
+- **`tests/test_calc_solvers.py`** — 59 cases across 18
+  test classes (one per solver function).  Highlights:
+    - Textbook-value verifications: 0.5 M NaCl in 1 L =
+      29.22 g (MW 58.44); 1 mol gas at STP = 22.414 L;
+      37 % w/w HCl ρ 1.18 → 11.97 M; pH 3 ↔ [H⁺] 1e-3;
+      Henderson-Hasselbalch at base/acid = 1 → pH = pKa;
+      Boyle's-law isothermal compression; AgCl K_sp =
+      1.69e-10 from s = 1.3e-5; PbI₂ K_sp = 4·s³;
+      first-order k = 0.05 /s → t½ = 13.86 s;
+      first-order [A]_0 = 1, k = 0.1, t = 10 → e^-1 ≈
+      0.368; 100 g water 20→30 °C = 4184 J; 1 m NaCl
+      (i = 2) in water → ΔTf = 3.72 °C; isotonic saline
+      at 37 °C ≈ 7.63 atm.
+    - Round-trip checks: pH ↔ [H⁺], pKa ↔ Ka, K_sp ↔
+      molar solubility, k ↔ t½.
+    - Error-path coverage: 2-unknowns rejected, zero /
+      negative inputs rejected, unknown solvent name
+      rejected, percent-purity > 100 rejected,
+      ICE solver no-real-root rejected, ICE both-zero
+      rejected.
+    - All 59 pass on the first run — strict input
+      validation + the matching test fixtures meant
+      no iteration was needed.
+- **Full suite: 1 522 / 1 522 pass, 0 skipped** (was
+  1 463).
+
+### Roadmap additions (mid-round, user-flagged)
+Two new phases added to `ROADMAP.md`:
+
+- **Phase 40** — major lab analysers + automation
+  reference.  Catalogue of capital-equipment-tier
+  instruments: clinical-chemistry analysers (Roche
+  cobas, Siemens Atellica, Beckman AU), hematology
+  (Sysmex XN, Beckman DxH), coagulation (Stago STA,
+  Sysmex CS), immunoassay (Roche cobas e, Abbott
+  Architect i), molecular (Roche cobas 8800, Hologic
+  Panther, Cepheid GeneXpert, Illumina NovaSeq, Oxford
+  Nanopore), mass spec (LC-MS/MS, MALDI-TOF, ICP-MS),
+  cell-based / functional (FLIPR, high-content
+  imagers, patch-clamp robots), microscopy (confocal,
+  super-res, light-sheet, cryo-EM), liquid-handling
+  (Hamilton STAR, Tecan Fluent, Beckman Biomek,
+  Opentrons), sample-storage automation.  Same shape
+  as Phase 37c chromatography.  3 sub-phases (40a
+  catalogue, 40b dialog, 40c agent actions).
+- **Phase 41** — centrifugation reference + g↔rpm
+  calculator.  Catalogue of centrifuge classes
+  (microfuge / benchtop / high-speed / ultra), rotor
+  types (fixed-angle / swinging-bucket / vertical /
+  continuous-flow), applications (differential,
+  density-gradient, subcellular fractionation,
+  centrifugal-filter concentration).  Quantitative
+  `g_to_rpm` / `rpm_to_g` calculator widget with rotor
+  dropdown that pre-fills the radius — the canonical
+  bench-side conversion most students get wrong.  3
+  sub-phases (41a catalogue + solver, 41b dialog +
+  calculator widget, 41c agent actions).
+
+### Design notes
+- **Why 7 modules, not 1 large `calc.py`?**  Each module
+  is small (50-200 lines) and self-contained.  One large
+  module would push past the 500-line guideline + would
+  conflate independent topics.  Splitting by category
+  also makes 39b's tabbed dialog a clean 1:1 mapping
+  (one tab per module).
+- **Why duplicate the `R = 0.0820573661` constant
+  between `calc_gas_law` and `calc_colligative`?**
+  The two modules genuinely share a physical constant,
+  but importing `calc_gas_law.R_L_ATM_PER_MOL_K` from
+  `calc_colligative` is cross-cutting clutter.
+  Module-level constants stay duplicated; if a third
+  module wants the same value it'll get its own copy.
+  Tests verify they don't drift apart.
+- **Why no `ICE_solve` for arbitrary stoichiometry?**
+  Multi-stage / multi-component ICE tables solve a
+  general polynomial that can't be closed-form (5+
+  species → quintic).  The 1:1:1:1 case via quadratic
+  is what 95 % of teaching problems need.  An iterative
+  numerical solver for general ICE is a future polish
+  item.
+- **Why accept negative ΔT in `heat_capacity_solve` but
+  positive elsewhere?**  Heating + cooling are
+  symmetric; q < 0 means heat released (exothermic) =
+  ΔT < 0 for the system.  Mass + specific heat are
+  always positive — those keep the strict-positive
+  validation.
+
+### Phase 39 status — 1 / 4 sub-phases complete
+- 39a ✅ headless solvers (round 142).
+- 39b ⏳ tabbed dialog (one tab per module).
+- 39c ⏳ agent actions (one thin wrapper per solver).
+- 39d ⏳ cross-references to Beer-Lambert / atom-economy /
+  formula calculator (docs only).
+
+### Next
+Round 143: **Phase 39b (tabbed lab-calculator dialog)**
+is the natural next pick — wraps each solver in a small
+form-and-button widget, all under one `QTabWidget` per
+category.  Pattern is already nailed by the Phase 37d
+Beer-Lambert calculator widget; this is mostly
+"replicate-and-extend" work.  Ships in 1 round.
+
+---
+
+## 2026-04-25 — Round 141 (Phase 38b — lab-setup catalogue + connection validator)
+
+### Context
+Round 140 shipped Phase 38a (lab equipment catalogue —
+42 items + connection-port metadata).  Round 141 ships
+Phase 38b (canonical setup catalogue) — same dataclass
++ dialog + agent-action shape, but adds a critical new
+piece: a **connection validator** that walks every
+seeded setup against the Phase-38a equipment / port
+catalogue and surfaces real port mismatches.  The
+validator caught real port-direction bugs in 38a —
+fixing those is what made round 141 a substantive
+"this build is more correct than yesterday" round.
+
+### What shipped
+- **`orgchem/core/lab_setups.py`** — `Setup` +
+  `SetupConnection` frozen dataclasses + 8 seeded
+  canonical setups:
+    1. **Simple distillation** (9 equipment, 6
+       connections): pot RBF + heating mantle + Variac
+       + distillation head + thermometer adapter +
+       thermometer + Liebig condenser + vacuum
+       adapter + receiver RBF.  Ports plumbed by id +
+       index.
+    2. **Fractional distillation** (10 equipment, 7
+       connections): same as simple + a Vigreux column
+       inserted between the pot + the head.  Strict
+       super-set of simple distillation, locked as a
+       per-setup teaching invariant.
+    3. **Standard reflux** (5 equipment, 2
+       connections): RBF + heating mantle + Variac +
+       Allihn condenser + drying tube.  Allihn (NOT
+       Liebig) — the bulb condenser is preferred for
+       sustained reflux.
+    4. **Reflux with controlled addition** (7
+       equipment, 4 connections): 3-neck RBF + Allihn
+       + sep funnel (used as addition funnel) +
+       thermometer adapter + thermometer.  The
+       Grignard-formation / exothermic-acylation
+       canonical setup.
+    5. **Soxhlet extraction** (5 equipment, 2
+       connections): pot RBF + heating mantle + Variac
+       + Soxhlet extractor + Allihn condenser.
+    6. **Vacuum filtration** (4 equipment, 3
+       connections): Büchner funnel + filter flask +
+       cold trap + aspirator.
+    7. **Liquid-liquid extraction** (5 equipment, 2
+       connections): sep funnel + ring stand + 3-prong
+       clamp + 2 Erlenmeyer collection flasks.
+    8. **Recrystallisation** (6 equipment, 3
+       connections): Erlenmeyer + hot plate + ice bath
+       + Büchner + filter flask + aspirator.
+  Equipment refs are INDICES into the setup's
+  equipment list (not ids) so the same piece can
+  appear twice.  Each setup carries: id / name /
+  purpose / equipment list / `SetupConnection` records
+  / procedure / safety_notes / pedagogical_notes /
+  typical_reactions / icon_id.  Each
+  `SetupConnection`: from_equipment_idx / from_port /
+  to_equipment_idx / to_port / note (free text
+  describing the connection).
+- **`validate_setup(setup)`** — the round's headline
+  helper.  Walks every connection, resolves the named
+  ports on the referenced equipment via the Phase-38a
+  catalogue, and returns a list of human-readable
+  error strings (empty = valid).  Validation rules:
+    - Equipment indices in range.
+    - No self-loops (connection between same
+      equipment item).
+    - Both port names exist on their respective
+      equipment.
+    - Joint types match (with `open` as wildcard for
+      non-glass-joint physical contact like clamp
+      grip / hot-plate top / vessel-on-bench).
+    - Male ↔ female port-sex complementarity for
+      ground-glass joints (skip for symmetric kinds:
+      `hose`, `socket`, `open`).
+- **4 port-direction bug fixes in
+  `core/lab_equipment.py`** — caught by the validator:
+    - Distillation head side arm was female; should be
+      male (head pegs INTO condenser inlet, which is
+      female).
+    - Vacuum adapter top was male; should be female
+      (accepts condenser male top output).
+    - Thermometer stem joint type was `thermometer-bulb`;
+      should be `thermometer-sleeve` to match the
+      adapter's `therm-sleeve` socket.
+    - Sep funnel had no male outlet — added an
+      `outlet` male 24/29 port for addition-funnel
+      use (when the funnel is mounted in a 3-neck
+      RBF side neck).
+  Also relaxed two non-glass-joint contact points
+  (clamp jaws → `open`, hot-plate top → `open`) and
+  fixed the filter flask mouth joint type to match
+  the Büchner stem.  All 37 existing 38a tests still
+  pass.
+- **`orgchem/gui/dialogs/lab_setups.py`** — singleton
+  modeless dialog wired to *Tools → Lab setups…*
+  (Ctrl+Shift+U).  Filter + setup list on the left;
+  detail card on the right with Purpose / Equipment
+  (resolved to full Phase-38a names with id
+  annotations) / Connections (port-to-port table
+  with notes) / Procedure / Safety / Pedagogical /
+  Typical-reactions sections.  When `validate_setup`
+  returns errors, they render in RED at the bottom
+  of the detail card — surfaces stale data (after a
+  Phase-38a port rename) without needing a test
+  re-run.  `select_setup(id)` programmatic API for
+  the agent-action open path.
+- **`orgchem/agent/actions_lab_setups.py`** — 5
+  actions in the `lab` category:
+    - `list_lab_setups()` — full catalogue with
+      equipment + connection details.
+    - `get_lab_setup(setup_id)`.
+    - `find_lab_setups(needle)` — case-insensitive
+      substring across id + name + purpose.
+    - `validate_lab_setup(setup_id)` — returns
+      `{"valid": bool, "errors": [str]}`.  Useful for
+      the future Phase-38c canvas: when a user drags a
+      piece onto the canvas, real-time validation
+      surfaces port-mismatch errors before they hit
+      *Run simulation*.
+    - `open_lab_setups(setup_id="")` — open the
+      dialog, optionally focus a specific setup.
+- **`orgchem/agent/__init__.py`** — auto-loader
+  registers the new module.
+- **`orgchem/gui/main_window.py`** — Tools menu entry
+  added.
+- **`orgchem/gui/audit.py`** — all 5 actions
+  registered; GUI coverage stays at 100 %.
+
+### Tests
+- **`tests/test_lab_setups.py`** — 30 headless cases:
+    - Catalogue size ≥ 8.
+    - All 8 canonical setups present.
+    - Every setup has required fields.
+    - Every id is unique.
+    - **Headline regression test**: every seeded setup
+      validates CLEAN against the Phase-38a equipment
+      catalogue.  This catches port-renames + sex-
+      mismatch typos at test time rather than at
+      canvas-build time.
+    - 6 negative-path validator tests covering each
+      error class (unknown-id, out-of-range-index,
+      self-loop, unknown-port, joint-mismatch,
+      port-sex-mismatch).
+    - `open` joint type relaxes the strict-equality
+      check (clamp grip on glass works).
+    - 8 per-setup teaching invariants:
+        - Simple distillation has ≥ 2 RBFs (pot +
+          receiver).
+        - Simple distillation includes thermometer +
+          Liebig + distillation head + vacuum adapter.
+        - Fractional distillation = simple + Vigreux
+          (super-set check on equipment ids).
+        - Reflux uses Allihn (NOT Liebig).
+        - Soxhlet includes extractor + condenser + RBF.
+        - Vacuum filtration includes Büchner + filter
+          flask + cold trap.
+        - LLE centred on sep funnel + ring stand.
+        - Recrystallisation has its own collection
+          stage (Büchner + filter flask).
+    - get unknown / find substring + case-insensitive
+      / find empty.
+    - to_dict serialisation has all 10 expected keys
+      + connections serialise as a list of dicts.
+    - 6 agent-action wrappers (list / get / get-unknown
+      / find / validate-clean / validate-unknown).
+- **`tests/test_lab_setups_dialog.py`** — 11 pytest-qt
+  cases:
+    - Construction with ≥ 8 rows + non-modal.
+    - Singleton identity.
+    - Text filter narrows list (reflux → 2 rows).
+    - No-match shows blank message.
+    - First setup auto-selected with all 5 standard
+      sections in detail (Purpose / Equipment /
+      Connections / Procedure / Pedagogical notes).
+    - `select_setup("vacuum_filtration")` focuses the
+      right row.
+    - Detail shows resolved Phase-38a equipment NAMES
+      ("Round-bottom flask", "Liebig condenser",
+      "Distillation head") rather than just ids.
+    - Detail shows port names in the connection list.
+    - `select_setup("does-not-exist")` returns False.
+    - `open_lab_setups` action fires.
+    - `open_lab_setups(setup_id="recrystallisation")`
+      focuses the row.
+- **Full suite: 1 463 / 1 463 pass, 0 skipped** (was
+  1 422).
+
+### Design notes
+- **Why a validator?**  Two payoffs: (a) catches real
+  port-direction bugs in the equipment catalogue
+  before they ship, and (b) gives the future
+  Phase-38c canvas a single trusted check for "did
+  the user assemble valid apparatus?".  The validator
+  is the same code path the canvas will call.
+- **Why equipment-by-INDEX, not by id?**  Because the
+  same piece can appear twice in one setup — pot RBF
+  vs receiver RBF, top + bottom Erlenmeyer in LLE
+  collection.  An id-keyed connection model would
+  collapse those into one node and lose the
+  distinction.  Indexing by position in the equipment
+  list is the natural data shape.
+- **Why surface validation errors in the dialog?**
+  When a Phase-38a port is renamed, the catalogue
+  in 38b doesn't update automatically; the validation
+  errors appearing in the dialog detail card surface
+  the stale data immediately to anyone browsing,
+  without anyone needing to run pytest.  Belt + braces
+  with the headline regression test.
+- **Why use `open` as a wildcard joint type?**
+  Some "connections" in real lab setups aren't glass
+  joints — they're a clamp gripping a flask, a flask
+  sitting on a hot plate, a Büchner funnel pressed
+  into a filter flask via a rubber stopper.  Forcing
+  these through a strict joint-type check would mean
+  inventing dozens of joint-type tags for things
+  that are just "physical contact / a stopper / a
+  grip".  `open` as a wildcard absorbs all of these
+  cleanly.
+- **Why no schematic-diagram render in the dialog?**
+  The dialog is the *reference* surface; the canvas
+  + animation are 38c + 38d.  Adding a render now
+  would mean inventing the layout algorithm twice
+  (once for the static dialog, once for the
+  interactive canvas).  Better to share the same
+  layout in 38c.
+
+### Phase 38 status — 2 / 6 sub-phases complete
+- 38a ✅ equipment catalogue (round 140).
+- 38b ✅ setup catalogue + validator (round 141).
+- 38c ⏳ equipment palette + `QGraphicsScene` canvas
+  (drag from palette + snap connection ports).
+- 38d ⏳ process simulator (per-setup state machine
+  + animation).
+- 38e ⏳ Reactions-tab integration (pick a seeded
+  reaction + matching setup, watch them co-animate).
+- 38f ⏳ agent actions for setup placement + sim.
+
+### Next
+Round 142: **Phase 38c (equipment palette + canvas)**
+is the natural next pick — the QGraphicsScene canvas
+where users drag pieces from a palette and snap them
+together.  The data model + validator from this round
+make the canvas's snap-validation a single function
+call.  The seeded setups give the canvas pre-built
+templates the user can load.  Ships in 1-2 rounds
+depending on how much animation polish lands in 38d
+vs 38c.
+
+---
+
+## 2026-04-25 — Round 140 (Phase 38a — lab equipment catalogue)
+
+### Context
+Round 139 closed Phase 37 entirely.  Round 140 starts
+Phase 38 (the user-flagged multi-round lab-setup
+simulator).  38a is the headless equipment catalogue —
+the foundation every later sub-phase (38b setups, 38c
+canvas, 38d simulator) depends on.  Same dataclass +
+dialog shape as Phase 37, so it ships in one round and
+sets up the canvas work for round 141+.
+
+### What shipped
+- **`orgchem/core/lab_equipment.py`** —
+  `Equipment` + `ConnectionPort` frozen dataclasses.
+  42-entry catalogue across 12 categories:
+    - **glassware (4)**: round-bottom flask, three-neck
+      RBF, Erlenmeyer, beaker.
+    - **adapter (6)**: distillation head (3-way),
+      Claisen adapter, vacuum take-off adapter,
+      thermometer adapter, glass stopper, rubber septum.
+    - **condenser (6)**: Liebig (straight tube), Allihn
+      (bulb), Graham (coil), Friedrichs (spiral),
+      Dimroth (double-end coil), air condenser.
+    - **heating (5)**: heating mantle, Variac, hot-plate
+      stirrer, silicone oil bath, Bunsen burner.
+    - **cooling (2)**: ice / water bath (0 °C), dry-ice
+      / acetone bath (-78 °C).
+    - **separation (3)**: separatory funnel, Vigreux
+      fractionating column, Soxhlet extractor.
+    - **filtration (3)**: Büchner funnel, Hirsch funnel,
+      filter / suction flask.
+    - **vacuum (4)**: rotary-vane pump, water aspirator,
+      cold-trap vacuum protection, drying tube
+      (CaCl₂ / sieves).
+    - **stirring (2)**: magnetic stir bar, mechanical
+      overhead stirrer.
+    - **support (4)**: ring stand, three-prong clamp,
+      Keck clip, cork ring.
+    - **safety (2)**: fume hood, thermometer.
+    - **analytical (1)**: melting-point apparatus
+      (placeholder cross-ref to Phase 37c/d catalogues).
+  Each entry: id / name / category / description /
+  typical_uses / variants / safety_notes / icon_id /
+  connection_ports.  Connection ports carry name +
+  location + joint_type + is_male flag — the data the
+  future Phase-38c canvas will use to snap items
+  together.  Joint-type vocabulary: ANSI ground-glass
+  tapers (`14/20`, `19/22`, `24/29`, `29/32`), `hose`
+  (rubber tubing), `socket` (electrical), `open`
+  (no-constraint), and equipment-specific tags
+  (`thermometer-bulb`, `filter-paper`, `MP-capillary`,
+  `gas-tube`, `dewar-fit`, …).
+  Lookup helpers `list_equipment(category)` /
+  `get_equipment(id)` / `find_equipment(needle)`
+  (case-insensitive substring across id + name +
+  category) / `categories()` / `to_dict(equipment)`
+  (ports serialise as a list of dicts so the agent
+  action returns JSON-friendly data).
+- **`orgchem/gui/dialogs/lab_equipment.py`** —
+  singleton modeless dialog wired to *Tools → Lab
+  equipment…* (Ctrl+Shift+I).  Same outer shape as
+  the Phase-37c/d dialogs (category combo + free-text
+  filter on the left, list of `name — category` rows,
+  HTML detail card on the right) plus a *Connection
+  ports* `<ul>` section in the detail body that lists
+  every named joint on the selected item with its
+  location + joint type + male/female role.
+- **`orgchem/agent/actions_lab_equipment.py`** — 4
+  actions in the `lab` category:
+    - `list_lab_equipment(category="")` — catalogue,
+      optional filter; unknown categories → clean error.
+    - `get_lab_equipment(equipment_id)` — full record
+      by id.
+    - `find_lab_equipment(needle)` — case-insensitive
+      substring across id + name + category.
+    - `open_lab_equipment(equipment_id="")` — open the
+      dialog, optionally focus an item.
+  All four wired into `agent/__init__.py` auto-loader.
+  Lookup actions are pure-headless; the dialog opener
+  marshals onto the Qt main thread.
+- **`orgchem/gui/main_window.py`** — Tools menu entry
+  added.
+- **`orgchem/gui/audit.py`** — all 4 actions registered;
+  GUI coverage stays at 100 %.
+
+### Tests
+- **`tests/test_lab_equipment.py`** — 26 headless cases:
+    - Catalogue size ≥ 35 (actually 42).
+    - All 12 categories represented.
+    - Every entry has required fields (id, name,
+      category, description, typical_uses).
+    - Every id is unique.
+    - 23 canonical apparatus pieces present (RBF,
+      3-neck, condensers, mantle, sep funnel, etc.).
+    - Per-row teaching invariants:
+        - RBF safety mentions cork ring or clamp.
+        - Three-neck flask has exactly 3 ports
+          (center / left / right).
+        - Distillation head has exactly 3 ports
+          (bottom + thermometer + side).
+        - Liebig has water-in + water-out hose ports.
+        - Sep funnel safety mentions venting / pressure.
+        - Dry-ice bath in cooling category + mentions
+          -78 °C in description.
+        - Bunsen burner safety mentions flammable
+          solvent / open flame risk.
+        - Keck clip variants mention the 24/29 mapping.
+    - Every connection port has all required fields.
+    - List filtered by category (glassware ≥ 4,
+      condenser ≥ 5).
+    - List unknown / get unknown / find empty.
+    - Find substring + case-insensitive.
+    - to_dict serialisation includes port lists.
+    - 6 agent-action tests (list / list-filtered /
+      list-unknown-error / get / get-unknown / find).
+- **`tests/test_lab_equipment_dialog.py`** — 11
+  pytest-qt cases:
+    - Construction with ≥ 35 rows.
+    - Singleton identity.
+    - Category combo filtering (condenser → ≥ 5 rows).
+    - Text filter narrows list ("flask" → ≥ 4 rows).
+    - No-match shows blank message.
+    - First item auto-selected with Description +
+      Typical-uses sections in detail HTML.
+    - Selecting 3-neck-RBF shows all three port names
+      (center / left / right) in detail.
+    - `select_equipment("liebig_condenser")` focuses
+      the right row.
+    - Unknown id returns False.
+    - `open_lab_equipment` action fires.
+    - Open with `equipment_id="sep_funnel"` focuses it.
+- **Full suite: 1 422 / 1 422 pass, 0 skipped** (was
+  1 385).
+
+### Design notes
+- **Why 42 entries, not 50?**  The user-flagged brief
+  mentioned ~50 items; the actual catalogue lands at
+  42 because the listed items don't all justify
+  separate entries (e.g. "Variac" + "voltage controller"
+  = same entry; "round-bottom flask" covers all sizes
+  via the variants field).  The 42 in the catalogue
+  cover every piece needed by the canonical Phase-38b
+  setups (simple distillation, fractional, reflux,
+  Soxhlet, vacuum filtration, recrystallisation,
+  liquid-liquid extraction).  Extras (rotary
+  evaporator, lyophiliser, glove box, Schlenk line)
+  can land in 38a.1 polish.
+- **Why `ConnectionPort` as a separate dataclass?**
+  The future Phase-38c canvas needs deterministic
+  snap-validation: when the user drags item A onto
+  item B, can these two pieces actually connect?  By
+  encoding the joint-type vocabulary now (ground-glass
+  tapers + hose + socket + open + specialty tags), the
+  canvas just compares `joint_type` strings + male /
+  female flags.  No dynamic typing; clear failure
+  modes.  Joint compatibility (24/29 male ↔ 24/29
+  female) is a simple equality + sex-mismatch check.
+- **Why include the `icon_id` field as just a string?**
+  Phase 38c will need an SVG asset per equipment item.
+  Reserving the field now (as a placeholder string
+  matching the equipment id) means the asset directory
+  can be populated in 38c without re-touching the
+  catalogue.
+- **Why no quantitative widgets / calculators?**
+  Equipment doesn't compute — the simulator (38d) is
+  where the physics lives.  This sub-phase is pure
+  reference + the connection-port data structure that
+  later sub-phases consume.
+
+### Phase 38 status — 1 / 6 sub-phases complete
+- 38a ✅ equipment catalogue (round 140).
+- 38b ⏳ setup catalogue (`Setup` dataclass + 6-8
+  canonical setups: simple distillation, fractional,
+  reflux, Soxhlet, …).
+- 38c ⏳ equipment palette + `QGraphicsScene` canvas
+  (drag from palette + snap connection ports).
+- 38d ⏳ process simulator (per-setup state machine
+  + animation).
+- 38e ⏳ Reactions-tab integration (pick a seeded
+  reaction + matching setup, watch them co-animate).
+- 38f ⏳ agent actions for setup placement + sim.
+
+### Next
+Round 141: **Phase 38b (setup catalogue)** — same
+shape as 38a, 6-8 canonical setups (simple distillation
+RBF + dist-head + thermometer + Liebig + vacuum
+adapter + receiver; reflux RBF + Allihn; Soxhlet
+flask + extractor + condenser; …).  Each setup carries
+an ordered list of equipment ids + the connections
+between them.  Ships cleanly in one round.
+
+---
+
+## 2026-04-25 — Round 139 (🎉 Phase 37 CLOSED — spectrophotometry + Beer-Lambert calculator)
+
+### Context
+Round 138 closed Phase 37c (chromatography).  Round 139
+ships 37d — spectrophotometry + a Beer-Lambert calculator
+that's the first quantitative widget in the Phase-37
+catalogue family.  After this round, all four user-flagged
+sub-phases of Phase 37 (qualitative inorganic + clinical
+lab + chromatography + spectrophotometry) are end-to-end
+functional.
+
+### What shipped
+- **`orgchem/core/spectrophotometry_methods.py`** —
+  `SpectrophotometryMethod` frozen dataclass + 12-entry
+  catalogue across 5 categories:
+    - **molecular-uv-vis (2)**: UV-Vis, fluorescence.
+    - **molecular-ir (5)**: IR/FTIR, ATR-FTIR, NIR,
+      Raman, SERS.
+    - **molecular-chirality (1)**: CD.
+    - **atomic (3)**: AAS, ICP-OES, ICP-MS.
+    - **magnetic-resonance (1)**: NMR.
+  Each entry is a long-form reference card (200-500 words)
+  with principle / light source / sample handling /
+  detector / wavelength range / typical analytes /
+  strengths / limitations / procedure / notes.  IR/FTIR
+  + NMR cross-reference the existing `core/spectroscopy.py`
+  + `core/nmr.py` *predictors* so users see the
+  descriptive (this round) and predictive (Phase 4) layers
+  integrated.  Notes capture textbook landmarks: NIR
+  pulse-oximeter as everyday application, GCMS Kovats
+  reference handling, NMR's Nobel history (Ernst 1991, MRI
+  2002), Sanger's 2D paper chromatography insulin
+  sequence, etc.
+- **Beer-Lambert helper** — `beer_lambert_solve(absorbance,
+  molar_absorptivity, path_length_cm, concentration_M)`:
+  pass any 3 of 4 quantities, get the 4th.  Validates
+  exactly-one-missing + positive inputs.  Pure-headless;
+  the dialog + agent action both delegate to it.
+- **`orgchem/gui/dialogs/spectrophotometry_methods.py`** —
+  singleton modeless dialog wired to *Tools →
+  Spectrophotometry techniques…* (Ctrl+Shift+W).
+  Same outer shape as the Phase-37c chromatography dialog
+  (category combo + free-text filter + list + 9-section
+  HTML detail card) PLUS a collapsible Beer-Lambert
+  calculator panel at the bottom of the right pane:
+    - 4 `QDoubleSpinBox` fields for A / ε (M⁻¹·cm⁻¹) /
+      l (cm) / c (M) — c uses 8-decimal display for
+      sub-µM concentrations.
+    - *Solve for empty field* button (treats 0 as
+      "blank") + *Clear* button.
+    - Status label that displays the rearranged
+      equation in human form (e.g. "c = A / (ε · l) =
+      4.0e-5 M").
+  `select_method(method_id)` programmatic API for the
+  agent-action open path.
+- **`orgchem/agent/actions_spectrophotometry.py`** — 5
+  actions in the `spectrophotometry` category:
+    - `list_spectrophotometry_methods(category="")` —
+      catalogue, optional category filter.
+    - `get_spectrophotometry_method(method_id)` — full
+      record by id.
+    - `find_spectrophotometry_methods(needle)` —
+      case-insensitive substring across id + name +
+      abbreviation.
+    - `beer_lambert(...)` — quantitative helper exposed
+      to the tutor / scripts.
+    - `open_spectrophotometry(method_id="")` — open the
+      dialog, optionally focus a method.
+  All five wired into `agent/__init__.py` auto-loader.
+  Lookup + Beer-Lambert actions are pure-headless; the
+  dialog opener marshals onto the Qt main thread.
+- **`orgchem/gui/main_window.py`** — Tools menu entry
+  added.
+- **`orgchem/gui/audit.py`** — all 5 actions registered;
+  GUI coverage stays at 100 %.
+
+### Tests
+- **`tests/test_spectrophotometry_methods.py`** — 33
+  headless cases:
+    - Catalogue size ≥ 12.
+    - All 5 categories represented.
+    - Every entry has all required fields (13 fields).
+    - 12 canonical methods present.
+    - Per-row teaching invariants:
+        - UV-Vis principle mentions Beer-Lambert / molar
+          absorptivity.
+        - Fluorescence mentions Stokes shift or quantum
+          yield.
+        - IR/FTIR notes cross-reference
+          `core/spectroscopy` predictor.
+        - ATR-FTIR mentions no-sample-prep.
+        - Raman mentions complementary selection rule
+          / polarisability.
+        - SERS mentions 10⁴-10⁸× enhancement factor.
+        - CD typical-analytes mentions secondary
+          structure / α-helix / β-sheet.
+        - NMR notes cross-reference `core/nmr` shift
+          predictor.
+        - ICP-MS limitations mention polyatomic
+          interferences.
+    - List filtered by category (5 IR + 3 atomic).
+    - List unknown / get unknown / find empty.
+    - Beer-Lambert solver in ALL 4 directions
+      (concentration, absorbance, path length, molar
+      absorptivity) with rel_tol 1e-6 numerical
+      precision.
+    - Beer-Lambert rejects two-missing inputs +
+      zero / negative inputs.
+    - to_dict serialisation has all 14 expected keys.
+    - 8 agent-action tests covering happy path +
+      every error path including the Beer-Lambert
+      action.
+- **`tests/test_spectrophotometry_dialog.py`** — 14
+  pytest-qt cases:
+    - Construction with ≥ 12 rows.
+    - Singleton identity.
+    - Category combo filtering (atomic → 3 rows).
+    - Text filter narrows list (nmr → 1 row).
+    - No-match shows blank message.
+    - First method auto-selected with all 5 standard
+      sections in detail.
+    - `select_method("nmr")` focuses NMR.
+    - Unknown id returns False.
+    - **Beer-Lambert calculator widget** — fills
+      concentration from A + ε + l; fills absorbance
+      from ε + l + c; complains when 2 fields blank;
+      Clear button resets all 4 spin boxes.
+    - `open_spectrophotometry` action fires.
+    - Open with `method_id="cd"` focuses CD row.
+- **Full suite: 1 385 / 1 385 pass, 0 skipped** (was
+  1 338).
+
+### Design notes
+- **Why include NMR in a "spectrophotometry" catalogue?**
+  Strictly speaking NMR isn't optical spectroscopy — it
+  uses RF.  But pedagogically NMR is the workhorse
+  spectroscopic technique organic students learn
+  alongside IR / UV-Vis / MS, and a "techniques" reference
+  panel that omits NMR would feel incomplete.  Categorised
+  as `magnetic-resonance` rather than mixed in with the
+  optical methods, with notes that surface its RF (not
+  light) source.
+- **Why a Beer-Lambert calculator + no other quantitative
+  widgets?**  Beer-Lambert is the single most-taught
+  quantitative relationship in undergraduate
+  spectroscopy.  Other methods have analytical
+  relationships (Hammett ρ, K_eq from spectroscopy
+  titrations, Raman cross-section…) but those are far
+  more specialised — adding calculator widgets for them
+  would clutter the dialog without much pedagogical
+  payoff.  The Beer-Lambert solver doubles as a worked
+  example of the catalogue + helper-function pattern,
+  in case 37e (e.g. NMR shift calculator) wants to add
+  more.
+- **Why both a dialog widget AND an agent action for
+  Beer-Lambert?**  Different audiences.  The dialog
+  widget is for a student doing a worked example
+  by hand; the agent action is for a tutor doing
+  scripted demos or a student generating a calibration
+  curve programmatically.  Same underlying solver →
+  no duplication.
+- **Why no spectrum simulator / lineshape predictor?**
+  Out of scope for a *reference* catalogue.  The Phase
+  4 layer (`core/spectroscopy.py` for IR, `core/nmr.py`
+  for NMR, `core/ms.py` for MS) already does
+  prediction; this phase deliberately complements
+  rather than overlapping.
+
+### Phase 37 status — COMPLETE 🎉
+- 37a ✅ qualitative inorganic tests (round 136).
+- 37b ✅ clinical lab panels (round 137).
+- 37c ✅ chromatography techniques (round 138).
+- 37d ✅ spectrophotometry techniques (round 139).
+
+The entire user-flagged Phase 37 (analytical-chemistry
+reference tools) is now end-to-end functional.
+
+### Next
+Round 140 candidates:
+- **Phase 38a (start the lab setup simulator)** — begin
+  with a headless equipment catalogue (~50 entries)
+  following the Phase-37a pattern; canvas + animation
+  ship in later rounds (38b-38f).
+- **Phase 31 long-running content** — chip another
+  named reaction (38/50), SAR series (9/15), etc.
+- **Phase 36 polish** — lasso select + drag, indole /
+  NHAc templates.
+
+---
+
+## 2026-04-25 — Round 138 (Phase 37c — chromatography techniques)
+
+### Context
+Round 137 closed Phase 37b.  Round 138 ships 37c — same
+catalogue + dialog + agent-action shape, keyed to
+chromatographic separation methods.  The user-flagged
+brief specified GC / HPLC / FPLC at minimum; the
+catalogue ships those plus 12 more methods covering the
+modern analytical + preparative spread.
+
+### What shipped
+- **`orgchem/core/chromatography_methods.py`** —
+  `ChromatographyMethod` frozen dataclass (id / name /
+  abbreviation / category / principle / stationary_phase
+  / mobile_phase / detectors / typical_analytes /
+  strengths / limitations / procedure / notes).  15
+  entries:
+    - **Planar (2)**: TLC, paper.
+    - **Preparative-column (2)**: gravity column, flash.
+    - **Gas (2)**: GC, GC-MS.
+    - **Liquid (3)**: HPLC, LC-MS, HILIC.
+    - **Protein (4)**: FPLC, IEX, SEC, affinity.
+    - **Ion (1)**: IC.
+    - **Supercritical (1)**: SFC.
+  Each entry is a 200-400-word reference card structured
+  around the strengths-vs-limitations trade-off — the
+  pedagogically essential bit ("what's this method good
+  at? what does it not handle?").  Notes capture the
+  textbook teaching footnotes (Kovats retention indices,
+  MRM for triple-quad LC-MS, ÄKTA as the FPLC platform,
+  SFC's chiral-separation dominance).
+- **`orgchem/gui/dialogs/chromatography_methods.py`** —
+  singleton modeless dialog wired to *Tools →
+  Chromatography techniques…* (Ctrl+Shift+G).  Same
+  shape as the round-136 qualitative-tests dialog:
+  category combo + free-text filter on the left, list of
+  `abbreviation — name` rows, HTML detail card on the
+  right with 8 sections (Principle / Stationary phase /
+  Mobile phase / Detector(s) / Typical analytes /
+  Strengths / Limitations / Procedure / Notes).
+  `select_method(method_id)` programmatic API for the
+  agent-action open path.
+- **`orgchem/agent/actions_chromatography.py`** — 4
+  actions in the `chromatography` category:
+    - `list_chromatography_methods(category="")` —
+      catalogue, optional category filter.
+    - `get_chromatography_method(method_id)` — full
+      record by id.
+    - `find_chromatography_methods(needle)` —
+      case-insensitive substring across id + name +
+      abbreviation.
+    - `open_chromatography_methods(method_id="")` — open
+      the dialog, optionally focus a method.
+  Dialog opener marshals onto the Qt main thread.
+- **`orgchem/agent/__init__.py`** — auto-loader
+  registers the new module.
+- **`orgchem/gui/main_window.py`** — Tools menu entry
+  added.
+- **`orgchem/gui/audit.py`** — all 4 actions registered;
+  GUI coverage stays at 100 %.
+
+### Tests
+- **`tests/test_chromatography_methods.py`** — 23
+  headless cases:
+    - Catalogue size ≥ 15.
+    - All 7 categories represented.
+    - Every entry has all required fields.
+    - 14 canonical methods present (TLC, column, flash,
+      GC, GC-MS, HPLC, LC-MS, HILIC, FPLC, IEX, SEC,
+      affinity, IC, SFC).
+    - User-explicitly-requested methods (GC, HPLC,
+      FPLC) have non-trivial principle text.
+    - Per-row teaching invariants:
+        - HPLC mentions reverse-phase or C18.
+        - GC limitations mention volatility / thermal
+          constraint.
+        - SEC principle mentions size + pore + void /
+          early elution.
+        - Affinity entry references His-tag / Ni-NTA /
+          Protein A / GST.
+        - SFC strengths / typical analytes mention
+          chiral / enantiomer.
+    - List filtered by category / unknown returns empty.
+    - get_method unknown returns None.
+    - find_methods substring + case-insensitive +
+      empty-needle behaviour.
+    - to_dict serialisation has all 13 expected keys.
+    - 6 agent-action tests (list / list-filtered /
+      list-unknown-error / get / get-unknown-error /
+      find-methods).
+- **`tests/test_chromatography_dialog.py`** — 10
+  pytest-qt cases:
+    - Dialog constructs with ≥ 15 rows.
+    - Singleton returns same instance.
+    - Category combo filters list (protein → 4 rows).
+    - Text filter narrows list.
+    - No-match shows blank message.
+    - First method auto-selected on construction with
+      all 5 standard sections in detail card.
+    - `select_method("hplc")` focuses the right row.
+    - Unknown id returns False.
+    - `open_chromatography_methods` action fires.
+    - Open with `method_id="sfc"` focuses SFC row.
+- **Full suite: 1 338 / 1 338 pass, 0 skipped** (was
+  1 305).
+
+### Design notes
+- **Why 15 methods, not 7 or 30?**  The user-requested
+  brief named TLC + column + GC + HPLC + FPLC (+ "etc").
+  15 covers the mainstream spread without padding —
+  every modern lab uses a subset of these regularly.
+  Adding more would mean specialty / niche techniques
+  (DCCC, CCC, paired-ion HPLC, micellar HPLC, …) that
+  most undergrads never see.
+- **Why a strengths-vs-limitations field pair instead of
+  a single "notes" field?**  Pedagogical: surfacing the
+  trade-off explicitly is what makes a chromatography
+  reference USEFUL.  "GC is fast + sensitive BUT only
+  volatile analytes" is the essential mental model;
+  burying that in prose loses the teaching point.
+- **Why no separation simulator / van Deemter
+  calculator?**  Reference data first, simulators
+  second.  A van Deemter plot or Rf calculator would be
+  a natural 37c.1 polish round if anyone asks for it,
+  but the catalogue already gives students the
+  qualitative + quantitative info they need to
+  understand WHEN to use each method.
+- **Why share the dialog shape across 37a / 37c?**  Same
+  user model (browse a categorised reference catalogue,
+  drill down to a detail card) deserves the same UI
+  shape.  37b's dialog is slightly different (panel
+  picker + analyte table) because the data model is
+  different (panels OWN analytes), but 37a + 37c are
+  pure category + entry catalogues with no internal
+  hierarchy.
+
+### Phase 37 status snapshot (post-round 138)
+- 37a ✅ qualitative inorganic tests (round 136).
+- 37b ✅ clinical lab panels (round 137).
+- 37c ✅ chromatography techniques (round 138).
+- 37d ⏳ spectrophotometry (UV-Vis / fluorescence /
+  IR / Raman / AA / CD).
+- Phase 38 ⏳ lab setup + process simulator (multi-
+  round).
+
+### Next
+Round 139: **Phase 37d (spectrophotometry)** is the
+natural next pick — closes Phase 37 entirely.  Same
+catalogue + dialog shape as 37c.
+
+---
+
+## 2026-04-25 — Round 137 (Phase 37b — clinical lab panels)
+
+### Context
+Round 136 closed Phase 37a (qualitative inorganic tests).
+Phase 37 has 4 sub-phases queued; 37b is the natural
+next pick — same dialog + catalogue shape as 37a but
+keyed to clinical-chemistry lab panels rather than
+wet-lab inorganic tests.  Ships in one round comfortably
+since the data shape is well-understood after 37a.
+
+### What shipped
+- **`orgchem/core/clinical_panels.py`** — headless
+  catalogue (~570 lines).  `LabAnalyte` + `LabPanel`
+  frozen dataclasses.  21 unique analytes:
+    - **Electrolyte (4)**: Na, K, Cl, HCO₃.
+    - **Kidney (2)**: BUN, creatinine.
+    - **Metabolic (2)**: glucose, HbA1c.
+    - **Liver (6)**: ALT, AST, ALP, total bilirubin,
+      albumin, total protein.
+    - **Lipid (4)**: TC, LDL, HDL, triglycerides.
+    - **Hormone (2)**: TSH, free T4.
+    - **Vitamin (1)**: 25(OH)D.
+    - **Mineral / electrolyte (1)**: calcium.
+  6 seeded panels reusing those analytes: BMP / CMP /
+  Lipid / DM follow-up / Thyroid / Vitamin D screening.
+  CMP literally shares BMP's analyte instances by
+  reference (frozen dataclass identity).  Each analyte
+  carries the clinical-significance + interpretation
+  notes that hit the textbook teaching points (BUN/Cr
+  ratio for pre-renal vs intrinsic, AST/ALT > 2 for
+  alcoholic hepatitis, HbA1c 3-month timescale,
+  Friedewald LDL caveat, Gilbert syndrome, anion-gap
+  MUDPILES, etc.).  Lookup helpers
+  `list_panels` / `get_panel` / `list_analytes(category)` /
+  `get_analyte` / `find_analyte(needle)` (matches against
+  id + name + abbreviation, case-insensitive) /
+  `categories()` + `analyte_to_dict` / `panel_to_dict`.
+- **`orgchem/gui/dialogs/clinical_panels.py`** —
+  singleton modeless dialog wired to *Tools → Clinical
+  lab panels…* (Ctrl+Shift+L).  Top: panel-picker
+  combo.  Below: horizontal splitter with left =
+  panel meta block (purpose / sample / fasting /
+  procedure / notes) + per-analyte `QTableWidget`
+  (4 columns: name, abbreviation, units, normal range);
+  right = analyte detail pane (title + meta line +
+  clinical-significance + notes).  Auto-selects first
+  panel + first analyte on open.  Switching panels
+  repopulates the table.  `select_panel(id)` +
+  `select_analyte(id)` programmatic API for the
+  `open_clinical_panels` agent action.
+- **`orgchem/agent/actions_clinical.py`** — 5 new
+  actions in the `clinical` category:
+    - `list_lab_panels()` — one-row-per-panel summary.
+    - `get_lab_panel(panel_id)` — full record incl.
+      every analyte.
+    - `list_lab_analytes(category="")` — every analyte
+      deduplicated, optional category filter.
+    - `find_lab_analyte(needle)` — case-insensitive
+      name / abbreviation / id lookup.
+    - `open_clinical_panels(panel_id="", analyte_id="")`
+      — open the dialog and optionally focus a panel +
+      row.
+  Dialog opener marshals onto the Qt main thread via
+  `_gui_dispatch.run_on_main_thread_sync`.
+- **`orgchem/agent/__init__.py`** — auto-loader registers
+  the new module so the actions show up in
+  `registry()`.
+- **`orgchem/gui/main_window.py`** — Tools menu entry
+  added.
+- **`orgchem/gui/audit.py`** — all 5 actions registered;
+  GUI coverage stays at 100 %.
+
+### Tests
+- **`tests/test_clinical_panels.py`** — 29 headless
+  cases:
+    - 3 primary panels (BMP / CMP / Lipid) + 3 extended
+      panels present.
+    - BMP = 8 analytes, CMP = 14 (= BMP ∪ 6 more), Lipid
+      = 4 (TC / LDL / HDL / TG).
+    - Every analyte has all required fields.
+    - Every panel has all required meta.
+    - Teaching invariants on key analyte descriptions
+      (BUN mentions kidney, Cr mentions GFR, HbA1c
+      mentions 3-month timescale, TSH mentions
+      thyroid).
+    - All 7 analyte categories represented.
+    - List filtered by category (lipid = 4, electrolyte
+      ≥ 4).
+    - Unknown category returns [].
+    - Lookup helpers (get_panel / get_analyte unknown
+      → None; find_analyte by name / by abbreviation /
+      case-insensitive / empty / no-match).
+    - **BMP and CMP share the glucose instance**
+      (frozen-dataclass identity check).
+    - to_dict serialisation has all 8 analyte keys + 9
+      panel keys.
+    - 7 agent-action tests cover happy path + unknown
+      panel / category / analyte error paths.
+- **`tests/test_clinical_panels_dialog.py`** — 13
+  pytest-qt cases:
+    - Dialog constructs with ≥ 5 panel-combo entries.
+    - Singleton returns same instance.
+    - Default loads first panel (BMP, 8 rows in table).
+    - Switching to Lipid repopulates with 4 rows.
+    - Panel meta text includes "Purpose" + "Fasting".
+    - First analyte auto-selected on construction.
+    - `select_analyte("creatinine")` focuses the right
+      row.
+    - Selecting an analyte not in the current panel
+      returns False (cross-panel safety).
+    - `select_panel(id)` + `select_analyte(id)`
+      sequential.
+    - Unknown panel id returns False.
+    - `open_clinical_panels` action fires.
+    - Open with both panel + analyte focuses both.
+    - Open with unknown analyte → analyte_selected is
+      False but panel_selected is True (no crash).
+- **Full suite: 1 305 / 1 305 pass, 0 skipped** (was
+  1 263).
+
+### Design notes
+- **Why share LabAnalyte instances rather than copy?**
+  CMP IS BMP + 6 more by definition.  Sharing the
+  frozen-dataclass instances (a) avoids data drift
+  (BMP and CMP can't disagree on glucose's normal
+  range), (b) cuts memory footprint, (c) makes
+  cross-panel lookups (e.g. "every panel that
+  measures glucose") trivial.  `frozen=True` makes
+  this safe — callers can't mutate either copy.
+- **Why include Vitamin D screening?**  Without it,
+  the `vitamin` category in `VALID_CATEGORIES` had
+  zero entries (vitamin D was defined as a LabAnalyte
+  but not used by any panel).  The 7-category
+  coverage invariant test caught the gap during the
+  test pass — added a small Vit D + Ca screening
+  panel rather than dropping the category.  Bonus:
+  the small panel doubles as a teaching demo for
+  what a "single-analyte focused workup" looks like.
+- **Why no chemistry / interpretation logic?**  These
+  panels are reference data, not decision support.
+  A student looking up "what does an elevated AST/ALT
+  ratio mean?" gets a textbook answer; an
+  interpretation engine would have to handle dozens
+  of confounders (medications, intercurrent illness,
+  age, sex) and would still be wrong often enough to
+  cause harm if anyone confused it for clinical
+  guidance.
+- **Why not include CBC, coagulation, ABG?**  Those
+  are different test categories (haematology /
+  coagulation / blood gas) with their own analyte
+  catalogues — could be Phase 37e if the user wants
+  them, but BMP / CMP / Lipid covered the user's
+  explicit request.
+
+### Phase 37 status snapshot (post-round 137)
+- 37a ✅ qualitative inorganic tests (round 136).
+- 37b ✅ clinical lab panels (round 137).
+- 37c ⏳ chromatography (TLC / column / GC / HPLC /
+  FPLC / SFC / ion).
+- 37d ⏳ spectrophotometry (UV-Vis / fluorescence /
+  IR / Raman / AA / CD).
+- Phase 38 ⏳ lab setup + process simulator (multi-
+  round).
+
+### Next
+Round 138: **Phase 37c (chromatography)** is the
+natural next pick — same dialog shape, ~7-10 entries
+covering the major separation methods.  Ships in one
+round.
+
+---
+
+## 2026-04-25 — Round 136 (Phase 37a — qualitative inorganic tests + roadmap expansion)
+
+### Context
+User flagged a new feature request: two reference tools
+for wet-lab analytical chemistry —
+1. Qualitative inorganic tests (flame / hydroxide / halide
+   / sulfate / carbonate / ammonium / common gas tests).
+2. Clinical-chemistry lab panels (BMP / CMP / Lipid Panel).
+Mid-round, two more tools added to the request:
+3. Chromatography techniques (TLC / column / GC / HPLC /
+   FPLC / SFC / ion).
+4. Spectrophotometry (UV-Vis / fluorescence / IR / Raman /
+   AA / CD / etc.).
+And then a much bigger request:
+5. Lab setup + process simulator with equipment library +
+   interactive canvas + animated process simulation +
+   seeded demos (simple distillation, reflux, Soxhlet, …).
+
+Round 136 ships #1 fully and adds #2-#5 to the roadmap as
+queued sub-phases / phases for future rounds.  Splitting
+the requests this way ensures each ships cleanly with full
+test coverage instead of cramming five UI tools into one
+round.
+
+### What shipped
+- **`orgchem/core/qualitative_tests.py`** — headless
+  catalogue.  `InorganicTest` dataclass (id, name,
+  category, target Unicode ion / gas, target_class
+  ∈ {cation, anion, gas}, reagents, procedure,
+  positive_observation, colour_hex for the dialog
+  swatch, notes).  32 entries:
+    - **Flame (8)**: Li / Na / K / Ca / Sr / Ba / Cu /
+      Cs.
+    - **Hydroxide (9)**: Cu²⁺ / Fe²⁺ / Fe³⁺ / Al³⁺ /
+      Mg²⁺ / Ca²⁺ / Zn²⁺ / Pb²⁺ / Mn²⁺ — with
+      amphoteric notes on Al / Zn / Pb that distinguish
+      them from Mg / Ca in excess NaOH.
+    - **Halide (3)**: Cl⁻ / Br⁻ / I⁻ — with the
+      ammonia-solubility differentiation (dilute NH₃
+      dissolves AgCl, conc. NH₃ dissolves AgBr,
+      neither dissolves AgI).
+    - **Sulfate**: BaSO₄ insoluble in acid.
+    - **Carbonate**: CO₃²⁻ / HCO₃⁻ + acid → CO₂ →
+      limewater milky.
+    - **Ammonium**: NH₄⁺ + NaOH + heat → NH₃ → litmus.
+    - **Gas (8)**: H₂ / O₂ / CO₂ / Cl₂ / NH₃ / HCl /
+      SO₂ / NO₂.
+  Lookup helpers: `list_tests(category)`,
+  `get_test(test_id)`, `find_tests_for(target)`,
+  `categories()`, `to_dict(test)`.
+  `_normalise_ion_label` strips Unicode super /
+  subscripts + lowercases + drops whitespace, so
+  `"Cu²⁺"` / `"Cu2+"` / `"cu  2  +"` all hash the
+  same.
+- **`orgchem/gui/dialogs/qualitative_tests.py`** —
+  modeless singleton dialog wired to *Tools →
+  Qualitative inorganic tests…* (Ctrl+Shift+Q).  Left
+  pane: category combo (`(all categories)` + 7
+  categories) + free-text filter + `QListWidget`
+  showing `target — name` rows.  Right pane: title +
+  meta line (target + class + category) + colour
+  swatch (`QLabel` whose stylesheet background is
+  set from the entry's `colour_hex`) + `QTextBrowser`
+  detail pane with Reagents / Procedure / Positive
+  observation / Notes sections.  `select_test(test_id)`
+  programmatic API for the agent-action open path.
+- **`orgchem/agent/actions_qualitative.py`** — 4 new
+  actions registered under category `"qualitative"`:
+    - `list_inorganic_tests(category="")` — full
+      catalogue or filtered (unknown categories return
+      `{"error": ...}`).
+    - `get_inorganic_test(test_id)` — full record by id.
+    - `find_inorganic_tests_for(target)` — every test
+      matching an ion / gas (case + Unicode tolerant).
+    - `open_qualitative_tests(test_id="")` — open the
+      dialog and optionally focus a row.  Marshals
+      onto the Qt main thread via
+      `_gui_dispatch.run_on_main_thread_sync`.
+  All four wired into `agent/__init__.py` auto-loader.
+- **`orgchem/gui/main_window.py`** — Tools menu entry
+  *Qualitative inorganic tests…* (Ctrl+Shift+Q) with
+  modeless singleton dialog opener.
+- **`orgchem/gui/audit.py`** — all 4 actions registered
+  in `GUI_ENTRY_POINTS`; coverage stays at 100 %.
+
+### Tests
+- **`tests/test_qualitative_tests.py`** — 23 headless
+  cases:
+    - 7-category invariant (every valid category has
+      ≥ 1 entry).
+    - Catalogue size ≥ 30.
+    - Every entry has all required fields (id, name,
+      target, target_class, reagents, procedure,
+      observation, colour_hex starts with `#` + 6 hex).
+    - Canonical flame / halide / gas tests present.
+    - Filter by category / by unknown-category empty.
+    - Get unknown id returns None.
+    - Get returns full record (Na yellow flame).
+    - ASCII / lowercase / whitespace tolerance for
+      `find_tests_for`.
+    - Aluminium hydroxide notes mention amphoteric /
+      excess NaOH (the discriminating teaching point
+      vs Mg / Ca).
+    - `to_dict` serialisation has all 10 expected keys.
+    - 6 agent-action tests: list / list-filtered /
+      list-unknown-error / get / get-unknown-error /
+      find-by-ASCII-target.
+- **`tests/test_qualitative_dialog.py`** — 11
+  pytest-qt cases:
+    - Dialog constructs with ≥ 30 rows, non-modal.
+    - Singleton returns same instance.
+    - Category combo filters list (3 rows for halide).
+    - Text filter narrows list ("copper" → ≥ 2 rows).
+    - No-match filter shows blank message.
+    - Selection updates title + detail pane.
+    - `select_test("flame-na")` focuses the right row.
+    - Unknown id returns False.
+    - Swatch stylesheet contains entry's `colour_hex`.
+    - `open_qualitative_tests` agent action fires +
+      can focus a specific test.
+- **Full suite: 1 263 / 1 263 pass, 0 skipped** (was
+  1 229).
+
+### Roadmap expansion
+Added to `ROADMAP.md`:
+- **Phase 37**:
+    - 37a ✅ qualitative inorganic tests (round 136).
+    - 37b ⏳ clinical lab panels (BMP / CMP / Lipid).
+    - 37c ⏳ chromatography (TLC / column / GC / HPLC /
+      FPLC / SFC / ion).
+    - 37d ⏳ spectrophotometry (UV-Vis / fluorescence /
+      IR / Raman / AA / CD).
+- **Phase 38** ⏳ lab setup + process simulator —
+  equipment library (~50 items: glassware kits, heating
+  / cooling, separation, support, analytical), setup
+  canvas with palette + drag-and-drop + connection-port
+  snapping, animated process simulation per setup
+  (simple distillation, fractional, reflux, Soxhlet,
+  liquid-liquid extraction, vacuum filtration,
+  recrystallisation), 6-10 rounds in scope split as
+  38a-38f.
+
+### Design notes
+- **Why a reference panel rather than a simulator?**
+  37a is intentionally a *describe what would happen*
+  tool — no chemistry runs.  The pedagogical use case
+  is "I'm seeing a blue flame in the lab, what cation
+  is that?" or "I want to know how to test for
+  chloride".  Simulation belongs in Phase 38.
+- **Why 7 categories not 5?**  Could have grouped
+  ammonium under "cation" and gases under "anion / gas",
+  but the experimental procedure for ammonium (NaOH +
+  heat → litmus) and the gas tests (visual / litmus /
+  limewater) are categorically different from
+  precipitation tests, and the dialog's category combo
+  reads more clearly with these as separate groups.
+- **Why Unicode targets in the data + ASCII-tolerant
+  lookup?**  The dialog renders Unicode cleanly
+  (`"Cu²⁺"` looks better than `"Cu2+"` in the row
+  text), but the agent / scripts shouldn't need to
+  copy-paste Unicode to call `find_inorganic_tests_for`.
+  The `_normalise_ion_label` helper bridges the two
+  worlds — Unicode in the data, ASCII / Unicode either
+  in the query.
+- **Why no atom-mapped chemistry SMILES on the test
+  entries?**  These are observation-driven procedures,
+  not transformations; the diagnostic IS the visual
+  result (flame colour, precipitate colour, gas
+  evolution).  Forcing a SMILES would over-engineer
+  the data model for a teaching-reference tool.
+
+### Next
+Round 137: **Phase 37b (clinical lab panels)** is the
+natural next sub-phase — same shape as 37a, smaller
+catalogue (BMP 8 analytes + CMP 14 + Lipid 4-5), so it
+should ship in one round comfortably.  Then 37c
+(chromatography) + 37d (spectrophotometry) at one each.
+Phase 38 is multi-round and would start once Phase 37 is
+fully closed.
+
+---
+
+## 2026-04-25 — Round 135 (Phase 36 polish: tapered wedge + hashed dash bonds)
+
+### Context
+Two consecutive content rounds (133: fluoroquinolones,
+134: CuAAC) advanced Phase 31 catalogues but left the
+Phase-36 drawing-tool visuals at the round-130 "thick
+green pen for wedge, dashed blue line for dash"
+placeholders.  The data-model side (Bond.stereo + SMILES
+/ mol-block round-trip) was correct — only the visual
+encoding was placeholder-y.  Round 135 ships the proper
+ChemDraw-style geometry that this round's user-facing
+drawing tool deserves.
+
+### What shipped
+- **`orgchem/gui/panels/drawing_panel.py`** — bond-rendering
+  refactor:
+    - New `_build_bond_visual(idx) -> QGraphicsItem` factory
+      that dispatches on `bond.stereo`:
+        - `"wedge"` → `_build_wedge_item(ax, ay, bx, by)`
+          returning a `QGraphicsPolygonItem` triangle (apex
+          at begin atom, two base vertices flanking the end
+          atom along the perpendicular axis).
+        - `"dash"` → `_build_dash_item(ax, ay, bx, by)`
+          returning a `QGraphicsItemGroup` of perpendicular
+          hash lines spaced ~4 px apart, widening from
+          1 px half-width at the begin atom to 5 px half-
+          width at the end atom.
+        - `"either"` → squiggle-grey dotted line (existing).
+        - default → plain `QGraphicsLineItem` with the
+          width / dash pattern encoding for bond order
+          (existing).
+    - `_draw_bond(idx)` simplified — calls the factory,
+      addItem to scene, append to `_bond_items`.
+    - `_refresh_bond(idx)` now drops the old item from the
+      scene and rebuilds via the factory.  Cheap on
+      teaching-scale molecules and avoids the dual update
+      paths that would otherwise be needed when stereo
+      flips swap the underlying QGraphicsItem subclass.
+    - Tunables surfaced as class attributes:
+      `_STEREO_WEDGE_COLOUR`, `_STEREO_DASH_COLOUR`,
+      `_STEREO_EITHER_COLOUR`, `_BOND_DEFAULT_COLOUR`,
+      `_WEDGE_HALF_WIDTH_PX = 5.0`,
+      `_DASH_HASH_SPACING_PX = 4.0`,
+      `_DASH_HALF_WIDTH_BEGIN = 1.0`,
+      `_DASH_HALF_WIDTH_END = 5.0`.
+
+### Tests
+- **`tests/test_drawing_panel_wedge_geometry.py`** — 15
+  new pytest-qt cases:
+    - **Wedge geometry (7 tests)**: type-check
+      `QGraphicsPolygonItem`, polygon has exactly 3
+      vertices, apex sits on begin atom (sub-pixel
+      tolerance), base centre sits on end atom, base
+      vector is perpendicular to bond axis (dot product
+      ≈ 0), base width = 2 × `_WEDGE_HALF_WIDTH_PX`,
+      brush colour is `_STEREO_WEDGE_COLOUR`.
+    - **Dash geometry (3 tests)**: type-check
+      `QGraphicsItemGroup`, has ≥ 4 hash lines (all
+      `QGraphicsLineItem`), last hash longer than first
+      hash (widening invariant).
+    - **Live update on atom drag (2 tests)**: drag end
+      atom, wedge polygon's base centre tracks new
+      position; same for the dash group's last hash.
+    - **Stereo flip swaps visual type (2 tests)**: wedge
+      → dash flips `QGraphicsPolygonItem` → `QGraphicsItemGroup`;
+      dash toggle-off (same kind clicked twice) flips
+      `QGraphicsItemGroup` → `QGraphicsLineItem`.
+    - **No scene leaks (1 test)**: stereo flip
+      preserves the scene item count.
+- All 77 existing drawing tests still pass — the refactor
+  is a pure visual upgrade with no data-model changes.
+- Full suite: **1 229 / 1 229 pass, 0 skipped** (was
+  1 214).
+
+### Design notes
+- **Why rebuild rather than mutate?**  Wedge ↔ dash flips
+  swap the underlying QGraphicsItem subclass
+  (`QGraphicsPolygonItem` ↔ `QGraphicsItemGroup` ↔
+  `QGraphicsLineItem`).  An in-place update path would
+  need three separate "update polygon vertices" / "update
+  group children" / "update line endpoints" branches
+  AND a "no-op vs swap" decision tree.  A
+  remove-and-rebuild approach handles all 9 transitions
+  with one code path; the cost is one scene-item churn
+  per refresh, which is invisible at teaching-scale
+  molecule sizes (≤ 50 atoms).
+- **Why apex-at-begin / base-at-end for the wedge?**
+  ChemDraw and IUPAC recommendation 2006 both put the
+  point at the stereocentre and the wide end at the
+  substituent that's closer to the viewer.  Our begin
+  atom is the stereocentre by convention (the user
+  clicks the centre first, then the substituent), so
+  the apex sits naturally at begin.
+- **Why hash-spacing scales with bond length?**  A
+  fixed hash count (say "always 5 hashes") looks bad
+  on long bonds (gappy) and on short bonds (crowded).
+  Scaling by `length / spacing` and clamping at a
+  minimum of 4 keeps the visual density consistent
+  across canvas zoom levels.
+- **Why no `QGraphicsPathItem`?**  Both shapes COULD
+  be expressed as a single `QPainterPath`, but the
+  per-hash `QGraphicsLineItem` approach gives free
+  hit-testing per hash + cleaner debug introspection
+  (each hash shows up separately in `childItems()`).
+  No measurable perf cost for ≤ 100-hash bonds.
+
+### Phase 36 polish status (post-round 135)
+- ✅ Tapered-polygon wedge + hashed-ladder dash bonds
+  (round 135).
+- ⏳ Lasso select + drag-move (multi-atom selection).
+- ⏳ Indole + NHAc ring / FG templates.
+- ⏳ Reagents-above-arrow text editor.
+
+### Next
+Round 136 candidates:
+- **Phase 36 polish +1**: lasso select + multi-atom
+  drag would be the next biggest UX win.
+- **Phase 31b +1 reaction** — 12 to go for the 50-target.
+- **Phase 31k +1 SAR series** — 6 to go.
+
+---
+
+## 2026-04-25 — Round 134 (Phase 31b +1: CuAAC click chemistry)
+
+### Context
+Round 133 added the 9th SAR series.  Round 134 varies
+target — Phase 31b (named reactions) is at 37/50 with 13
+to go; one more named reaction is the same content-round
+size as a SAR series (one teaching-anchor per round) and
+keeps the catalogues advancing in parallel rather than
+all-in-on-one.
+
+### What shipped
+- **`orgchem/db/seed_reactions.py`** — 38th named reaction:
+  *"Click chemistry: CuAAC (phenylacetylene + benzyl
+  azide)"*.  Reaction SMILES:
+  `C#Cc1ccccc1.[N-]=[N+]=NCc1ccccc1>>c1ccc(Cn2cc(-c3ccccc3)nn2)cc1`
+  — phenylacetylene + benzyl azide → 1-benzyl-4-phenyl-
+  1,2,3-triazole (1,4-disubstituted regioisomer).
+  Description:
+    - Sharpless / Meldal / Bertozzi 2022 Nobel anchor.
+    - Thermal Huisgen reaction is sluggish + gives
+      ~1:1 1,4 / 1,5 mixture without catalyst.
+    - Cu(I) accelerates ~10⁷-fold AND drives complete
+      1,4-regioselectivity.
+    - Stepwise dinuclear-Cu mechanism (Fokin / Worrell
+      2013) — Cu acetylide + Cu-coordinated azide α-N,
+      six-membered metallacycle, ladder cycle.
+    - Bioorthogonal + water-tolerant — why it sits at
+      the centre of chemical biology + drug discovery.
+    - SPAAC (cyclooctyne + azide, no Cu) is Bertozzi's
+      bio-friendly variant.
+- **`orgchem/db/seed_intermediates.py`** — two new
+  fragments backfilled to keep the fragment-consistency
+  audit clean: `Benzyl azide` and `1-Benzyl-4-phenyl-
+  1,2,3-triazole`.  Verified: `audit_reaction(...)` now
+  reports `n_in_db=3, n_missing=0` for the new reaction.
+
+### Tests
+- **`tests/test_reactions.py::test_click_chemistry_cuaac_seeded`**
+  — 1 new test locking three invariants:
+    1. Entry exists by substring lookup ("Click chemistry").
+    2. Reaction SMILES uses the canonical 1,4-disubstituted
+       triazole pattern (`Cn2cc(...)nn2`) — regioselectivity
+       is the whole teaching point of Cu(I) catalysis vs.
+       uncatalysed Huisgen.
+    3. Description names all three 2022 Nobel laureates
+       (Sharpless / Meldal / Bertozzi) AND mentions
+       "1,4" or "regioselect" so future copy-edits can't
+       accidentally drop the contemporary teaching anchor.
+- All five new SMILES (the reaction's three component
+  SMILES + the two intermediate-fragment SMILES) parse
+  + canonicalise cleanly via RDKit before insertion.
+- Full suite: **1 214 / 1 214 pass, 0 skipped** (was
+  1 213).
+
+### Design notes
+- **Why click chemistry as the 38th entry?**  The
+  catalogue already covers 5 Pd-cross-couplings (Suzuki /
+  Sonogashira / Buchwald-Hartwig / Negishi / Heck);
+  adding a Cu-cycloaddition pivots into a different
+  metal, different mechanism (dinuclear ladder vs.
+  Pd-cycle), and a different teaching anchor
+  (regioselectivity vs. cross-coupling).  The 2022 Nobel
+  also makes it the most contemporary entry in the
+  catalogue.
+- **Why no atom-mapped SMARTS?**  The dinuclear-Cu
+  mechanism doesn't fit the simple atom-map convention
+  used by the round-49 3D side-by-side renderer (which
+  expects a single concerted bond-making / bond-breaking
+  pattern).  The triazole ring formation involves Cu
+  shuttling between two coordination modes — better left
+  unmapped than misrepresented.  If the round-50
+  reaction-trajectory animator is ever extended for
+  multi-Cu intermediates, this can be back-filled.
+- **Why benzyl azide / phenylacetylene specifically?**
+  Phenylacetylene was already in the intermediate-fragment
+  table (round 39 backfill for HWE / Sonogashira); benzyl
+  azide is the most common test substrate in the
+  click-chemistry literature.  Together they give a
+  hand-drawable triazole product the user can recognise
+  immediately.
+
+### Phase 31 status snapshot (post-round 134)
+- 31a (molecules) — long-running, no target reached
+- 31b (reactions) — **38/50** (round 134)
+- 31c (mechanisms) — closed at 20
+- 31d (pathways) — closed at 12
+- 31e (energy profiles) — closed at 20/20 (round 106)
+- 31f (glossary) — closed at 60+
+- 31g (tutorials) — closed at 30/30 (round 93)
+- 31h/i/j (carbs / lipids / NA) — closed
+- 31k (SAR series) — 9/15 (round 133)
+- 31l (proteins) — closed at 15/15 (round 116)
+
+### Next
+Round 135 candidates:
+- **Phase 31b +1 reaction** — 12 to go (Stille,
+  Mitsunobu-extension, Mukaiyama aldol, Sharpless
+  epoxidation, Birch, …).
+- **Phase 31k +1 SAR series** — 6 to go (kinase
+  inhibitors, ARBs, opioids, antihistamines, retinoids).
+- **Phase 36 polish round** — proper tapered-polygon
+  wedge bonds, lasso select + drag, indole / NHAc ring
+  templates.
+
+---
+
+## 2026-04-24 — Round 133 (Phase 31k +1: fluoroquinolone SAR series)
+
+### Context
+Phase 36 was closed in round 132.  Round 133 picks up
+Phase 31 long-running content.  First check showed
+Phase 31l (proteins) was already at 15/15 (the
+PROJECT_STATUS reference in round 130 had been stale —
+the round-116 close at 5CHA + 6LU7 was the real
+status).  Pivoted to **Phase 31k (SAR series, 8/15)** —
+adding one new series ships 5 pedagogically rich
+variants and increments toward the 15-target close.
+
+### What shipped
+- **`orgchem/core/sar.py`** — 9th SAR series:
+  *Fluoroquinolone antibiotic series*.  5 variants
+  walking the 1962 → 1999 generation-by-generation SAR
+  optimisation of the quinolone scaffold:
+    - **Nalidixic acid** (1962, 1st-gen, no C-6 F, no
+      piperazine).  Naphthyridone core, narrow Gram-
+      negative spectrum.  The proof-of-concept that
+      DNA-gyrase inhibition is a viable antibacterial
+      strategy.
+    - **Norfloxacin** (1980, 2nd-gen).  Two SAR moves vs
+      nalidixic acid: C-6 F + C-7 piperazine.  ~100× MIC
+      drop on E. coli; first true *fluoroquinolone*.
+    - **Ciprofloxacin** (1987, 2nd-gen).  Single tweak —
+      N-1 ethyl → cyclopropyl — drops MIC ~4× across the
+      board and unlocks oral + IV bioavailability.
+    - **Levofloxacin** (1996, 3rd-gen).  S enantiomer of
+      ofloxacin (chiral switch); oxazine ring fusion at
+      N-1/C-8 + C-7 N-methylpiperazine.  Respiratory FQ.
+    - **Moxifloxacin** (1999, 4th-gen).  C-8 methoxy +
+      C-7 bicyclic diazabicyclooctane.  Best Gram-positive
+      coverage in the class but loses anti-Pseudomonas
+      activity.
+  Activity columns: `mic_e_coli_ugml` /
+  `mic_s_aureus_ugml` / `mic_p_aeruginosa_ugml`.  All 5
+  SMILES validated against RDKit (parse + canonical
+  round-trip) before insertion.
+
+### Tests
+- **`tests/test_sar.py::test_fluoroquinolone_series_landmarks`**
+  — 1 new test, locking 3 teaching invariants:
+    1. Nalidixic acid ≥50× weaker on E. coli than every
+       -floxacin (the C-6 F + C-7 piperazine SAR move).
+    2. Ciprofloxacin lowest E. coli MIC of the class.
+    3. Moxifloxacin lowest S. aureus MIC AND highest
+       Pseudomonas MIC of the four floxacins (the
+       Gram-positive widening costs anti-Pseudomonas
+       activity).
+- Full suite: **1 213 / 1 213 pass, 0 skipped** (was
+  1 212).
+
+### Design notes
+- **Why fluoroquinolones for the 9th series?**  The
+  catalogue already covered the textbook drug classes
+  (NSAID / statin / β-blocker / ACE / SSRI / penicillin /
+  PDE5 / benzodiazepine).  Antibiotics needed a Gram-
+  negative gyrase counterweight to the Gram-positive
+  β-lactam story; fluoroquinolones provide a clean
+  generation-by-generation SAR walk where each
+  substituent change has a measurable MIC consequence.
+- **Why MIC tables instead of Ki / IC50?**  MIC (minimum
+  inhibitory concentration) is the operational
+  antibiotic-pharmacology unit — what a clinical lab
+  reports.  Putting Ki against gyrase would be more
+  mechanistically pure but would lose the cross-organism
+  selectivity story that's the whole point.
+- **Why not include delafloxacin or other 5th-gen?**
+  The Sustained / 5th-gen FQs (delafloxacin,
+  besifloxacin) are mostly topical / niche; the 5
+  systemic generations chosen tell the entire teaching
+  arc without padding.
+- **PROJECT_STATUS.md drift caught**.  The round-130
+  PROJECT_STATUS still said proteins were at 13/15 —
+  but the round-116 close at 15/15 was real (verified
+  via `tests/test_protein.py::test_seeded_proteins_has_core_targets`
+  invariant `len(ids) >= 15`).  No code change needed,
+  just a doc-status cleanup as part of this round's
+  log.
+
+### Phase 31 status snapshot (post-round 133)
+- 31a (molecules) — long-running, no target reached yet
+- 31b (reactions) — 37/50 (round 123)
+- 31c (mechanisms) — closed at 20
+- 31d (pathways) — closed at 12
+- 31e (energy profiles) — closed at 20/20 (round 106)
+- 31f (glossary) — closed at 60+
+- 31g (tutorials) — closed at 30/30 (round 93)
+- 31h/i/j (carbs / lipids / NA) — closed
+- 31k (SAR series) — **9/15** (round 133)
+- 31l (proteins) — closed at 15/15 (round 116)
+
+### Next
+Round 134 candidates:
+- **Phase 31k +1 more SAR series** (kinase inhibitors,
+  ARBs, opioids…) — 6 to go to close.
+- **Phase 31b +1 named reaction** — 13 to go to close
+  the 50-target.
+- **Phase 36 polish** — proper tapered-polygon wedge
+  bonds, lasso select, indole / NHAc ring templates.
+- A new user-flagged feature.
+
+---
+
+## 2026-04-24 — Round 132 (🎉 Phase 36 CLOSED at 8/8 — canvas reaction arrow + Reactions handoff)
+
+### Context
+Round 131 closed Phase 36f.1 (headless `Scheme` core + agent
+action).  Phase 36f.2 was the final open sub-phase: place
+the arrow on the canvas, partition atoms into LHS / RHS by
+x-coord, and ship the result to the Reactions tab.  After
+this round, the Phase-36 user directive (*"add molecular
+drawing tool — same abilities as ChemDraw"*) is end-to-end
+functional: the user can draw two structures, place an
+arrow between them, give the reaction a name, and have it
+land as a fresh `Reaction` row in the live DB visible on
+the Reactions tab.
+
+### What shipped
+- **`orgchem/gui/panels/drawing_panel.py`** — two new tool
+  keys: `arrow-forward` (→) and `arrow-reversible` (⇌).
+  Click empty canvas to drop an arrow at the click point;
+  second placement replaces the first (single-arrow
+  constraint per canvas); same kind + same position is a
+  no-op skipped from the undo stack.  Arrow rendered via
+  `QGraphicsLineItem` shaft + `QGraphicsPolygonItem`
+  arrowhead, stacked half-arrows for the ⇌ kind.  Pen is
+  muted slate-grey (#444) so the arrow doesn't fight the
+  molecule glyphs for attention.
+- **Snapshot tuple grew to 3-tuple** `(Structure,
+  positions, arrow)`.  `_restore_snapshot` accepts legacy
+  2-tuples defensively so an in-flight session that
+  started before round 132 doesn't crash on its first
+  undo.  `clear()` resets the arrow; new `remove_arrow()`
+  drops it without touching the structure.
+- **`current_scheme()` extractor** — partitions atoms by
+  x-coord vs the arrow's x position, builds a fresh
+  `Structure` for each side via `_slice_structure` (which
+  re-indexes bonds for the local atom-id space).  Bonds
+  whose endpoints straddle the arrow are dropped (the
+  user's drawing said "these atoms became those atoms",
+  not "this exact bond survived").  Returns `None` when
+  no arrow is on the canvas — caller should prompt the
+  user to place one first.
+- **`orgchem/gui/dialogs/drawing_tool.py`** — new footer
+  button *"Send to Reactions tab"*.  Workflow:
+    1. Pull a `Scheme` from `panel.current_scheme()`.
+    2. If no arrow / empty / one-side-empty → info popup,
+       no DB write.
+    3. Prompt the user for a reaction name via
+       `QInputDialog` (default `Drawn-rxn-XXXXXXXX` UUID).
+    4. Invoke the round-55 `add_reaction` authoring action
+       with category `"Drawn"`.
+    5. On duplicate-name rejection, open the existing row.
+    6. Call `_open_reaction(rid)` which walks
+       `MainWindow.tabs` for the Reactions panel and calls
+       its `_display(rid)`.
+- All Phase 36 sub-phases now complete.
+
+### Tests
+- **`tests/test_drawing_panel_scheme.py`** — 16 pytest-qt
+  cases:
+    - toolbar wiring (both arrow tool keys present)
+    - arrow placement creates state
+    - reversible arrow state distinct from forward
+    - second placement replaces first
+    - same-point repeat is no-op (no extra undo snapshot)
+    - `remove_arrow()` clears state
+    - undo / redo round-trip
+    - undo after arrow-replace restores the first arrow
+    - `clear()` drops the arrow
+    - `current_scheme()` is None without arrow
+    - atom partition by x: 2 LHS + 2 RHS
+    - bonds straddling the arrow dropped
+    - intra-side bonds preserved with canonical SMILES
+      round-trip (LHS = "CC", RHS = "C")
+    - arrow kind ("reversible") propagates to the Scheme
+    - one-empty-side edge case (`"C>>"`)
+    - charge + h_count survive partitioning (NH₄⁺-style)
+- **`tests/test_drawing_tool_dialog.py`** — 5 new cases:
+    - *Send to Reactions tab* button visible / enabled
+    - no-arrow info popup, no DB write
+    - `add_reaction` invocation with `>>`-bearing SMILES
+    - duplicate-name handling routes to existing row
+    - user cancels name prompt → no DB write
+    - one-side-empty info popup
+- **Full suite: 1 212 / 1 212 pass, 0 skipped** (was
+  1 190).
+
+### Design notes
+- **Why partition by x-coord, not by connected component?**
+  Connected-component partitioning sounds more "correct"
+  but breaks the obvious user model: two disconnected
+  structures on the LHS of an SN2 (substrate + nucleophile)
+  should both end up on the LHS, even though they're not
+  bonded.  X-coord partition does that for free.  The
+  trade-off: the user has to keep their LHS / RHS
+  spatially separated by the arrow, which is the natural
+  ChemDraw discipline anyway.
+- **Why drop straddling bonds rather than auto-cut on the
+  arrow line?**  Auto-cutting would let the user "draw the
+  reaction as a single connected graph and let the tool
+  figure it out" — but RDKit doesn't have a clean way to
+  represent half-bonds, and the user's intent is genuinely
+  ambiguous in that case (does the bond break or not?).
+  Dropping is the conservative choice and matches the
+  textbook arrow-pushing convention where each side stands
+  alone.
+- **Why prompt for a name rather than auto-naming?**  The
+  Reactions tab indexes by name; an auto-generated
+  `Drawn-rxn-abcd1234` name shows up as garbage in the
+  list.  The default-but-overrideable prompt lets the user
+  give the reaction a semantic name immediately while
+  still providing a fall-through default.
+
+### Phase 36 status — COMPLETE 🎉
+- 36a ✅ headless core (round 124)
+- 36b ✅ canvas widget (round 125)
+- 36g ✅ dialog + workspace integration (round 126)
+- 36h ✅ agent actions (round 127)
+- 36d ✅ undo / redo (round 128)
+- 36c ✅ ring / FG templates (round 129)
+- 36e ✅ stereo wedges + charges + isotopes (round 130)
+- 36f.1 ✅ scheme dataclass + reaction-SMILES helpers +
+  agent action (round 131)
+- 36f.2 ✅ canvas arrow + Reactions-tab handoff (round
+  132)
+
+### Next
+The user-flagged ChemDraw-equivalent drawing tool is now
+end-to-end functional.  Round 133 candidates:
+- **Phase 31 long-running content** — more named
+  reactions (catalogue at 37/50; 13 to go), more energy
+  profiles (20/20 closed), more SAR series (8/15), more
+  seeded proteins (13/15).
+- **Phase 36 polish round** — proper tapered-polygon
+  wedge bonds, lasso select + drag, indole / NHAc
+  templates, reagents-above-arrow text editor.
+- **A new user-flagged feature** if one comes in.
+
+---
+
+## 2026-04-24 — Round 131 (Phase 36f.1 — reaction-scheme data core)
+
+### Context
+Round 130 closed Phase 36e.  Phase 36f (reaction arrows
++ multi-structure schemes) is the last open Phase-36 sub-
+phase.  A full ChemDraw-style canvas-arrow editor would
+be 2-3 rounds of Qt work — placing arrow items between
+two structures, dragging reagents above the arrow, the
+multi-structure-on-one-canvas geometry problem, etc.
+Splitting into headless core (36f.1, this round) +
+canvas integration (36f.2, next round) keeps each round
+self-contained and lets the agent / scripts use the
+reaction-scheme bundling immediately.
+
+### What shipped
+- **`orgchem/core/drawing_scheme.py`** — pure-Python
+  `Scheme` dataclass (`lhs: List[Structure]`, `rhs:
+  List[Structure]`, `arrow ∈ {"forward", "reversible"}`,
+  `reagents` free-text) + helpers:
+    - `Scheme.from_smiles_pair(lhs, rhs, arrow, reagents)`
+      — primary GUI entry point; passes each side through
+      `structure_from_smiles`, returns `None` on parse
+      failure.
+    - `Scheme.from_reaction_smiles("LHS>reagents>RHS")`
+      — round-trip the other direction.
+    - `Scheme.to_reaction_smiles()` — bundle to the
+      `LHS>reagents>RHS` form.
+    - `lhs_smiles()` / `rhs_smiles()` — per-side
+      `"."`-joined SMILES.
+    - `to_dict()` / `from_dict(payload)` — JSON-friendly
+      serialisation for session save / restore.
+    - `is_balanced_atom_counts(scheme)` — heavy-atom-count
+      sanity hint for the future GUI's "did you forget the
+      leaving group?" prompt.
+  `"."`-separated SMILES on either side are exploded into
+  per-component `Structure`s so multi-substrate schemes
+  like `"CC(=O)Cl.NC"` land as two LHS structures.  Empty
+  halves serialise as the empty string to match RDKit
+  reaction-SMILES convention (e.g. `">>"` for an
+  all-empty scheme, `"CCO>>"` for a synthesis-target
+  scheme).  RDKit lazy-imported so the dataclass is usable
+  in environments without RDKit.
+- **`orgchem/agent/actions_drawing.py`** — new action
+  `make_reaction_scheme(lhs_smiles, rhs_smiles,
+  arrow="forward", reagents="")`.  Pure-headless wrapper
+  around `Scheme` that bundles two SMILES strings into a
+  reaction record: returns `{"reaction_smiles",
+  "lhs_canonical", "rhs_canonical", "arrow", "reagents",
+  "balanced"}` on success, `{"error": ...}` on parse
+  failure or invalid arrow type.  No Qt main-thread
+  marshalling needed since the call doesn't touch the
+  GUI — usable from the tutor, Python drivers, and the
+  stdio bridge alike.
+- **`orgchem/gui/audit.py`** — `make_reaction_scheme`
+  registered in `GUI_ENTRY_POINTS` (mapped to the future
+  Phase-36f.2 canvas-arrow tool's user-facing path).  GUI
+  coverage stays at 100 %.
+
+### Tests
+- **`tests/test_drawing_scheme_core.py`** — 22 headless
+  cases:
+    - defaults (empty lhs/rhs, default arrow, empty
+      reagents)
+    - unknown arrow falls back to `"forward"`
+    - `"reversible"` arrow preserved
+    - `from_smiles_pair` builds multi-component schemes
+    - `from_smiles_pair` rejects garbage SMILES on either
+      side
+    - empty LHS is valid (synthesis-target scheme)
+    - `to_reaction_smiles` basic case + with reagents
+    - `from_reaction_smiles` round-trip via canonicalised
+      LHS / RHS
+    - `from_reaction_smiles` preserves reagents
+    - `from_reaction_smiles` rejects malformed input
+      (wrong arrow segment count, garbage components)
+    - `lhs_smiles` joins components with `"."`
+    - `rhs_smiles` empty on empty RHS
+    - `to_dict` / `from_dict` round-trip preserves
+      arrow + reagents
+    - `from_dict` rejects garbage SMILES
+    - `from_dict` rejects non-dict input
+    - empty scheme is trivially balanced
+    - aldehyde-reduction scheme is balanced
+    - unbalanced when atom counts differ
+    - `to_reaction_smiles` skips empty substructures
+    - `n_atom_counts` match structure state
+- **`tests/test_drawing_actions.py`** — 6 new agent-action
+  tests:
+    - `make_reaction_scheme` in registry membership
+    - basic round-trip (CCO → CC=O)
+    - with reagents (`[Cr]` text preserved)
+    - unbalanced-flag detection (CC → CCO)
+    - garbage-SMILES error path
+    - invalid-arrow rejection
+    - reversible-arrow preservation
+- **Full suite: 1 190 / 1 190 pass, 0 skipped** (was
+  1 162).
+
+### Design notes
+- **Why split 36f into 36f.1 (headless) + 36f.2 (canvas)?**
+  The Phase-36 pattern: ship the data core first, layer
+  the GUI on top.  36a → 36b → 36g → 36c, 36e all
+  followed this — the Structure dataclass shipped before
+  the QGraphicsScene canvas; the template catalogue
+  shipped before the toolbar buttons.  Splitting 36f the
+  same way means the agent / scripts can compose
+  reaction-schemes immediately, and the canvas-arrow
+  Qt work in 36f.2 is a pure GUI round (no data-model
+  questions to thrash on).
+- **Why `List[Structure]` for `lhs` / `rhs`?**  Many
+  textbook reactions have multi-component sides
+  (Diels-Alder dimers, Mannich aldehyde + amine + ketone,
+  esterification with explicit water-out).  Carrying
+  per-component structures means a future GUI can
+  highlight which component contributes which atoms in
+  the Reactions-tab render without re-parsing.
+- **Why `is_balanced_atom_counts` is heuristic-only.**
+  Real reaction balancing requires graph isomorphism
+  modulo bond-breaking — a Phase-2c.1-class problem (see
+  `core/reaction_trajectory.py`).  The heavy-atom-count
+  check catches the common student error (forgetting
+  the leaving group) cheaply and is honest about its
+  scope (it'll happily report a scrambled non-reaction
+  as balanced if atom counts happen to match).  The
+  future GUI prompt should phrase it as a hint, not a
+  verdict.
+
+### Phase 36 status after round 131
+- 36a ✅ headless core (round 124)
+- 36b ✅ canvas widget (round 125)
+- 36g ✅ dialog + workspace integration (round 126)
+- 36h ✅ agent actions (round 127)
+- 36d ✅ undo / redo (round 128)
+- 36c ✅ ring / FG templates (round 129)
+- 36e ✅ stereo wedges + charges + isotopes (round 130)
+- 36f.1 ✅ scheme dataclass + reaction-SMILES helpers +
+  agent action (round 131)
+- 36f.2 ⏳ canvas arrow + Reactions-tab handoff
+
+### Next
+Round 132 candidates: **36f.2 (canvas arrow + Reactions-
+tab handoff)** would close Phase 36 entirely.  Needs a
+canvas-arrow `QGraphicsItem` (probably a thin polygon),
+a "place arrow" tool mode that's only enabled when the
+canvas has at least one structure, an "LHS / RHS / arrow"
+classifier that walks the canvas atoms and groups them
+based on which side of the arrow they sit, and a
+*"Send to Reactions tab"* button on the
+`DrawingToolDialog` that bundles the `Scheme` into a
+reaction-SMILES via `make_reaction_scheme` and pipes it
+through the Reactions workspace's existing render path.
+**Alternative**: Phase 31 long-running content (more
+named reactions, energy profiles, SAR series, seeded
+proteins).
+
+---
+
+## 2026-04-24 — Round 130 (Phase 36e — stereo wedges + charges + isotopes)
+
+### Context
+Round 129 closed Phase 36c.  Phase 36 had two open
+sub-phases left — 36e (stereo + charges + isotopes) and
+36f (reaction arrows).  36e is the natural next step: the
+headless `Structure` already supports wedge / dash bonds +
+charged / isotope / radical / explicit-H atoms; only the
+GUI entry points were missing.  Single round of work
+unlocks chiral-center drawing, zwitterion drawing, and
+isotope-labelled drawings — covers ammonium, NMR-labelled
+substrates, transition-state stereo, etc.
+
+### What shipped
+- **`orgchem/gui/panels/drawing_panel.py`** — two new
+  bond tools: `bond-wedge` (◣) and `bond-dash` (◌) on
+  the main toolbar.  Routed through
+  `_handle_stereo_bond_click(atom_idx, scene_pos, stereo)`
+  which mirrors `_handle_bond_click` but each new bond is
+  created with `order=1` + the requested stereo.  Clicking
+  an existing bond TOGGLES the stereo (same stereo → none;
+  otherwise switch).  Empty-canvas auto-place behaviour
+  matches the plain bond tool.
+- **Right-click context menu** — `_DrawingView.mousePressEvent`
+  now branches on `event.button() == Qt.RightButton` and
+  forwards to `DrawingPanel.handle_canvas_right_click`,
+  which hit-tests the click point and (when over an atom)
+  pops a `QMenu` with four submenus:
+    - Formal charge: -2 / -1 / 0 / +1 / +2 (current value
+      checked)
+    - Radical electrons: 0 / 1 / 2
+    - Isotope label: opens `QInputDialog` for an int 0-300
+    - Explicit H count: -1 (auto) / 0 / 1 / 2 / 3 / 4
+  Each entry calls a thin setter (`_set_atom_charge` /
+  `_set_atom_radical` / `_set_atom_isotope` /
+  `_set_atom_h_count`) that pushes one undo snapshot then
+  refreshes the atom glyph + emits `structure_changed`.
+  Same-value selections are no-ops that don't pollute the
+  undo stack.
+- **`_apply_bond_order_style` upgrade** — wedge bonds use a
+  thick green pen (#1B6E1B, 4.5 px solid), dash bonds use a
+  blue dashed pen (#1B4FA8, 2.4 px Qt.DashLine), "either"
+  bonds use a grey dotted pen.  Proper tapered-polygon
+  wedges (the "real" ChemDraw look) deferred as polish.
+- **`_draw_atom` upgrade** — atoms with non-default
+  charge / isotope / radical promote from a dot to a
+  labelled glyph (even pure C), with optional decorations:
+  charge as a red superscript at the top-right
+  ("+", "−", "2+", "2−"), isotope mass number as a grey
+  superscript at the top-left ("13C", "2H"), radical
+  electrons as 1-2 bullet dots above the symbol.  All
+  decorations live in the per-atom `_atom_items` dict so
+  the round-128 snapshot stack picks them up automatically
+  via `_refresh_atom_glyph`.
+
+### Tests
+- **`tests/test_drawing_panel_stereo.py`** — 17 pytest-qt
+  cases:
+    - toolbar registration (`bond-wedge`, `bond-dash`)
+    - wedge tool creates wedge bond
+    - dash tool creates dash bond
+    - wedge tool toggles stereo on existing bond (wedge →
+      none → wedge cycle)
+    - dash → wedge tool replaces stereo on the same bond
+    - empty-canvas auto-places carbons for the wedge tool
+    - undo reverses wedge creation
+    - `_set_atom_charge` updates `Atom.charge`
+    - `_set_atom_charge` pushes an undo snapshot
+    - `_set_atom_charge` with the current value is a no-op
+    - NH₄⁺ live SMILES round-trip (charge + h_count + atom)
+    - `_set_atom_isotope` updates `Atom.isotope`
+    - ¹³C isotope SMILES round-trip via RDKit
+    - `_set_atom_radical` updates `Atom.radical`
+    - `_set_atom_h_count` setter + undo restores the -1
+      sentinel
+    - right-click on empty canvas is a no-op (no menu, no
+      exception)
+    - V2000 mol-block writer emits the wedge stereo flag
+      in the bond line
+- **Full suite: 1 162 / 1 162 pass, 0 skipped** (was
+  1 145).
+
+### Design notes
+- **Why pen colour for wedge / dash, not tapered polygons?**
+  A proper ChemDraw wedge is a triangle (narrow at the
+  begin atom, wide at the end), which means swapping the
+  `QGraphicsLineItem` for a `QGraphicsPolygonItem` and
+  reworking `_bond_items`' element type.  That refactor is
+  invasive enough to be its own polish round; the colour /
+  pen encoding is unambiguous and immediately survives the
+  SMILES + mol-block round-trip via the underlying
+  `Bond.stereo` field — which is what actually matters for
+  chemistry correctness.
+- **Why no lone-pair decoration?**  The Phase-13c mechanism
+  player already supports lone-pair dots; the drawing tool
+  doesn't need them for SMILES round-trip (RDKit infers
+  lone pairs from valence + charge).  Could be added later
+  as a right-click option if a tutor asks for it.
+- **RDKit mol-block reader limitation** — RDKit drops the
+  bond direction on non-stereocenter bonds when reading a
+  mol-block back.  This is a SMILES / mol-block stereo
+  model thing, not a writer bug.  The
+  `test_wedge_bond_emits_stereo_flag_in_molblock` test
+  checks the *writer* output instead of round-tripping.
+
+### Phase 36 status after round 130
+- 36a ✅ headless core (round 124)
+- 36b ✅ canvas widget (round 125)
+- 36g ✅ dialog + workspace integration (round 126)
+- 36h ✅ agent actions (round 127)
+- 36d ✅ undo / redo (round 128)
+- 36c ✅ ring / FG templates (round 129)
+- 36e ✅ stereo wedges + charges + isotopes (round 130)
+- 36f ⏳ reaction arrows + multi-structure schemes — last
+  remaining sub-phase
+
+### Next
+Round 131: **Phase 36f (reaction arrows + multi-structure
+schemes)** is the last Phase-36 sub-phase.  Bigger scope —
+needs a "reaction" tool that lets the user place a → / ⇌
+arrow between two structures on the canvas, then a
+modal dialog for reagents / conditions, then a
+`structure_to_reaction_smarts` helper that bundles the
+LHS + RHS into a single SMARTS string the Reactions tab
+can render.  Likely two rounds (36f.1 = arrow placement +
+core; 36f.2 = multi-structure layout + handoff to the
+Reactions tab).  Alternative: shift to Phase 31
+long-running content (rounds 31b reactions, 31e energy
+profiles, 31k SAR series, 31l proteins).
+
+---
+
+## 2026-04-24 — Round 129 (Phase 36c — ring + FG template palette)
+
+### Context
+Round 128 closed Phase 36d (undo/redo for the drawing
+canvas).  Phase 36 had three open sub-phases left — 36c
+(template palette), 36e (stereo wedges), 36f (reaction
+arrows).  36c is the highest-leverage next step: ChemDraw
+users reach for the benzene / cyclohexane buttons several
+times per minute, and the headless-testable design slots
+naturally between the round-124 `Structure` core and the
+round-128 snapshot stack.
+
+### What shipped
+- **`orgchem/core/drawing_templates.py`** — pure-Python
+  catalogue with a single `apply_template(structure,
+  positions, template, anchor_pos, host_atom_idx, scale)`
+  helper.  20 templates in two families:
+    - **Rings** (`fuse_mode="merge"`): cyclopropane,
+      cyclobutane, cyclopentane, cyclohexane, benzene,
+      pyridine, pyrimidine, furan, thiophene, pyrrole.
+    - **FGs** (`fuse_mode="attach"`): OH, NH₂, Me, COOH,
+      CHO, C=O, NO₂, CN, OMe, CF₃.
+  `apply_template` returns a *fresh* `(Structure,
+  positions)` tuple — input is never mutated, so the
+  round-128 snapshot stack just needs to capture the
+  pre-call state.  Unit-bond-length internal coords scaled
+  by `DEFAULT_SCALE_PX = 42.0`; y is flipped at placement
+  to match Qt's screen convention.  No Qt imports.
+- **`orgchem/gui/panels/drawing_panel.py`** — second
+  toolbar row with all 20 template buttons.  Tool keys are
+  `template-<name>`; clicks route through
+  `_apply_template_at` which: (1) pushes one undo
+  snapshot, (2) calls `apply_template`, (3) pops the
+  snapshot if the call was a no-op (e.g. invalid
+  template), (4) renders only the newly appended atoms /
+  bonds via `_draw_atom` / `_draw_bond`.  Existing scene
+  items for fused atoms keep their identity so the
+  ring-fusion overlap stays seamless.
+- **NO₂ as zwitterion** — `[N+](=O)[O-]` rather than
+  `N(=O)=O`, since RDKit refuses pentavalent N.  Tested
+  via the canonical-SMILES round-trip of methylated NO₂
+  giving `C[N+](=O)[O-]`.
+- **Empty-canvas FG behaviour** — `auto_attach_element="C"`
+  on every FG template means clicking COOH / OH / NH₂ on
+  empty canvas first synthesises a methyl host then
+  attaches the FG.  Result: empty canvas + COOH = acetic
+  acid; empty canvas + OH = methanol.  Matches ChemDraw
+  intuition and avoids degenerate states like `O` (free
+  oxygen) showing up in the ribbon.
+
+### Tests
+- **`tests/test_drawing_templates_core.py`** — 18 headless
+  tests: catalogue-contents invariants (every expected ring +
+  FG present), `list_templates(kind=…)` filter, `get_template`
+  miss returns `None`, free-standing benzene + cyclohexane +
+  pyridine + furan placement (atom counts, hetero counts,
+  SMILES round-trip), benzene + cyclopropane fused onto an
+  existing C (n-1 atoms appended; host is in the ring),
+  every FG → SMILES round-trip including NO₂ zwitterion
+  + C=O double-bond attach (acetaldehyde) + acetic-acid
+  COOH + acetonitrile CN, anchor-position invariant
+  (`new_pos[0] == anchor_pos`), input-immutability check.
+- **`tests/test_drawing_panel_templates.py`** — 13
+  pytest-qt cases: every template registers a toolbar
+  button, exclusivity (only the active template button is
+  checked), benzene + cyclohexane on empty canvas, benzene
+  fused onto carbon, OH / COOH / NO₂ attaches on existing
+  atoms with correct SMILES, undo reverses + redo replays
+  template placement, multi-step undo chain (template +
+  element swap = 2 separate undo steps), signal emission,
+  scene-item bookkeeping invariant
+  (`len(_atom_items) == n_atoms`).
+- **Full suite: 1 145 / 1 145 pass, 0 skipped** (was
+  1 114 / 1 114).
+
+### INTERFACE.md
+New `core/drawing_templates.py` row added; the
+`drawing_panel.py` row updated to mention 36c + tool key
+convention + `_apply_template_at` glue.
+
+### Design notes
+- **Why not `QUndoCommand` for templates?**  The round-128
+  snapshot stack was the project-wide simplification
+  decision; templates layer on top of that without
+  introducing a separate command class hierarchy.  One
+  snapshot per placement = one undo step.
+- **Why headless catalogue + thin GUI glue?**  Phase 36a
+  set the precedent: structure manipulation is testable
+  offline, GUI only handles input → headless call →
+  scene-item update.  Round-129 follows the same split,
+  which is why all 18 catalogue tests run without Qt.
+- **Why no `indole` / `NHAc` template?**  Bicyclic ring
+  fusion + 4-atom chain attach would each ~double the
+  catalogue's complexity for limited pedagogical gain
+  beyond what users can already build with two clicks
+  (benzene + pyrrole; NH₂ + acetyl).  Queued as 36c.1.
+
+### Phase 36 status after round 129
+- 36a ✅ headless core (round 124)
+- 36b ✅ canvas widget (round 125)
+- 36g ✅ dialog + workspace integration (round 126)
+- 36h ✅ agent actions (round 127)
+- 36d ✅ undo / redo (round 128)
+- 36c ✅ ring / FG templates (round 129)
+- 36e ⏳ stereo wedges + charges + isotopes
+- 36f ⏳ reaction arrows + multi-structure schemes
+
+### Next
+Round 130 candidates: **36e (stereo wedges + charges +
+isotopes)** would close another big drawing-tool gap —
+the headless `Structure` already supports wedge / dash /
+charge / isotope, only the GUI entry points are missing;
+**36f (reaction arrows)** is bigger and would unlock the
+"draw your own reaction → render in Reactions tab" loop;
+**31b/e/k/l** Phase-31 long-running content rounds
+remain available.
+
+---
+
 ## 2026-04-24 — Round 94 (Glossary-pollution cleanup)
 
 ### Context

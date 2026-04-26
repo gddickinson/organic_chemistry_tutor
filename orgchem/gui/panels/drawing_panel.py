@@ -1,11 +1,11 @@
-"""Phase 36b / 36d — `QGraphicsScene` drawing canvas.
+"""Phase 36b / 36c / 36d — `QGraphicsScene` drawing canvas.
 
 Backs the molecular drawing tool the user flagged in Phase 36.
 Keeps a live :class:`orgchem.core.drawing.Structure` mirror of
 the on-screen atoms + bonds so SMILES round-trip is a single
 call away.
 
-Tool modes (round 125):
+Tool modes:
 
 - ``"select"`` — pointer: click an atom to move it (drag), click
   empty canvas to clear the selection.
@@ -16,17 +16,20 @@ Tool modes (round 125):
   single bond (or cycle through single → double → triple by
   clicking an existing bond).
 - ``"erase"`` — click an atom to delete it (and its bonds).
+- ``"template-<name>"`` *(round 129, Phase 36c)* — ring or FG
+  template; click empty canvas to place free-standing, click an
+  existing atom to fuse the template anchor with it.  Catalogue
+  lives in :mod:`orgchem.core.drawing_templates`.
 
 Round 128 adds **snapshot-based undo / redo** (Phase 36d) — every
 logical mutation (atom place / element swap / bond draw / bond
-order cycle / erase / drag-move / clear / SMILES-rebuild) pushes
-a `(Structure, positions)` snapshot onto an undo stack; Ctrl+Z
-(Undo) / Ctrl+Shift+Z (Redo) buttons walk it.  Stack depth is
-capped at 100.
+order cycle / erase / drag-move / clear / SMILES-rebuild / template
+placement) pushes a `(Structure, positions)` snapshot onto an undo
+stack; Ctrl+Z (Undo) / Ctrl+Shift+Z (Redo) buttons walk it.  Stack
+depth is capped at 100.
 
-Phase 36c will layer a ring / FG template palette on top; 36e
-will add stereochemistry (wedge / dash); 36f will add reaction
-arrows.
+Phase 36e will add stereochemistry (wedge / dash); 36f will add
+reaction arrows.
 """
 from __future__ import annotations
 import copy
@@ -36,18 +39,24 @@ from typing import Dict, List, Optional, Tuple
 from PySide6.QtCore import Qt, Signal, QPointF, QRectF
 from PySide6.QtGui import (
     QBrush, QColor, QFont, QKeySequence, QPainter, QPen, QMouseEvent,
-    QShortcut,
+    QPolygonF, QShortcut,
 )
 from PySide6.QtWidgets import (
-    QGraphicsEllipseItem, QGraphicsLineItem, QGraphicsScene,
+    QGraphicsEllipseItem, QGraphicsItem, QGraphicsItemGroup,
+    QGraphicsLineItem, QGraphicsPolygonItem, QGraphicsScene,
     QGraphicsSimpleTextItem, QGraphicsView,
-    QHBoxLayout, QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QToolButton, QVBoxLayout, QWidget,
+    QHBoxLayout, QInputDialog, QLabel, QLineEdit, QMenu,
+    QPushButton, QSizePolicy, QToolButton, QVBoxLayout, QWidget,
 )
+from PySide6.QtGui import QAction
 
 from orgchem.core.drawing import (
     Atom, Bond, Structure,
     structure_from_smiles, structure_to_smiles,
+)
+from orgchem.core.drawing_scheme import Scheme
+from orgchem.core.drawing_templates import (
+    apply_template, get_template, list_templates,
 )
 
 log = logging.getLogger(__name__)
@@ -105,10 +114,18 @@ class DrawingPanel(QWidget):
         self._tool: str = "atom-C"
         self._bond_first_atom: Optional[int] = None   # mid-draw state
         self._drag_atom_idx: Optional[int] = None
-        # Phase 36d undo/redo: stacks of (Structure, positions) tuples.
+        # Phase 36d undo/redo: stacks of (Structure, positions, arrow) tuples.
         # Invariant: the *current* canvas state is NOT on either stack.
-        self._undo_stack: List[Tuple[Structure, List[Tuple[float, float]]]] = []
-        self._redo_stack: List[Tuple[Structure, List[Tuple[float, float]]]] = []
+        # Phase 36f.2 (round 132): snapshot tuple grew a third slot for the
+        # optional reaction arrow ((x, y, kind) or None).
+        self._undo_stack: List[Tuple[Structure, List[Tuple[float, float]],
+                                     Optional[Tuple[float, float, str]]]] = []
+        self._redo_stack: List[Tuple[Structure, List[Tuple[float, float]],
+                                     Optional[Tuple[float, float, str]]]] = []
+        # Phase 36f.2: at most one arrow on the canvas; (x, y, "forward"
+        # | "reversible").  ``None`` means no arrow placed.
+        self._arrow: Optional[Tuple[float, float, str]] = None
+        self._arrow_items: List = []   # QGraphicsItems backing the arrow
         self._build_ui()
 
     # ---- UI construction ------------------------------------
@@ -129,6 +146,10 @@ class DrawingPanel(QWidget):
             ("F", "atom-F"), ("Cl", "atom-Cl"),
             ("Br", "atom-Br"), ("I", "atom-I"),
             ("— bond", "bond"),
+            ("◣ wedge", "bond-wedge"),
+            ("◌ dash", "bond-dash"),
+            ("→ arrow", "arrow-forward"),
+            ("⇌ rev.arrow", "arrow-reversible"),
             ("✕ erase", "erase"),
         ]:
             btn = QToolButton()
@@ -155,6 +176,38 @@ class DrawingPanel(QWidget):
         toolbar.addWidget(self._clear_btn)
         toolbar.addStretch(1)
         lay.addLayout(toolbar)
+
+        # Template palette — second row.  Phase 36c (round 129).
+        tpl_row = QHBoxLayout()
+        tpl_row.setContentsMargins(0, 0, 0, 0)
+        tpl_row.addWidget(QLabel("Templates:"))
+        for tpl in list_templates(kind="ring"):
+            btn = QToolButton()
+            btn.setText(tpl.label)
+            btn.setToolTip(f"Insert {tpl.name} ring "
+                           "(click empty canvas to place; click an "
+                           "atom to fuse).")
+            btn.setCheckable(True)
+            tool_key = f"template-{tpl.name}"
+            btn.clicked.connect(
+                lambda _chk=False, k=tool_key: self.set_tool(k))
+            tpl_row.addWidget(btn)
+            self._tool_buttons[tool_key] = btn
+        tpl_row.addSpacing(8)
+        for tpl in list_templates(kind="fg"):
+            btn = QToolButton()
+            btn.setText(tpl.label)
+            btn.setToolTip(f"Insert {tpl.name.upper()} group "
+                           "(click an atom to attach; click empty "
+                           "canvas to place on a fresh carbon).")
+            btn.setCheckable(True)
+            tool_key = f"template-{tpl.name}"
+            btn.clicked.connect(
+                lambda _chk=False, k=tool_key: self.set_tool(k))
+            tpl_row.addWidget(btn)
+            self._tool_buttons[tool_key] = btn
+        tpl_row.addStretch(1)
+        lay.addLayout(tpl_row)
 
         # Keyboard shortcuts — scoped to this widget so they fire
         # even when the Drawing dialog isn't the top-level window.
@@ -216,12 +269,14 @@ class DrawingPanel(QWidget):
         return True
 
     def clear(self, *, record_undo: bool = True) -> None:
-        """Drop every atom + bond.  Emits `structure_changed("")`.
+        """Drop every atom + bond + the reaction arrow.  Emits
+        `structure_changed("")`.
 
         ``record_undo=False`` bypasses the Phase-36d snapshot —
         used internally by `_load_structure` + `_restore_snapshot`
         where the outer call already manages the stack."""
-        if record_undo and not self._structure.is_empty:
+        if record_undo and (
+                not self._structure.is_empty or self._arrow is not None):
             self._push_undo()
         self._structure = Structure()
         for items in self._atom_items:
@@ -233,6 +288,8 @@ class DrawingPanel(QWidget):
                 self._scene.removeItem(b)
         self._atom_items.clear()
         self._bond_items.clear()
+        self._remove_arrow_items()
+        self._arrow = None
         self._bond_first_atom = None
         self._drag_atom_idx = None
         self._smiles_edit.setText("")
@@ -253,14 +310,18 @@ class DrawingPanel(QWidget):
 
     # ---- undo / redo (Phase 36d) ----------------------------
 
-    def _snapshot(
-            self) -> Tuple[Structure, List[Tuple[float, float]]]:
+    def _snapshot(self) -> Tuple[
+            Structure,
+            List[Tuple[float, float]],
+            Optional[Tuple[float, float, str]]]:
         """Capture a deep-copied snapshot of the current canvas —
-        structure + per-atom screen positions."""
+        structure + per-atom screen positions + arrow state.
+        Phase 36f.2 added the arrow slot."""
         struct = copy.deepcopy(self._structure)
         positions = [tuple(items.get("pos", (0.0, 0.0)))
                      for items in self._atom_items]
-        return struct, positions
+        arrow = self._arrow
+        return struct, positions, arrow
 
     def _push_undo(self) -> None:
         """Push the current state onto the undo stack.  Clears
@@ -275,12 +336,18 @@ class DrawingPanel(QWidget):
         self._redo_stack.clear()
         self._update_undo_buttons()
 
-    def _restore_snapshot(
-            self, snap: Tuple[Structure, List[Tuple[float, float]]]
-            ) -> None:
+    def _restore_snapshot(self, snap: Tuple) -> None:
         """Wipe + rebuild the scene from a snapshot.  Does NOT
-        push anything onto the undo stack — caller handles that."""
-        struct, positions = snap
+        push anything onto the undo stack — caller handles that.
+
+        Accepts both 2-tuple (legacy, pre-Phase-36f.2) and
+        3-tuple snapshots so an in-flight session that started
+        before round 132 doesn't crash on its first undo."""
+        if len(snap) == 3:
+            struct, positions, arrow = snap
+        else:
+            struct, positions = snap
+            arrow = None
         # Remove existing scene items.
         for items in self._atom_items:
             for it in items.values():
@@ -289,6 +356,7 @@ class DrawingPanel(QWidget):
         for b in self._bond_items:
             if b.scene():
                 self._scene.removeItem(b)
+        self._remove_arrow_items()
         self._atom_items.clear()
         self._bond_items.clear()
         self._bond_first_atom = None
@@ -301,6 +369,10 @@ class DrawingPanel(QWidget):
             self._draw_atom(i, QPointF(pos[0], pos[1]))
         for i in range(len(self._structure.bonds)):
             self._draw_bond(i)
+        # Restore arrow.
+        self._arrow = arrow
+        if self._arrow is not None:
+            self._render_arrow()
         # Emit changed without pushing a fresh snapshot.
         smi = self.current_smiles()
         self._smiles_edit.blockSignals(True)
@@ -366,6 +438,22 @@ class DrawingPanel(QWidget):
             return
         if tool == "bond":
             self._handle_bond_click(atom_idx, scene_pos)
+            return
+        if tool == "bond-wedge":
+            self._handle_stereo_bond_click(atom_idx, scene_pos, "wedge")
+            return
+        if tool == "bond-dash":
+            self._handle_stereo_bond_click(atom_idx, scene_pos, "dash")
+            return
+        if tool == "arrow-forward":
+            self._place_arrow(scene_pos, "forward")
+            return
+        if tool == "arrow-reversible":
+            self._place_arrow(scene_pos, "reversible")
+            return
+        if tool.startswith("template-"):
+            name = tool.split("-", 1)[1]
+            self._apply_template_at(name, scene_pos, atom_idx)
             return
         # atom-<element> tool.
         if tool.startswith("atom-"):
@@ -503,17 +591,392 @@ class DrawingPanel(QWidget):
         self._bond_first_atom = None
         self._emit_changed()
 
+    def _apply_template_at(self, name: str, scene_pos: QPointF,
+                           host_atom_idx: Optional[int]) -> None:
+        """Phase 36c — fold a ring or FG template into the canvas.
+
+        Pushes one undo snapshot, then delegates the geometric
+        merge to :func:`orgchem.core.drawing_templates.apply_template`
+        so the headless core stays the source of truth for layout
+        + bond bookkeeping.  Adds scene items only for the *new*
+        atoms / bonds appended to the structure.
+        """
+        tpl = get_template(name)
+        if tpl is None:
+            log.warning("Unknown template: %r", name)
+            return
+        self._push_undo()
+        old_n_atoms = self._structure.n_atoms
+        old_n_bonds = self._structure.n_bonds
+        positions = [items.get("pos", (0.0, 0.0))
+                     for items in self._atom_items]
+        new_struct, new_positions = apply_template(
+            self._structure,
+            positions,
+            tpl,
+            anchor_pos=(scene_pos.x(), scene_pos.y()),
+            host_atom_idx=host_atom_idx,
+            scale=_BOND_PX,
+        )
+        # No-op guard: if nothing was added, drop the snapshot we
+        # just pushed so cancel doesn't pollute undo history.
+        if (new_struct.n_atoms == old_n_atoms
+                and new_struct.n_bonds == old_n_bonds):
+            self._undo_stack.pop()
+            self._update_undo_buttons()
+            return
+        self._structure = new_struct
+        # Render every newly appended atom + bond.  Existing atoms
+        # / bonds keep their scene items unchanged so the overlap
+        # of fused-ring anchors stays seamless.
+        for i in range(old_n_atoms, len(new_struct.atoms)):
+            x, y = new_positions[i]
+            self._atom_items.append({"pos": (x, y)})
+            self._draw_atom(i, QPointF(x, y))
+        for i in range(old_n_bonds, len(new_struct.bonds)):
+            self._draw_bond(i)
+        self._emit_changed()
+
+    def _handle_stereo_bond_click(
+            self, atom_idx: Optional[int], scene_pos: QPointF,
+            stereo: str) -> None:
+        """Phase 36e — wedge / dash bond placement.
+
+        Mirrors :meth:`_handle_bond_click` but every new bond
+        gets ``order=1`` + the requested ``stereo`` (``"wedge"``
+        or ``"dash"``).  Clicking an existing bond TOGGLES the
+        stereo: same stereo → ``"none"``; any other → switch to
+        the requested stereo.  Empty-canvas auto-place behaviour
+        matches the plain bond tool — clicking empty canvas as
+        the first / second click of a wedge bond places a fresh
+        carbon.
+        """
+        if self._bond_first_atom is None:
+            if atom_idx is None:
+                atom_idx = self._add_atom("C", scene_pos)
+            self._bond_first_atom = atom_idx
+            return
+        self._push_undo()
+        if atom_idx is None:
+            atom_idx = self._add_atom(
+                "C", scene_pos, record_undo=False)
+        if atom_idx == self._bond_first_atom:
+            self._undo_stack.pop()
+            self._update_undo_buttons()
+            self._bond_first_atom = None
+            return
+        existing = self._bond_between(self._bond_first_atom, atom_idx)
+        if existing is not None:
+            bond = self._structure.bonds[existing]
+            if bond.stereo == stereo:
+                bond.stereo = "none"
+            else:
+                bond.stereo = stereo
+                bond.order = 1
+            self._refresh_bond(existing)
+        else:
+            self._structure.add_bond(
+                self._bond_first_atom, atom_idx,
+                order=1, stereo=stereo)
+            self._draw_bond(len(self._structure.bonds) - 1)
+        self._bond_first_atom = None
+        self._emit_changed()
+
     def _bond_between(self, a: int, b: int) -> Optional[int]:
         for i, bond in enumerate(self._structure.bonds):
             if {bond.begin_idx, bond.end_idx} == {a, b}:
                 return i
         return None
 
+    # ---- reaction arrow (Phase 36f.2) -----------------------
+
+    #: Pixel half-width of the rendered arrow shaft.
+    _ARROW_HALF_WIDTH_PX = 50.0
+
+    def _place_arrow(self, scene_pos: QPointF, kind: str) -> None:
+        """Drop a reaction arrow at the click point, replacing
+        any existing arrow (only one arrow per canvas).
+
+        Pushes one undo snapshot per placement so the round-128
+        stack picks the change up.  Re-clicking with the same
+        kind at exactly the same point is a no-op (would still
+        push a snapshot otherwise).
+        """
+        if kind not in ("forward", "reversible"):
+            return
+        new_state = (scene_pos.x(), scene_pos.y(), kind)
+        if self._arrow == new_state:
+            return
+        self._push_undo()
+        self._set_arrow(new_state)
+        self._emit_changed()
+
+    def _set_arrow(self,
+                   state: Optional[Tuple[float, float, str]]) -> None:
+        """Replace the current arrow without pushing an undo
+        snapshot — used by `_restore_snapshot` and the public
+        `_place_arrow` (which manages the snapshot itself)."""
+        self._remove_arrow_items()
+        self._arrow = state
+        if state is not None:
+            self._render_arrow()
+
+    def _remove_arrow_items(self) -> None:
+        for it in self._arrow_items:
+            if it is not None and hasattr(it, "scene") and it.scene():
+                self._scene.removeItem(it)
+        self._arrow_items.clear()
+
+    def _render_arrow(self) -> None:
+        """Draw the arrow shaft + head(s) at `self._arrow`.
+
+        Forward arrow = single rightward arrowhead; reversible =
+        ``⇌`` style with two stacked half-arrows (one rightward
+        on top, one leftward on bottom).  Pen is a muted
+        slate-grey so the arrow doesn't fight the molecule
+        glyphs for attention.
+        """
+        if self._arrow is None:
+            return
+        ax, ay, kind = self._arrow
+        w = self._ARROW_HALF_WIDTH_PX
+        head_len = 12.0
+        head_off = 5.0
+        pen = QPen(QColor("#444"))
+        pen.setWidthF(2.0)
+        pen.setCapStyle(Qt.RoundCap)
+        if kind == "forward":
+            shaft = QGraphicsLineItem(ax - w, ay, ax + w, ay)
+            shaft.setPen(pen)
+            shaft.setZValue(-2)
+            self._scene.addItem(shaft)
+            self._arrow_items.append(shaft)
+            head = QPolygonF([
+                QPointF(ax + w, ay),
+                QPointF(ax + w - head_len, ay - head_off),
+                QPointF(ax + w - head_len, ay + head_off),
+            ])
+            head_item = QGraphicsPolygonItem(head)
+            head_item.setBrush(QBrush(QColor("#444")))
+            head_item.setPen(pen)
+            head_item.setZValue(-2)
+            self._scene.addItem(head_item)
+            self._arrow_items.append(head_item)
+        else:  # reversible
+            offset = 4.0
+            # Top shaft + right-pointing arrowhead.
+            top = QGraphicsLineItem(
+                ax - w, ay - offset, ax + w, ay - offset)
+            top.setPen(pen)
+            top.setZValue(-2)
+            self._scene.addItem(top)
+            self._arrow_items.append(top)
+            top_head = QPolygonF([
+                QPointF(ax + w, ay - offset),
+                QPointF(ax + w - head_len,
+                        ay - offset - head_off),
+                QPointF(ax + w - head_len, ay - offset),
+            ])
+            top_item = QGraphicsPolygonItem(top_head)
+            top_item.setBrush(QBrush(QColor("#444")))
+            top_item.setPen(pen)
+            top_item.setZValue(-2)
+            self._scene.addItem(top_item)
+            self._arrow_items.append(top_item)
+            # Bottom shaft + left-pointing arrowhead.
+            bot = QGraphicsLineItem(
+                ax - w, ay + offset, ax + w, ay + offset)
+            bot.setPen(pen)
+            bot.setZValue(-2)
+            self._scene.addItem(bot)
+            self._arrow_items.append(bot)
+            bot_head = QPolygonF([
+                QPointF(ax - w, ay + offset),
+                QPointF(ax - w + head_len,
+                        ay + offset + head_off),
+                QPointF(ax - w + head_len, ay + offset),
+            ])
+            bot_item = QGraphicsPolygonItem(bot_head)
+            bot_item.setBrush(QBrush(QColor("#444")))
+            bot_item.setPen(pen)
+            bot_item.setZValue(-2)
+            self._scene.addItem(bot_item)
+            self._arrow_items.append(bot_item)
+
+    def remove_arrow(self) -> None:
+        """Public clearer — drop the arrow if any.  Pushes one
+        undo snapshot when an arrow was actually present."""
+        if self._arrow is None:
+            return
+        self._push_undo()
+        self._set_arrow(None)
+        self._emit_changed()
+
+    def has_arrow(self) -> bool:
+        return self._arrow is not None
+
+    def arrow_state(self) -> Optional[Tuple[float, float, str]]:
+        return self._arrow
+
+    def current_scheme(self) -> Optional[Scheme]:
+        """Phase 36f.2 — partition the canvas into a reaction
+        :class:`Scheme` based on each atom's x position vs the
+        arrow's x position.  Atoms left of the arrow → LHS;
+        atoms right → RHS.  Bonds whose endpoints straddle the
+        arrow are dropped (the user's drawing said *"these
+        atoms became those atoms"*, not *"this exact bond
+        survived"*).
+
+        Returns ``None`` when no arrow is on the canvas — caller
+        should prompt the user to place one first.
+        """
+        if self._arrow is None:
+            return None
+        ax, _ay, kind = self._arrow
+        lhs_indices: List[int] = []
+        rhs_indices: List[int] = []
+        for i, items in enumerate(self._atom_items):
+            x, _y = items.get("pos", (0.0, 0.0))
+            if x < ax:
+                lhs_indices.append(i)
+            else:
+                rhs_indices.append(i)
+        lhs_struct = self._slice_structure(lhs_indices)
+        rhs_struct = self._slice_structure(rhs_indices)
+        lhs_list: List[Structure] = (
+            [lhs_struct] if not lhs_struct.is_empty else [])
+        rhs_list: List[Structure] = (
+            [rhs_struct] if not rhs_struct.is_empty else [])
+        return Scheme(lhs=lhs_list, rhs=rhs_list, arrow=kind)
+
+    def _slice_structure(self, atom_indices: List[int]) -> Structure:
+        """Build a fresh :class:`Structure` from a subset of the
+        live structure's atoms.  Bonds with both endpoints in the
+        subset are copied over with re-indexed endpoints."""
+        out = Structure()
+        idx_map: Dict[int, int] = {}
+        for old_i in atom_indices:
+            atom = self._structure.atoms[old_i]
+            new_i = out.add_atom(atom.element)
+            out.atoms[new_i].charge = atom.charge
+            out.atoms[new_i].isotope = atom.isotope
+            out.atoms[new_i].radical = atom.radical
+            out.atoms[new_i].h_count = atom.h_count
+            out.atoms[new_i].aromatic = atom.aromatic
+            out.atoms[new_i].chirality = atom.chirality
+            idx_map[old_i] = new_i
+        atom_set = set(atom_indices)
+        for b in self._structure.bonds:
+            if b.begin_idx in atom_set and b.end_idx in atom_set:
+                out.add_bond(idx_map[b.begin_idx],
+                             idx_map[b.end_idx],
+                             order=b.order, stereo=b.stereo)
+        return out
+
+    # ---- right-click atom-property menu (Phase 36e) ---------
+
+    def handle_canvas_right_click(self, scene_pos: QPointF,
+                                  global_pos) -> None:
+        """Open a context menu over the atom under the cursor.
+        Lets the user set formal charge, isotope label, radical
+        electrons, or explicit hydrogen count without leaving
+        the canvas."""
+        atom_idx = self._hit_atom(scene_pos)
+        if atom_idx is None:
+            return
+        menu = QMenu(self)
+        atom = self._structure.atoms[atom_idx]
+        # ---- charge submenu --------------------------------
+        charge_menu = menu.addMenu("Formal charge")
+        for value in (-2, -1, 0, +1, +2):
+            label = f"{value:+d}" if value != 0 else "0 (neutral)"
+            act = QAction(label, charge_menu)
+            act.setCheckable(True)
+            act.setChecked(atom.charge == value)
+            act.triggered.connect(
+                lambda _chk=False, i=atom_idx, v=value:
+                self._set_atom_charge(i, v))
+            charge_menu.addAction(act)
+        # ---- radical submenu --------------------------------
+        rad_menu = menu.addMenu("Radical electrons")
+        for value in (0, 1, 2):
+            act = QAction(str(value), rad_menu)
+            act.setCheckable(True)
+            act.setChecked(atom.radical == value)
+            act.triggered.connect(
+                lambda _chk=False, i=atom_idx, v=value:
+                self._set_atom_radical(i, v))
+            rad_menu.addAction(act)
+        # ---- isotope ----------------------------------------
+        iso_act = QAction(
+            f"Isotope label… (current: {atom.isotope or 'natural'})",
+            menu)
+        iso_act.triggered.connect(
+            lambda _chk=False, i=atom_idx: self._prompt_atom_isotope(i))
+        menu.addAction(iso_act)
+        # ---- explicit H -------------------------------------
+        h_menu = menu.addMenu("Explicit H count")
+        for value in (-1, 0, 1, 2, 3, 4):
+            label = "auto (-1)" if value == -1 else str(value)
+            act = QAction(label, h_menu)
+            act.setCheckable(True)
+            act.setChecked(atom.h_count == value)
+            act.triggered.connect(
+                lambda _chk=False, i=atom_idx, v=value:
+                self._set_atom_h_count(i, v))
+            h_menu.addAction(act)
+        menu.exec(global_pos)
+
+    def _set_atom_charge(self, atom_idx: int, value: int) -> None:
+        atom = self._structure.atoms[atom_idx]
+        if atom.charge == value:
+            return
+        self._push_undo()
+        atom.charge = value
+        self._refresh_atom_glyph(atom_idx)
+        self._emit_changed()
+
+    def _set_atom_radical(self, atom_idx: int, value: int) -> None:
+        atom = self._structure.atoms[atom_idx]
+        if atom.radical == value:
+            return
+        self._push_undo()
+        atom.radical = value
+        self._emit_changed()
+
+    def _set_atom_isotope(self, atom_idx: int, value: int) -> None:
+        atom = self._structure.atoms[atom_idx]
+        if atom.isotope == value:
+            return
+        self._push_undo()
+        atom.isotope = max(0, int(value))
+        self._refresh_atom_glyph(atom_idx)
+        self._emit_changed()
+
+    def _set_atom_h_count(self, atom_idx: int, value: int) -> None:
+        atom = self._structure.atoms[atom_idx]
+        if atom.h_count == value:
+            return
+        self._push_undo()
+        atom.h_count = value
+        self._emit_changed()
+
+    def _prompt_atom_isotope(self, atom_idx: int) -> None:
+        atom = self._structure.atoms[atom_idx]
+        value, ok = QInputDialog.getInt(
+            self, "Isotope label",
+            f"Mass number for atom {atom_idx} ({atom.element}):\n"
+            "Enter 0 for natural abundance.",
+            value=int(atom.isotope), minValue=0, maxValue=300, step=1)
+        if ok:
+            self._set_atom_isotope(atom_idx, int(value))
+
     # ---- drawing primitives --------------------------------
 
     def _draw_atom(self, idx: int, pos: QPointF) -> None:
         r = _ATOM_RADIUS_PX
-        element = self._structure.atoms[idx].element
+        atom = self._structure.atoms[idx]
+        element = atom.element
         items = self._atom_items[idx]
         # Invisible hit-target circle — sits under the label so
         # clicks near the glyph still register.  Also provides the
@@ -526,10 +989,16 @@ class DrawingPanel(QWidget):
         dot.setZValue(0)
         self._scene.addItem(dot)
         items["dot"] = dot
-        # Carbon atoms: show only a small dot (ChemDraw
-        # convention).  Heteroatoms: show the element label.
-        if element != "C":
-            label = QGraphicsSimpleTextItem(element)
+        # Phase 36e: render the element symbol when the atom is
+        # heteroatom OR has a non-default charge / isotope.  Pure
+        # C with no decoration stays as a point dot.
+        decorated = (element != "C"
+                     or atom.charge != 0
+                     or atom.isotope > 0
+                     or atom.radical > 0)
+        if decorated:
+            label_text = element
+            label = QGraphicsSimpleTextItem(label_text)
             label.setBrush(_ATOM_COLOUR.get(element, QColor("#222")))
             font = QFont()
             font.setPointSize(12)
@@ -541,6 +1010,51 @@ class DrawingPanel(QWidget):
             label.setZValue(1)
             self._scene.addItem(label)
             items["label"] = label
+            # Charge superscript (top-right of element label).
+            if atom.charge != 0:
+                sign = "+" if atom.charge > 0 else "−"
+                mag = abs(atom.charge)
+                ctxt = f"{mag if mag > 1 else ''}{sign}"
+                charge_label = QGraphicsSimpleTextItem(ctxt)
+                charge_label.setBrush(QColor("#A02020"))
+                cf = QFont()
+                cf.setPointSize(8)
+                cf.setBold(True)
+                charge_label.setFont(cf)
+                charge_label.setPos(
+                    pos.x() + br.width() / 2 - 1,
+                    pos.y() - br.height() / 2 - 4)
+                charge_label.setZValue(2)
+                self._scene.addItem(charge_label)
+                items["charge_label"] = charge_label
+            # Isotope superscript (top-left).
+            if atom.isotope > 0:
+                iso_label = QGraphicsSimpleTextItem(str(atom.isotope))
+                iso_label.setBrush(QColor("#404040"))
+                isf = QFont()
+                isf.setPointSize(8)
+                iso_label.setFont(isf)
+                ibr = iso_label.boundingRect()
+                iso_label.setPos(
+                    pos.x() - br.width() / 2 - ibr.width(),
+                    pos.y() - br.height() / 2 - 2)
+                iso_label.setZValue(2)
+                self._scene.addItem(iso_label)
+                items["iso_label"] = iso_label
+            # Radical dots (one or two small circles above the atom).
+            if atom.radical > 0:
+                for k in range(min(atom.radical, 2)):
+                    dot_r = 1.6
+                    cx = pos.x() + (k - 0.5) * 4 if atom.radical > 1 \
+                        else pos.x()
+                    cy = pos.y() - br.height() / 2 - 6
+                    rdot = QGraphicsEllipseItem(
+                        cx - dot_r, cy - dot_r, 2 * dot_r, 2 * dot_r)
+                    rdot.setBrush(QBrush(QColor("#000")))
+                    rdot.setPen(QPen(QColor("#000")))
+                    rdot.setZValue(2)
+                    self._scene.addItem(rdot)
+                    items[f"radical_{k}"] = rdot
         else:
             items["label"] = None
             # Shrink the dot so pure-C atoms render as a point.
@@ -561,42 +1075,142 @@ class DrawingPanel(QWidget):
         self._draw_atom(idx, QPointF(pos_tuple[0], pos_tuple[1]))
 
     def _draw_bond(self, idx: int) -> None:
-        bond = self._structure.bonds[idx]
-        a_pos = self._atom_items[bond.begin_idx]["pos"]
-        b_pos = self._atom_items[bond.end_idx]["pos"]
-        line = QGraphicsLineItem(a_pos[0], a_pos[1], b_pos[0], b_pos[1])
-        pen = QPen(QColor("#222"))
-        pen.setWidthF(1.6 if bond.order == 1 else 1.2)
-        line.setPen(pen)
-        line.setZValue(-1)     # under atoms
-        self._scene.addItem(line)
-        self._bond_items.append(line)
-        self._apply_bond_order_style(idx)
+        """Add the visual for bond *idx* to the scene + the
+        per-bond list.  Wedge / dash get tapered-polygon and
+        hashed-ladder geometry; everything else stays as a
+        plain `QGraphicsLineItem`."""
+        item = self._build_bond_visual(idx)
+        self._scene.addItem(item)
+        self._bond_items.append(item)
 
     def _refresh_bond(self, idx: int) -> None:
-        """Redraw a bond after its endpoints moved or its order
-        changed."""
+        """Drop + rebuild the visual for bond *idx*.
+
+        We can't mutate-in-place across visual types (a
+        wedge-→-line stereo flip changes the QGraphicsItem
+        subclass), so refresh always swaps the scene item.
+        Cheap on a teaching-scale molecule and far simpler
+        than maintaining two parallel update paths.
+        """
+        old = self._bond_items[idx]
+        if old is not None and old.scene():
+            self._scene.removeItem(old)
+        new = self._build_bond_visual(idx)
+        self._scene.addItem(new)
+        self._bond_items[idx] = new
+
+    # Pen / brush palette for bond visuals.  Centralised here so
+    # tweaks land in one place.
+    _STEREO_WEDGE_COLOUR = QColor("#1B6E1B")    # solid green
+    _STEREO_DASH_COLOUR = QColor("#1B4FA8")     # dashed blue
+    _STEREO_EITHER_COLOUR = QColor("#888888")   # squiggle grey
+    _BOND_DEFAULT_COLOUR = QColor("#222222")
+    #: Half-width of the wide end of a tapered wedge (px).
+    _WEDGE_HALF_WIDTH_PX = 5.0
+    #: Hash spacing along the dashed bond (px).
+    _DASH_HASH_SPACING_PX = 4.0
+    #: Half-width range for hashed-dash bond (begin → end).
+    _DASH_HALF_WIDTH_BEGIN = 1.0
+    _DASH_HALF_WIDTH_END = 5.0
+
+    def _build_bond_visual(self, idx: int) -> QGraphicsItem:
+        """Construct (but don't insert) a fresh scene item for
+        bond *idx* based on its current order + stereo."""
         bond = self._structure.bonds[idx]
         a_pos = self._atom_items[bond.begin_idx]["pos"]
         b_pos = self._atom_items[bond.end_idx]["pos"]
-        line = self._bond_items[idx]
-        line.setLine(a_pos[0], a_pos[1], b_pos[0], b_pos[1])
-        self._apply_bond_order_style(idx)
-
-    def _apply_bond_order_style(self, idx: int) -> None:
-        """Minimal stub that shows bond order via pen width;
-        proper offset-parallel double/triple-bond rendering is
-        Phase 36c polish."""
-        bond = self._structure.bonds[idx]
-        line = self._bond_items[idx]
-        pen = line.pen()
+        ax, ay = a_pos
+        bx, by = b_pos
+        if bond.stereo == "wedge":
+            return self._build_wedge_item(ax, ay, bx, by)
+        if bond.stereo == "dash":
+            return self._build_dash_item(ax, ay, bx, by)
+        # Plain line for orders 1/2/3/aromatic + the default
+        # ('none' / 'either') stereo.  Encoding via pen width +
+        # dash pattern is enough — proper double-bond offset
+        # rendering is a future polish round.
+        line = QGraphicsLineItem(ax, ay, bx, by)
+        pen = QPen(self._BOND_DEFAULT_COLOUR)
         widths = {1: 1.6, 2: 4.0, 3: 6.0, 4: 2.4}
         pen.setWidthF(widths.get(bond.order, 1.6))
-        if bond.order == 4:
-            pen.setStyle(Qt.DashLine)    # aromatic as dashed for now
+        if bond.stereo == "either":
+            pen.setColor(self._STEREO_EITHER_COLOUR)
+            pen.setWidthF(2.0)
+            pen.setStyle(Qt.DotLine)
+        elif bond.order == 4:
+            pen.setStyle(Qt.DashLine)
         else:
             pen.setStyle(Qt.SolidLine)
         line.setPen(pen)
+        line.setZValue(-1)
+        return line
+
+    def _build_wedge_item(self, ax: float, ay: float,
+                          bx: float, by: float) -> QGraphicsItem:
+        """Tapered solid triangle: apex at the begin atom (a),
+        base at the end atom (b).  Reads as *"this bond projects
+        out of the page toward the end atom"*, matching ChemDraw."""
+        dx, dy = bx - ax, by - ay
+        length = (dx * dx + dy * dy) ** 0.5
+        if length < 1e-3:
+            # Degenerate (begin / end coincide) — fall back to a
+            # tiny line so we don't divide by zero.
+            return QGraphicsLineItem(ax, ay, bx, by)
+        # Perpendicular unit vector (-dy, dx) / length.
+        px, py = -dy / length, dx / length
+        h = self._WEDGE_HALF_WIDTH_PX
+        polygon = QPolygonF([
+            QPointF(ax, ay),
+            QPointF(bx + h * px, by + h * py),
+            QPointF(bx - h * px, by - h * py),
+        ])
+        item = QGraphicsPolygonItem(polygon)
+        item.setBrush(QBrush(self._STEREO_WEDGE_COLOUR))
+        pen = QPen(self._STEREO_WEDGE_COLOUR)
+        pen.setWidthF(0.0)   # fill-only
+        item.setPen(pen)
+        item.setZValue(-1)
+        return item
+
+    def _build_dash_item(self, ax: float, ay: float,
+                         bx: float, by: float) -> QGraphicsItem:
+        """Hashed ladder: a stack of short perpendicular lines
+        getting wider toward the end atom.  Reads as *"this bond
+        projects behind the page toward the end atom"*, matching
+        ChemDraw's dashed-wedge convention.
+
+        Returned as a `QGraphicsItemGroup` so the per-hash lines
+        move together when the bond gets refreshed."""
+        dx, dy = bx - ax, by - ay
+        length = (dx * dx + dy * dy) ** 0.5
+        if length < 1e-3:
+            return QGraphicsLineItem(ax, ay, bx, by)
+        ux, uy = dx / length, dy / length
+        px, py = -uy, ux                     # perpendicular unit vector
+        # Number of hashes scales with bond length — minimum 4 so
+        # short bonds still read as a "ladder" rather than two dots.
+        n_hashes = max(4, int(length / self._DASH_HASH_SPACING_PX))
+        group = QGraphicsItemGroup()
+        pen = QPen(self._STEREO_DASH_COLOUR)
+        pen.setWidthF(1.4)
+        pen.setCapStyle(Qt.RoundCap)
+        for i in range(n_hashes):
+            # Parameter along bond, [0, 1].  Skip t=0 so the first
+            # hash sits a bit away from the begin atom.
+            t = (i + 1) / (n_hashes + 1)
+            cx = ax + t * dx
+            cy = ay + t * dy
+            half = (self._DASH_HALF_WIDTH_BEGIN
+                    + t * (self._DASH_HALF_WIDTH_END
+                           - self._DASH_HALF_WIDTH_BEGIN))
+            line = QGraphicsLineItem(
+                cx - half * px, cy - half * py,
+                cx + half * px, cy + half * py,
+            )
+            line.setPen(pen)
+            group.addToGroup(line)
+        group.setZValue(-1)
+        return group
 
     # ---- SMILES ribbon --------------------------------------
 
@@ -713,6 +1327,10 @@ class _DrawingView(QGraphicsView):
 
     def mousePressEvent(self, event: QMouseEvent) -> None:   # noqa: N802
         pos = self.mapToScene(event.pos())
+        if event.button() == Qt.RightButton:
+            self._panel.handle_canvas_right_click(
+                pos, event.globalPosition().toPoint())
+            return
         self._panel.handle_canvas_press(pos)
         super().mousePressEvent(event)
 

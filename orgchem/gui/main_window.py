@@ -128,6 +128,7 @@ class MainWindow(QMainWindow):
         self.lipids = LipidsPanel()
         self.nucleic_acids = NucleicAcidsPanel()
         self._macromolecules_window: Optional[QMainWindow] = None
+        self._biochemistry_by_kingdom_window: Optional[QMainWindow] = None
 
         self.setCentralWidget(self.tabs)
 
@@ -297,6 +298,169 @@ class MainWindow(QMainWindow):
         )
         a_draw.triggered.connect(self._on_drawing_tool)
         m_tools.addAction(a_draw)
+        a_qual = QAction("Qualitative inorganic tests…", self)
+        a_qual.setShortcut(QKeySequence("Ctrl+Shift+Q"))
+        a_qual.setToolTip(
+            "Reference panel of flame / hydroxide / halide / "
+            "sulfate / carbonate / ammonium / gas tests with "
+            "procedures + observations + colour swatches "
+            "(Phase 37a)."
+        )
+        a_qual.triggered.connect(self._on_qualitative_tests)
+        m_tools.addAction(a_qual)
+        a_clin = QAction("Clinical lab panels…", self)
+        a_clin.setShortcut(QKeySequence("Ctrl+Shift+L"))
+        a_clin.setToolTip(
+            "Reference panel of clinical-chemistry lab "
+            "panels (BMP / CMP / Lipid / DM follow-up / "
+            "Thyroid) with per-analyte normal ranges + "
+            "clinical significance (Phase 37b)."
+        )
+        a_clin.triggered.connect(self._on_clinical_panels)
+        m_tools.addAction(a_clin)
+        a_chrom = QAction("Chromatography techniques…", self)
+        a_chrom.setShortcut(QKeySequence("Ctrl+Shift+G"))
+        a_chrom.setToolTip(
+            "Reference panel of separation methods (TLC / "
+            "column / GC / HPLC / FPLC / SEC / IEX / "
+            "affinity / IC / SFC) with principle, phases, "
+            "detectors, strengths + limitations (Phase 37c)."
+        )
+        a_chrom.triggered.connect(self._on_chromatography_methods)
+        m_tools.addAction(a_chrom)
+        a_spec = QAction("Spectrophotometry techniques…", self)
+        a_spec.setShortcut(QKeySequence("Ctrl+Shift+W"))
+        a_spec.setToolTip(
+            "Reference panel of UV-Vis / fluorescence / "
+            "IR / FTIR / NIR / Raman / SERS / CD / AAS / "
+            "ICP-OES / ICP-MS / NMR with a Beer-Lambert "
+            "calculator (Phase 37d)."
+        )
+        a_spec.triggered.connect(self._on_spectrophotometry)
+        m_tools.addAction(a_spec)
+        a_lab = QAction("Lab equipment…", self)
+        a_lab.setShortcut(QKeySequence("Ctrl+Shift+I"))
+        a_lab.setToolTip(
+            "Reference panel of lab apparatus (glassware, "
+            "adapters, condensers, heating, separation, "
+            "filtration, vacuum, support, safety) — "
+            "Phase 38a foundation for the lab-setup "
+            "simulator."
+        )
+        a_lab.triggered.connect(self._on_lab_equipment)
+        m_tools.addAction(a_lab)
+        a_setup = QAction("Lab setups…", self)
+        a_setup.setShortcut(QKeySequence("Ctrl+Shift+U"))
+        a_setup.setToolTip(
+            "Reference panel of canonical lab setups "
+            "(simple distillation, fractional, reflux, "
+            "Soxhlet, vacuum filtration, liquid-liquid "
+            "extraction, recrystallisation) with equipment "
+            "lists + connection diagrams + procedures "
+            "(Phase 38b)."
+        )
+        a_setup.triggered.connect(self._on_lab_setups)
+        m_tools.addAction(a_setup)
+        a_calc = QAction("Lab calculator…", self)
+        a_calc.setShortcut(QKeySequence("Ctrl+Shift+C"))
+        a_calc.setToolTip(
+            "Tabbed lab calculator covering ~30 routine "
+            "bench calculations across 7 categories: "
+            "solution prep / stoichiometry / acid-base / "
+            "gas law / colligative / thermo + kinetics / "
+            "equilibrium (Phase 39b)."
+        )
+        a_calc.triggered.connect(self._on_lab_calculator)
+        m_tools.addAction(a_calc)
+        a_cent = QAction("Centrifugation…", self)
+        a_cent.setShortcut(QKeySequence("Ctrl+Shift+F"))
+        a_cent.setToolTip(
+            "Centrifuge / rotor / application reference + a "
+            "g↔RPM calculator with rotor-dropdown radius "
+            "auto-fill (Phase 41)."
+        )
+        a_cent.triggered.connect(self._on_centrifugation)
+        m_tools.addAction(a_cent)
+        a_anly = QAction("Lab analysers…", self)
+        a_anly.setShortcut(QKeySequence("Ctrl+Shift+A"))
+        a_anly.setToolTip(
+            "Reference panel of major capital-equipment-tier "
+            "instruments: clinical chemistry / hematology / "
+            "coagulation / immunoassay / molecular / mass spec "
+            "/ FLIPR / microscopy / liquid-handling automation "
+            "/ sample storage (Phase 40a)."
+        )
+        a_anly.triggered.connect(self._on_lab_analysers)
+        m_tools.addAction(a_anly)
+        a_path = QAction("Metabolic pathways…", self)
+        a_path.setShortcut(QKeySequence("Ctrl+Alt+P"))
+        a_path.setToolTip(
+            "Reference panel of major metabolic pathways "
+            "(glycolysis / TCA / ox-phos / β-oxidation / "
+            "FAS / cholesterol biosynth / urea cycle / "
+            "PPP / Calvin cycle / glycogen / heme "
+            "biosynth) with per-step substrates / "
+            "enzymes / products / ΔG / regulators "
+            "(Phase 42a)."
+        )
+        a_path.triggered.connect(self._on_metabolic_pathways)
+        m_tools.addAction(a_path)
+        a_ph = QAction("pH explorer…", self)
+        a_ph.setShortcut(QKeySequence("Ctrl+Alt+H"))
+        a_ph.setToolTip(
+            "Reference cards (pH definition / Henderson-"
+            "Hasselbalch / buffer capacity / polyprotic) + "
+            "buffer designer + titration-curve simulator + "
+            "46-acid pKa lookup table (Phase 46)."
+        )
+        a_ph.triggered.connect(self._on_ph_explorer)
+        m_tools.addAction(a_ph)
+        a_rgnt = QAction("Lab reagents…", self)
+        a_rgnt.setShortcut(QKeySequence("Ctrl+Shift+R"))
+        a_rgnt.setToolTip(
+            "Reference catalogue of off-the-shelf lab reagents "
+            "(buffers / acids-bases / detergents / reducing "
+            "agents / salts / protein-prep / stains / solvents "
+            "/ cell-culture media / molecular-biology "
+            "reagents) with typical concentration / storage / "
+            "hazards / preparation / CAS / usage (Phase 45)."
+        )
+        a_rgnt.triggered.connect(self._on_lab_reagents)
+        m_tools.addAction(a_rgnt)
+        a_iso = QAction("Isomer relationships…", self)
+        a_iso.setShortcut(QKeySequence("Ctrl+Shift+B"))
+        a_iso.setToolTip(
+            "Enumerate stereoisomers + tautomers of a SMILES "
+            "and classify the isomer relationship between any "
+            "two molecules — identical / constitutional / "
+            "enantiomer / diastereomer / meso / tautomer / "
+            "different (Phase 48)."
+        )
+        a_iso.triggered.connect(self._on_isomer_explorer)
+        m_tools.addAction(a_iso)
+        a_micro = QAction("Microscopy techniques…", self)
+        a_micro.setShortcut(QKeySequence("Ctrl+Alt+M"))
+        a_micro.setToolTip(
+            "Reference catalogue of microscopy techniques "
+            "organised by resolution scale (whole-organism / "
+            "tissue / cellular / sub-cellular / single-"
+            "molecule / clinical-histology) with sample-type "
+            "filter (Phase 44)."
+        )
+        a_micro.triggered.connect(self._on_microscopy)
+        m_tools.addAction(a_micro)
+        a_cells = QAction("Cell components…", self)
+        a_cells.setShortcut(QKeySequence("Ctrl+Shift+J"))
+        a_cells.setToolTip(
+            "Reference catalogue of cellular components keyed "
+            "to the three domains of life (Eukarya / Bacteria "
+            "/ Archaea) plus sub-domain specialisations "
+            "(animal / plant / fungus / gram-positive / "
+            "gram-negative).  Each component carries its "
+            "molecular constituents (Phase 43)."
+        )
+        a_cells.triggered.connect(self._on_cell_components)
+        m_tools.addAction(a_cells)
         m_tools.addSeparator()
         a_prefs = QAction("Preferences…", self)
         a_prefs.setShortcut(QKeySequence("Ctrl+,"))
@@ -322,6 +486,20 @@ class MainWindow(QMainWindow):
         )
         a_macro.triggered.connect(self.open_macromolecules_window)
         m_window.addAction(a_macro)
+        a_kingdom = QAction("Biochemistry by Kingdom…", self)
+        a_kingdom.setShortcut(QKeySequence("Ctrl+Shift+K"))
+        a_kingdom.setToolTip(
+            "Open the Biochemistry-by-Kingdom window — "
+            "Eukarya / Bacteria / Archaea / Viruses tabs "
+            "with Structure / Physiology+Development / "
+            "Genetics+Evolution sub-tabs.  Companion view "
+            "to the Macromolecules window — same content "
+            "but organised by kingdom of life rather than "
+            "molecular class (Phase 47)."
+        )
+        a_kingdom.triggered.connect(
+            self.open_biochemistry_by_kingdom_window)
+        m_window.addAction(a_kingdom)
 
         m_tutor = mb.addMenu("T&utor")
         a_focus_tutor = QAction("Open chat console", self)
@@ -354,6 +532,37 @@ class MainWindow(QMainWindow):
         self.tabs.setCurrentIndex(0)
 
     # ---------------- windows ----------------------------------------
+
+    def open_biochemistry_by_kingdom_window(
+        self,
+        kingdom: Optional[str] = None,
+        subtab: Optional[str] = None,
+        topic_id: Optional[str] = None,
+    ):
+        """Show (and raise) the Biochemistry-by-Kingdom window
+        (Phase 47b).  Lazily constructs on first call.  Optional
+        ``kingdom`` focuses one of the four outer tabs
+        (``"eukarya"`` / ``"bacteria"`` / ``"archaea"`` /
+        ``"viruses"``); optional ``subtab`` focuses one of the
+        three sub-tabs (``"structure"`` / ``"physiology"`` /
+        ``"genetics"``); optional ``topic_id`` selects a specific
+        topic.  Returns the window so callers / agent actions
+        can introspect it."""
+        from orgchem.gui.windows.biochemistry_by_kingdom_window import (
+            BiochemistryByKingdomWindow,
+        )
+        if self._biochemistry_by_kingdom_window is None:
+            self._biochemistry_by_kingdom_window = (
+                BiochemistryByKingdomWindow(parent=self))
+        win = self._biochemistry_by_kingdom_window
+        if kingdom and subtab and topic_id:
+            win.select_topic(kingdom, subtab, topic_id)
+        elif kingdom:
+            win.switch_to_kingdom(kingdom)
+        win.show()
+        win.raise_()
+        win.activateWindow()
+        return win
 
     def open_macromolecules_window(self, tab_label: Optional[str] = None):
         """Show (and raise) the Macromolecules window. Lazily
@@ -462,6 +671,169 @@ class MainWindow(QMainWindow):
         from orgchem.gui.dialogs.drawing_tool import DrawingToolDialog
 
         dlg = DrawingToolDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_qualitative_tests(self) -> None:
+        """Open the Phase 37a qualitative inorganic-test reference
+        dialog (singleton, modeless)."""
+        from orgchem.gui.dialogs.qualitative_tests import (
+            QualitativeTestsDialog,
+        )
+        dlg = QualitativeTestsDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_clinical_panels(self) -> None:
+        """Open the Phase 37b clinical lab-panel reference dialog
+        (singleton, modeless)."""
+        from orgchem.gui.dialogs.clinical_panels import (
+            ClinicalPanelsDialog,
+        )
+        dlg = ClinicalPanelsDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_chromatography_methods(self) -> None:
+        """Open the Phase 37c chromatography-method reference
+        dialog (singleton, modeless)."""
+        from orgchem.gui.dialogs.chromatography_methods import (
+            ChromatographyMethodsDialog,
+        )
+        dlg = ChromatographyMethodsDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_spectrophotometry(self) -> None:
+        """Open the Phase 37d spectrophotometry reference
+        dialog (singleton, modeless)."""
+        from orgchem.gui.dialogs.spectrophotometry_methods import (
+            SpectrophotometryDialog,
+        )
+        dlg = SpectrophotometryDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_lab_equipment(self) -> None:
+        """Open the Phase 38a lab-equipment reference dialog
+        (singleton, modeless)."""
+        from orgchem.gui.dialogs.lab_equipment import (
+            LabEquipmentDialog,
+        )
+        dlg = LabEquipmentDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_lab_setups(self) -> None:
+        """Open the Phase 38b lab-setups reference dialog
+        (singleton, modeless)."""
+        from orgchem.gui.dialogs.lab_setups import LabSetupsDialog
+        dlg = LabSetupsDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_lab_calculator(self) -> None:
+        """Open the Phase 39b tabbed lab-calculator dialog
+        (singleton, modeless)."""
+        from orgchem.gui.dialogs.lab_calculator import (
+            LabCalculatorDialog,
+        )
+        dlg = LabCalculatorDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_centrifugation(self) -> None:
+        """Open the Phase 41 centrifugation reference + g↔rpm
+        calculator dialog (singleton, modeless)."""
+        from orgchem.gui.dialogs.centrifugation import (
+            CentrifugationDialog,
+        )
+        dlg = CentrifugationDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_lab_analysers(self) -> None:
+        """Open the Phase 40a major-lab-analysers reference
+        dialog (singleton, modeless)."""
+        from orgchem.gui.dialogs.lab_analysers import (
+            LabAnalysersDialog,
+        )
+        dlg = LabAnalysersDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_metabolic_pathways(self) -> None:
+        """Open the Phase 42a metabolic-pathways reference
+        dialog (singleton, modeless)."""
+        from orgchem.gui.dialogs.metabolic_pathways import (
+            MetabolicPathwaysDialog,
+        )
+        dlg = MetabolicPathwaysDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_ph_explorer(self) -> None:
+        """Open the Phase 46 pH + buffer explorer dialog
+        (singleton, modeless)."""
+        from orgchem.gui.dialogs.ph_explorer import (
+            PHExplorerDialog,
+        )
+        dlg = PHExplorerDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_lab_reagents(self) -> None:
+        """Open the Phase 45 lab-reagents reference dialog
+        (singleton, modeless)."""
+        from orgchem.gui.dialogs.lab_reagents import (
+            LabReagentsDialog,
+        )
+        dlg = LabReagentsDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_isomer_explorer(self) -> None:
+        """Open the Phase 48b isomer-relationships dialog
+        (singleton, modeless)."""
+        from orgchem.gui.dialogs.isomer_explorer import (
+            IsomerExplorerDialog,
+        )
+        dlg = IsomerExplorerDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_microscopy(self) -> None:
+        """Open the Phase 44 microscopy techniques dialog
+        (singleton, modeless)."""
+        from orgchem.gui.dialogs.microscopy import (
+            MicroscopyDialog,
+        )
+        dlg = MicroscopyDialog.singleton(parent=self)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+
+    def _on_cell_components(self) -> None:
+        """Open the Phase 43 cell-components dialog
+        (singleton, modeless)."""
+        from orgchem.gui.dialogs.cell_components import (
+            CellComponentsDialog,
+        )
+        dlg = CellComponentsDialog.singleton(parent=self)
         dlg.show()
         dlg.raise_()
         dlg.activateWindow()

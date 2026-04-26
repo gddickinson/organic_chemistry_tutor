@@ -169,7 +169,7 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
     ("Hydroxylamine",            "NO",                                 "intermediate"),
     ("Hydrazine",                "NN",                                 "intermediate"),
     # Common isomers that show up in reactions as minor products
-    ("trans-Stilbene",           "C(/c1ccccc1)=C/c1ccccc1",            "intermediate"),
+    ("trans-Stilbene",           "C(=C\\c1ccccc1)/c1ccccc1",           "intermediate"),
     ("Styrene",                  "C=Cc1ccccc1",                        "intermediate"),
     ("Cinnamaldehyde",           "O=C/C=C/c1ccccc1",                   "intermediate"),
     ("Acrolein",                 "O=CC=C",                             "intermediate"),
@@ -241,6 +241,11 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
         "C#Cc1ccccc1",                                                 "intermediate"),
     ("Diphenylacetylene (tolan)",
         "C(#Cc1ccccc1)c1ccccc1",                                       "intermediate"),
+    # ---- Phase 31b round 134 — CuAAC click chemistry fragments -------
+    ("Benzyl azide",
+        "[N-]=[N+]=NCc1ccccc1",                                        "intermediate"),
+    ("1-Benzyl-4-phenyl-1,2,3-triazole",
+        "c1ccc(Cn2cc(-c3ccccc3)nn2)cc1",                               "intermediate"),
     ("Isopropyl acetate",
         "CC(=O)OC(C)C",                                                "intermediate"),
     ("1-Octanol",
@@ -410,39 +415,204 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
         "[Cl][Zn][c]1ccccc1",                                          "reagent"),
     ("Zinc bromochloride",
         "[Cl][Zn][Br]",                                                "intermediate"),
+
+    # ---- Phase 31b round 152 — Birch reduction fragments -----------
+    ("Sodium metal",
+        "[Na]",                                                        "reagent"),
+    ("Sodium cation",
+        "[Na+]",                                                       "intermediate"),
+    ("1,4-Cyclohexadiene",
+        "C1=CCC=CC1",                                                  "intermediate"),
+
+    # ---- Phase 31b round 153 — Sharpless + CBS fragments -----------
+    ("trans-Crotyl alcohol (E-2-buten-1-ol)",
+        "C/C=C/CO",                                                    "intermediate"),
+    ("tert-Butyl hydroperoxide (TBHP)",
+        "CC(C)(C)OO",                                                  "reagent"),
+    ("(2R,3R)-2,3-Epoxybutan-1-ol",
+        "C[C@@H]1O[C@H]1CO",                                           "intermediate"),
+    ("Borane (BH3)",
+        "B",                                                           "reagent"),
+    ("(R)-1-Phenylethanol",
+        "C[C@H](O)c1ccccc1",                                           "intermediate"),
+
+    # ---- Phase 31b round 154 — Sharpless AD + Jacobsen fragments ---
+    # (trans-Stilbene already seeded at the top; SMILES corrected
+    # round 154 to the canonical E-isomer.)
+    ("Osmium tetroxide (OsO4)",
+        "O=[Os](=O)(=O)=O",                                            "reagent"),
+    ("Osmium dioxide (OsO2)",
+        "O=[Os]=O",                                                    "intermediate"),
+    ("(1R,2R)-1,2-Diphenylethane-1,2-diol",
+        "O[C@@H](c1ccccc1)[C@H](O)c1ccccc1",                           "intermediate"),
+    ("cis-β-Methylstyrene (Z-1-phenyl-1-propene)",
+        "C/C=C\\c1ccccc1",                                             "intermediate"),
+    ("Hypochlorite (OCl-)",
+        "[O-]Cl",                                                      "reagent"),
+    ("(2R,3S)-2-Methyl-3-phenyloxirane",
+        "C[C@H]1O[C@@H]1c1ccccc1",                                     "intermediate"),
+
+    # ---- Phase 31b round 155 — Mukaiyama + Evans aldol fragments ---
+    ("Trimethylsilyl enol ether of acetone",
+        "C=C(C)O[Si](C)(C)C",                                          "intermediate"),
+    ("(R)-4-Hydroxy-4-phenylbutan-2-one (Mukaiyama aldol product)",
+        "CC(=O)C[C@H](O)c1ccccc1",                                     "intermediate"),
+    ("Trimethylsilanol (TMS-OH)",
+        "C[Si](C)(C)O",                                                "intermediate"),
+    ("N-Propionyl-(S)-4-benzyl-2-oxazolidinone (Evans auxiliary acylated)",
+        "CCC(=O)N1C(=O)OC[C@@H]1Cc1ccccc1",                            "reagent"),
+    ("Evans syn-aldol (N-acyl-(2S,3R)-3-hydroxy-2-methylpentanoyl)",
+        "CC[C@H](O)[C@@H](C)C(=O)N1C(=O)OC[C@@H]1Cc1ccccc1",           "intermediate"),
+
+    # ---- Phase 31b round 156 — Stille + Corey-Chaykovsky fragments
+    ("Tributyl(vinyl)stannane",
+        "C=C[Sn](CCCC)(CCCC)CCCC",                                     "reagent"),
+    ("Tributyltin bromide (Bu3SnBr)",
+        "CCCC[Sn](CCCC)(CCCC)Br",                                      "intermediate"),
+    ("Dimethylsulfonium methylide (Corey ylide)",
+        "C[S+](C)[CH2-]",                                              "reagent"),
+    ("Dimethyl sulfide (DMS)",
+        "CSC",                                                         "intermediate"),
+
+    # ---- Phase 31b round 157 — Appel + Jones fragments -------------
+    ("Carbon tetrachloride (CCl4)",
+        "ClC(Cl)(Cl)Cl",                                               "reagent"),
+    ("1-Chlorooctane",
+        "CCCCCCCCCl",                                                  "intermediate"),
+    ("Chloroform (CHCl3)",
+        "ClC(Cl)Cl",                                                   "intermediate"),
+    ("Chromium trioxide (CrO3, Jones reagent)",
+        "O=[Cr](=O)=O",                                                "reagent"),
+    ("Octanoic acid (caprylic acid)",
+        "CCCCCCCC(=O)O",                                               "intermediate"),
+    ("Chromium dioxide (CrO2)",
+        "O=[Cr]=O",                                                    "intermediate"),
+
+    # ---- Phase 31b round 164 — Wacker + Brown fragments ------------
+    ("1-Methylcyclohexene",
+        "CC1=CCCCC1",                                                  "intermediate"),
+    ("Hydrogen peroxide (H2O2)",
+        "OO",                                                          "reagent"),
+    ("trans-2-Methylcyclohexanol",
+        "C[C@@H]1CCCC[C@H]1O",                                         "intermediate"),
+
+    # ---- Phase 31b round 165 — Robinson + Knoevenagel fragments ----
+    ("Δ1,9-Octalin-2-one (Robinson annulation product)",
+        "O=C1C=C2CCCCC2CC1",                                           "intermediate"),
+    ("Diethyl malonate",
+        "CCOC(=O)CC(=O)OCC",                                           "reagent"),
+    ("Diethyl benzylidene malonate",
+        "CCOC(=O)/C(=C\\c1ccccc1)C(=O)OCC",                            "intermediate"),
+
+    # ---- Phase 31b round 175 — Henry + Hantzsch fragments ----------
+    ("Nitromethane",
+        "C[N+](=O)[O-]",                                               "reagent"),
+    ("2-Nitro-1-phenylethanol (Henry product)",
+        "O=[N+]([O-])CC(O)c1ccccc1",                                   "intermediate"),
+    ("Hantzsch 1,4-dihydropyridine "
+     "(diethyl 4-phenyl-2,6-dimethyl-DHP-3,5-dicarboxylate)",
+        "CCOC(=O)C1=C(C)NC(C)=C(C(=O)OCC)C1c1ccccc1",                  "intermediate"),
+
+    # ---- Phase 31b round 182 — Grubbs / Hofmann / ozonolysis -------
+    ("1-Hexene",
+        "C=CCCCC",                                                     "reagent"),
+    ("1-Phenyl-1-hexene (Grubbs cross-metathesis product)",
+        "CCCCC=Cc1ccccc1",                                             "intermediate"),
+    ("2-Pentyltrimethylammonium (Hofmann substrate)",
+        "CCCC(C)[N+](C)(C)C",                                          "intermediate"),
+    ("1-Pentene",
+        "C=CCCC",                                                      "reagent"),
+    ("Ozone",
+        "O=[O+][O-]",                                                  "reagent"),
 ]
 
 
+#: Round 154 — one-shot SMILES-fix backfill.  Applies ONLY to rows
+#: in this dict (keyed by name) where the stored SMILES doesn't
+#: match the source-of-truth.  Gentle: never touches a row whose
+#: stored SMILES already canonicalises to the target.  Idempotent.
+_SMILES_FIXES: dict = {
+    # The pre-round-154 row stored cis-stilbene (`C(/c1ccccc1)=C/c1ccccc1`)
+    # under the name "trans-Stilbene" — a real bug.  Round 154's
+    # Sharpless asymmetric dihydroxylation reaction needs the actual
+    # E-isomer, so backfill the row to canonical trans-stilbene.
+    "trans-Stilbene": "C(=C\\c1ccccc1)/c1ccccc1",
+}
+
+
 def seed_intermediates() -> int:
-    """Additively insert intermediate molecules by name.
+    """Additively insert intermediate molecules by name + apply
+    one-shot SMILES backfills for known buggy historical rows.
 
     Mirrors the additive-backfill logic in ``seed.py``: re-running on an
-    existing DB is safe; pre-existing molecules (by name) are untouched.
+    existing DB is safe; pre-existing molecules (by name) are untouched
+    UNLESS the name appears in ``_SMILES_FIXES`` AND the stored SMILES
+    does not canonicalise to the target.
     """
     with session_scope() as s:
         existing_names = {row.name for row in s.query(DBMol.name).all()}
 
     to_add = [e for e in _INTERMEDIATES if e[0] not in existing_names]
-    if not to_add:
-        log.info("All %d intermediate entries already seeded.", len(_INTERMEDIATES))
-        return 0
-
-    log.info("Seeding %d intermediate molecules.", len(to_add))
     added = 0
-    with session_scope() as s:
-        for name, smi, tag in to_add:
-            try:
-                m = ChemMol.from_smiles(smi, name=name, generate_3d=False)
-                m.ensure_properties()
-            except Exception as e:
-                log.warning("Failed to seed intermediate %s (%r): %s",
-                            name, smi, e)
-                continue
-            s.add(DBMol(
-                name=m.name, smiles=m.smiles,
-                inchi=m.inchi, inchikey=m.inchikey, formula=m.formula,
-                properties_json=json.dumps(m.properties), source=tag,
-            ))
-            added += 1
-    log.info("Seeded %d intermediate molecules.", added)
-    return added
+    if to_add:
+        log.info("Seeding %d intermediate molecules.", len(to_add))
+        with session_scope() as s:
+            for name, smi, tag in to_add:
+                try:
+                    m = ChemMol.from_smiles(smi, name=name,
+                                            generate_3d=False)
+                    m.ensure_properties()
+                except Exception as e:
+                    log.warning(
+                        "Failed to seed intermediate %s (%r): %s",
+                        name, smi, e)
+                    continue
+                s.add(DBMol(
+                    name=m.name, smiles=m.smiles,
+                    inchi=m.inchi, inchikey=m.inchikey,
+                    formula=m.formula,
+                    properties_json=json.dumps(m.properties),
+                    source=tag,
+                ))
+                added += 1
+        log.info("Seeded %d intermediate molecules.", added)
+    else:
+        log.info("All %d intermediate entries already seeded.",
+                 len(_INTERMEDIATES))
+
+    # ---- One-shot SMILES backfill for known buggy historical rows --
+    fixed = 0
+    if _SMILES_FIXES:
+        from rdkit import Chem as _RDChem
+        with session_scope() as s:
+            for name, target_smi in _SMILES_FIXES.items():
+                row = s.query(DBMol).filter_by(name=name).one_or_none()
+                if row is None or not row.smiles:
+                    continue
+                try:
+                    cur_canon = _RDChem.CanonSmiles(row.smiles)
+                    tgt_canon = _RDChem.CanonSmiles(target_smi)
+                except Exception:
+                    continue
+                if cur_canon == tgt_canon:
+                    continue
+                try:
+                    m = ChemMol.from_smiles(target_smi, name=name,
+                                            generate_3d=False)
+                    m.ensure_properties()
+                except Exception as e:
+                    log.warning(
+                        "Failed to backfill SMILES for %s "
+                        "(target %r): %s", name, target_smi, e)
+                    continue
+                row.smiles = m.smiles
+                row.inchi = m.inchi
+                row.inchikey = m.inchikey
+                row.formula = m.formula
+                row.properties_json = json.dumps(m.properties)
+                fixed += 1
+        if fixed:
+            log.info(
+                "Backfilled SMILES for %d intermediate rows.", fixed)
+
+    return added + fixed

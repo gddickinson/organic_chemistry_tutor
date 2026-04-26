@@ -29,3 +29,28 @@ def elements_by_category(category: str) -> List[Dict[str, Any]]:
     ``noble-gas``, ``transition-metal``, ``lanthanide``."""
     from orgchem.core.periodic_table import elements_by_category as _by
     return [e.to_dict() for e in _by(category)]
+
+
+@action(category="periodic")
+def open_periodic_table() -> Dict[str, Any]:
+    """Open the *Tools → Periodic table…* dialog (Ctrl+Shift+T).
+    Returns ``{"opened": True}`` on success or ``{"error": ...}``
+    if the main window isn't reachable."""
+    from orgchem.agent import controller
+    from orgchem.agent._gui_dispatch import run_on_main_thread_sync
+    win = controller.main_window()
+    if win is None:
+        return {"error": "Main window not available — run the app "
+                         "interactively or via HeadlessApp first."}
+
+    def _open() -> Dict[str, Any]:
+        from orgchem.gui.dialogs.periodic_table import (
+            PeriodicTableDialog,
+        )
+        dlg = PeriodicTableDialog(win)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+        return {"opened": True}
+
+    return run_on_main_thread_sync(_open)

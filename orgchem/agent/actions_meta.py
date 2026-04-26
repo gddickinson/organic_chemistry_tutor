@@ -41,6 +41,63 @@ _CATEGORY_SUMMARIES: Dict[str, str] = {
     "export": "2D / 3D image export + screenshots.",
     "window": "Secondary-window management (Macromolecules window).",
     "meta": "Self-introspection actions (this category).",
+    # Round 180 (Phase 49e) backfill — categories that shipped
+    # after the round-55 baseline but never got a summary entry.
+    "authoring": "Add new molecules / reactions / glossary terms / "
+                 "tutorial lessons / molecule synonyms to the DB.",
+    "biochem": "Major metabolic pathways (glycolysis, TCA, "
+               "ox-phos, β-oxidation, …) with per-step substrates / "
+               "enzymes / EC numbers / ΔG / regulators.",
+    "calc": "Lab calculator solvers — molarity, dilution, "
+            "stoichiometry, pH, gas law, colligative, thermo / "
+            "kinetics, equilibrium (~ 30 routine bench calcs).",
+    "cell": "Cell-component explorer (eukarya / bacteria / "
+            "archaea — organelles, membranes, cytoskeleton, "
+            "envelopes, ribosomes).",
+    "centrifugation": "Centrifuge / rotor catalogue + g↔RPM "
+                      "calculator + recommended-protocol lookup.",
+    "chromatography": "Chromatography-method reference (TLC, "
+                      "HPLC, GC-MS, FPLC, SEC, IC, SFC, …).",
+    "clinical": "Clinical chemistry lab panels (BMP / CMP / "
+                "Lipid / Diabetes / Thyroid / Vitamin D) with "
+                "per-analyte normal ranges + clinical "
+                "significance.",
+    "drawing": "Headless ChemDraw-equivalent: structure ↔ SMILES, "
+               "PNG / SVG / MOL export, reaction-scheme builder.",
+    "instrumentation": "Major lab analyser reference catalogue "
+                       "(clinical chemistry, hematology, "
+                       "molecular, mass-spec, microscopy, "
+                       "automation, storage).",
+    "isomer": "Stereoisomer + tautomer enumeration + "
+              "pairwise-relationship classifier (identical / "
+              "enantiomer / diastereomer / meso / tautomer / "
+              "constitutional).",
+    "kingdom": "Biochemistry-by-Kingdom topics (Eukarya / "
+               "Bacteria / Archaea / Viruses × Structure / "
+               "Physiology / Genetics).",
+    "microscopy": "Microscopy-method reference across resolution "
+                  "scales (whole-organism → single-molecule), "
+                  "with cross-references to lab analysers.",
+    "ph": "pH + buffer explorer — pKa lookup, buffer designer "
+          "(Henderson-Hasselbalch), buffer capacity, titration "
+          "curve simulator.",
+    "phys-org": "Physical organic chemistry — Hammett ρ-σ fits, "
+                "primary kinetic isotope effects.",
+    "qualitative": "Qualitative inorganic ion / gas tests (flame, "
+                   "hydroxide, halide, sulfate, carbonate, NH₄⁺, "
+                   "and gas tests).",
+    "reagent": "Lab reagents reference (buffers, acids / bases, "
+               "detergents, solvents, cell-culture media, "
+               "molecular-biology enzymes).",
+    "scripting": "Python script editor + 3D scene composer "
+                 "workbench window.",
+    "search": "Full-text search across every text-bearing column "
+              "in the seeded DB (molecules, reactions, "
+              "pathways, glossary, mechanism steps).",
+    "spectrophotometry": "Spectrophotometry-method reference + "
+                         "Beer-Lambert solver (UV-Vis, "
+                         "fluorescence, IR / FTIR, NIR, Raman, "
+                         "CD, AAS, ICP, NMR).",
 }
 
 

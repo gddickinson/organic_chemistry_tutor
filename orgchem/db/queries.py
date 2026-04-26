@@ -8,7 +8,7 @@ from orgchem.db.session import session_scope
 from orgchem.db.models import Molecule as DBMol, Reaction as DBRxn
 
 
-def list_molecules(limit: int = 500, query: Optional[str] = None) -> List[DBMol]:
+def list_molecules(limit: int = 5000, query: Optional[str] = None) -> List[DBMol]:
     with session_scope() as s:
         stmt = select(DBMol)
         if query:

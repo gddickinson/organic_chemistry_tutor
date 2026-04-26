@@ -22,6 +22,19 @@ def test_glossary_seeded_with_at_least_40_terms(app):
     assert len(rows) >= 40, f"expected ≥40 glossary terms, got {len(rows)}"
 
 
+def test_phase_48a_isomer_terms_present(app):
+    """Round 170 / Phase 48a — 7 new isomer-vocabulary terms
+    seeded into the glossary as part of the isomers exploration
+    tool's 4-pronged integration."""
+    rows = app.call("list_glossary")
+    names = {r["term"] for r in rows}
+    for expected in ("Isomerism", "Stereoisomer", "Conformer",
+                     "Tautomer", "Atropisomer",
+                     "Cis-trans isomerism", "Optical activity"):
+        assert expected in names, \
+            f"isomer-vocabulary term {expected!r} missing"
+
+
 def test_expected_core_terms_present(app):
     rows = app.call("list_glossary")
     names = {r["term"] for r in rows}

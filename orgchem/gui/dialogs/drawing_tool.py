@@ -25,7 +25,7 @@ from typing import Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QDialog, QFileDialog, QHBoxLayout, QMessageBox,
+    QDialog, QFileDialog, QHBoxLayout, QInputDialog, QMessageBox,
     QPushButton, QVBoxLayout, QWidget,
 )
 
@@ -79,6 +79,16 @@ class DrawingToolDialog(QDialog):
             "immediately.")
         self.send_btn.clicked.connect(self._on_send_to_workspace)
         footer.addWidget(self.send_btn)
+
+        # Phase 36f.2 (round 132) — bundle the canvas into a reaction
+        # using the arrow tool and ship it to the Reactions tab.
+        self.send_rxn_btn = QPushButton("Send to Reactions tab")
+        self.send_rxn_btn.setToolTip(
+            "Place a → or ⇌ arrow between two structures on the "
+            "canvas, then use this button to bundle them into a "
+            "new reaction row + open it in the Reactions tab.")
+        self.send_rxn_btn.clicked.connect(self._on_send_to_reactions)
+        footer.addWidget(self.send_rxn_btn)
 
         footer.addStretch(1)
         close_btn = QPushButton("Close")
@@ -176,3 +186,96 @@ class DrawingToolDialog(QDialog):
         from orgchem.messaging.bus import bus
         bus().database_changed.emit()
         bus().molecule_selected.emit(int(mol_id))
+
+    def _on_send_to_reactions(self) -> None:
+        """Phase 36f.2 — pull a reaction scheme out of the canvas
+        and ship it to the Reactions tab as a fresh DB row."""
+        scheme = self.panel.current_scheme()
+        if scheme is None:
+            QMessageBox.information(
+                self, "No reaction arrow",
+                "Place a → or ⇌ arrow on the canvas between two "
+                "structures first (use the arrow tool on the "
+                "toolbar).")
+            return
+        if scheme.is_empty:
+            QMessageBox.information(
+                self, "Empty scheme",
+                "Draw at least one atom on each side of the arrow "
+                "before sending to the Reactions tab.")
+            return
+        rxn_smi = scheme.to_reaction_smiles()
+        if not rxn_smi or rxn_smi.startswith(">") or rxn_smi.endswith(">"):
+            QMessageBox.information(
+                self, "Incomplete scheme",
+                f"Reaction SMILES came out as {rxn_smi!r}; one side "
+                "of the arrow is empty.  Add atoms on both sides "
+                "and try again.")
+            return
+        # Prompt for a name.
+        default_name = f"Drawn-rxn-{uuid.uuid4().hex[:8]}"
+        name, ok = QInputDialog.getText(
+            self, "Name this reaction",
+            "Reaction name (used as the row title in the Reactions "
+            "tab):",
+            text=default_name)
+        if not ok or not name.strip():
+            return
+        try:
+            from orgchem.agent.actions import invoke
+            res = invoke(
+                "add_reaction",
+                rxn_name=name.strip(),
+                reaction_smiles=rxn_smi,
+                description="Drawn in the Phase-36 drawing tool.",
+                rxn_category="Drawn",
+            )
+        except Exception as e:  # noqa: BLE001
+            log.exception("add_reaction invocation failed")
+            QMessageBox.warning(self, "Send failed", str(e))
+            return
+        if res.get("status") != "accepted":
+            reason = res.get("reason", "unknown")
+            if res.get("existing_id") is not None:
+                eid = res["existing_id"]
+                QMessageBox.information(
+                    self, "Already in library",
+                    f"A reaction named '{name}' already exists "
+                    f"(id={eid}).  Opening it in the Reactions tab.")
+                self._open_reaction(eid)
+                return
+            QMessageBox.warning(self, "Send rejected", reason)
+            return
+        self._open_reaction(res["id"])
+        QMessageBox.information(
+            self, "Added to library",
+            f"Reaction '{name}' added (id={res['id']}).  Now active "
+            f"in the Reactions tab.")
+
+    def _open_reaction(self, rxn_id: int) -> None:
+        """Switch the main window to the Reactions tab and select
+        the new row.  No-ops if the main window isn't reachable
+        (headless / dialog-only smoke tests)."""
+        try:
+            from orgchem.agent import controller
+            from orgchem.messaging.bus import bus
+            bus().database_changed.emit()
+            win = controller.main_window()
+            if win is None:
+                return
+            # MainWindow tab-switch helper: walk the central tab
+            # widget for the Reactions tab and call its display
+            # routine if available.
+            tabs = getattr(win, "tabs", None)
+            if tabs is None:
+                return
+            for i in range(tabs.count()):
+                if tabs.tabText(i).lower().startswith("reaction"):
+                    tabs.setCurrentIndex(i)
+                    panel = tabs.widget(i)
+                    display = getattr(panel, "_display", None)
+                    if display is not None:
+                        display(int(rxn_id))
+                    break
+        except Exception as e:  # noqa: BLE001
+            log.warning("Reactions-tab handoff failed: %s", e)

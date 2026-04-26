@@ -308,6 +308,676 @@ _STARTER: List[Tuple[str, str, str, str]] = [
      " materials synthesis; Heck-Matsuda and asymmetric variants "
      "are active research areas.",
      "Ic1ccccc1.C=CC(=O)OC>>COC(=O)/C=C/c1ccccc1.[H]I"),
+
+    # ---- Phase 31b round 134 — CuAAC click chemistry ---------------
+    ("Click chemistry: CuAAC (phenylacetylene + benzyl azide)",
+     "Cycloaddition (Cu-catalysed)",
+     "Sharpless / Meldal / Bertozzi 2022 Nobel Prize in Chemistry. "
+     "Copper(I)-catalysed azide-alkyne cycloaddition (CuAAC) — "
+     "the canonical 'click' reaction.  Thermal Huisgen "
+     "1,3-dipolar cycloaddition of an azide and a terminal "
+     "alkyne is sluggish at room temperature and gives a ~1:1 "
+     "mixture of 1,4- and 1,5-disubstituted 1,2,3-triazole "
+     "regioisomers; the Cu(I) catalyst (from CuSO₄ / sodium "
+     "ascorbate, or from CuI directly) accelerates the reaction "
+     "~10⁷-fold AND drives complete 1,4-regioselectivity.  "
+     "Mechanism (Fokin / Finn 2005 + Worrell 2013): Cu(I) "
+     "deprotonates the alkyne to form a copper acetylide; "
+     "a second Cu(I) coordinates the azide α-N; ladder cycle "
+     "with stepwise C–N bond formation through a six-membered "
+     "metallacycle gives the 1,4-triazole + regenerates Cu(I).  "
+     "The reaction is bioorthogonal (azides + alkynes don't "
+     "exist in living cells) and proceeds in water — the "
+     "conditions that put it at the centre of chemical-biology "
+     "labelling, drug-discovery fragment assembly, and polymer "
+     "/ materials cross-linking.  Strain-promoted SPAAC "
+     "(cyclooctyne + azide, no Cu) is the bio-friendly variant "
+     "that earned Bertozzi her share of the Nobel.",
+     "C#Cc1ccccc1.[N-]=[N+]=NCc1ccccc1"
+     ">>c1ccc(Cn2cc(-c3ccccc3)nn2)cc1"),
+
+    # ---- Phase 31b round 152 — Birch reduction ---------------------
+    ("Birch reduction (benzene → 1,4-cyclohexadiene)",
+     "Reduction (single-electron transfer)",
+     "Birch 1944 — dissolving-metal reduction of an aromatic "
+     "ring with Na (or Li, or K) in liquid ammonia (~ −33 °C) "
+     "and a proton source (EtOH, t-BuOH, MeOH).  The *only* "
+     "seeded reaction in the catalogue that goes through "
+     "single-electron-transfer (SET) chemistry rather than "
+     "concerted / two-electron polar bonds.  Mechanism is a "
+     "4-step ladder: (1) Na donates one electron to benzene to "
+     "give a radical anion; (2) EtOH protonates the radical "
+     "anion at one of the carbons that bears the highest "
+     "electron density to give a cyclohexadienyl radical; "
+     "(3) a second Na donates an electron to give a "
+     "pentadienyl-stabilised carbanion; (4) EtOH protonates "
+     "again at the central carbon of the pentadienyl anion to "
+     "give the **non-conjugated** 1,4-cyclohexadiene.  "
+     "Critical regioselectivity: 1,4 (not 1,3) because the "
+     "second protonation lands at the central carbon of the "
+     "5-atom pentadienyl anion — protonation at the ends "
+     "would give an unstable cross-conjugated diene.  "
+     "Substituent rule: electron-donating groups (OMe, NR₂) "
+     "land on sp²-carbon of the product (un-reduced ring "
+     "position); electron-withdrawing groups (COOH, CO-R) "
+     "land on sp³.  Workhorse for setting up enol ethers from "
+     "anisole + chiral cyclohexenones from ortho-substituted "
+     "benzoic acids in total synthesis.",
+     "c1ccccc1.[Na].[Na].CCO.CCO"
+     ">>C1=CCC=CC1.[Na+].[Na+].[O-]CC.[O-]CC"),
+
+    # ---- Phase 31b round 152 — Dess-Martin periodinane oxidation ---
+    ("Dess-Martin oxidation (1-octanol → octanal)",
+     "Oxidation",
+     "Dess + Martin 1983 — modern, mild, hyper-valent-iodine(V) "
+     "oxidation of a 1° alcohol to an aldehyde (or 2° alcohol "
+     "to a ketone) using Dess-Martin periodinane (DMP, "
+     "1,1,1-tris(acetyloxy)-1,1-dihydro-1,2-benziodoxol-3-(1H)-"
+     "one).  Run in CH₂Cl₂ at room temperature, complete in "
+     "minutes; aqueous bicarbonate / thiosulfate workup.  "
+     "Mechanism: alcohol exchange replaces one of the three "
+     "acetate ligands at the I(V) centre with the alkoxide; "
+     "intramolecular β-acetate-assisted hydride / proton "
+     "removal (cyclic TS) reduces I(V) → I(III) and produces "
+     "the carbonyl + 2 AcOH + the o-iodoxybenzoic-acid "
+     "by-product (IBX after workup).  Critical advantage over "
+     "Swern: no cryogenic temperature, no foul-smelling "
+     "Me₂S by-product, and the reagent is bench-stable as a "
+     "white powder.  Critical advantage over Jones / KMnO₄: "
+     "does NOT over-oxidise to carboxylic acid (just like "
+     "Swern + PCC).  Now the default 1° → aldehyde oxidation "
+     "in modern total-synthesis labs.",
+     "CCCCCCCCO>>CCCCCCCC=O"),
+
+    # ---- Phase 31b round 153 — Sharpless asymmetric epoxidation ----
+    ("Sharpless asymmetric epoxidation (trans-crotyl "
+     "alcohol → 2,3-epoxybutan-1-ol)",
+     "Asymmetric catalysis (oxidation)",
+     "K. B. Sharpless 1980 (Nobel 2001, shared with Knowles + "
+     "Noyori) — the first practical asymmetric oxidation, and "
+     "the first asymmetric-catalysis entry in the catalogue.  "
+     "Reagents: catalytic Ti(OiPr)₄ + a chiral diethyl "
+     "tartrate (DET) ligand + tert-butyl hydroperoxide (TBHP) "
+     "in CH₂Cl₂ with 4 Å molecular sieves at −20 °C.  "
+     "Mechanism (highly schematic): two Ti(OiPr)₄ + two DET "
+     "self-assemble into a dimeric Ti₂(tartrate)₂ complex; "
+     "the allylic alcohol coordinates one Ti through its OH, "
+     "TBHP coordinates the same Ti as a peroxide, and "
+     "intramolecular oxygen transfer from the η²-peroxide to "
+     "the alkene face dictated by the (R,R)- or (S,S)-tartrate "
+     "ligand delivers the 2,3-epoxide.  **Substrate "
+     "requirement: the alcohol MUST be allylic** (i.e. -OH on "
+     "the carbon next to the C=C) — the OH is the anchor that "
+     "binds the substrate to the Ti centre.  Face-selectivity "
+     "predicted by the Sharpless mnemonic: with the allylic "
+     "alcohol drawn with the OH at lower right, (R,R)-(+)-DET "
+     "delivers the oxygen from below; (S,S)-(−)-DET from "
+     "above.  Routinely > 90 % ee with simple substrates.  "
+     "Game-changing for total synthesis — opened the era of "
+     "predictable enantioselective C-O bond formation.",
+     "C/C=C/CO.CC(C)(C)OO>>C[C@@H]1O[C@H]1CO.CC(C)(C)O"),
+
+    # ---- Phase 31b round 153 — CBS reduction ------------------------
+    ("CBS reduction (acetophenone → (R)-1-phenylethanol)",
+     "Asymmetric catalysis (reduction)",
+     "Corey + Bakshi + Shibata 1987 — catalytic enantioselective "
+     "reduction of a prochiral ketone to the corresponding "
+     "secondary alcohol, using a sub-stoichiometric chiral "
+     "oxazaborolidine catalyst (the *CBS catalyst*, derived "
+     "from (S)- or (R)-α,α-diphenylprolinol + a borane) plus "
+     "stoichiometric BH₃·THF / BH₃·SMe₂ / catecholborane as the "
+     "hydride source.  Mechanism: the CBS catalyst's nitrogen "
+     "Lewis-binds borane while its boron Lewis-binds the "
+     "ketone oxygen; this brings hydride + carbonyl into a "
+     "rigid cis-fused six-membered chair-like TS where the "
+     "*larger* ketone substituent points *away* from the "
+     "endo-face of the catalyst, so hydride delivery is "
+     "stereo-electronically dictated.  With (S)-CBS catalyst, "
+     "ArC(=O)R (Ar bigger than R) gives the (R)-alcohol; "
+     "swap to (R)-CBS for the (S)-alcohol.  Routinely > 95 % "
+     "ee for aryl-alkyl ketones; tolerates esters, halides, "
+     "alkenes that NaBH₄ would touch.  Workhorse asymmetric "
+     "ketone reduction in modern total synthesis (e.g. "
+     "Corey's prostaglandin, Taxol, ginkgolide routes).  "
+     "Pedagogically distinct from the seeded NaBH₄ entry: "
+     "same overall transformation (C=O → C-OH), but with "
+     "a chiral catalyst that controls the new stereocentre's "
+     "absolute configuration.",
+     "CC(=O)c1ccccc1.B>>O[C@@H](C)c1ccccc1"),
+
+    # ---- Phase 31b round 154 — Sharpless asymmetric dihydroxylation
+    ("Sharpless asymmetric dihydroxylation (trans-stilbene "
+     "→ (R,R)-1,2-diphenylethane-1,2-diol)",
+     "Asymmetric catalysis (oxidation)",
+     "K. B. Sharpless 1988-1996 (the Nobel-2001 oxidation half "
+     "of the prize, alongside the asymmetric epoxidation).  "
+     "Catalytic K₂OsO₄·2H₂O + a bis-cinchona-alkaloid chiral "
+     "ligand ((DHQ)₂PHAL or (DHQD)₂PHAL — the two ligand "
+     "enantiomers commercially pre-mixed as **AD-mix-α** "
+     "(DHQ)₂PHAL and **AD-mix-β** (DHQD)₂PHAL respectively) + "
+     "stoichiometric K₃Fe(CN)₆ as the terminal oxidant + "
+     "K₂CO₃ + tBuOH/H₂O at 0 °C.  Mechanism: OsO₄ undergoes a "
+     "[3+2] cycloaddition with the alkene face dictated by the "
+     "chiral ligand to give an osmate ester; hydrolysis liberates "
+     "the *cis*-1,2-diol AND reduced Os(VI), which is "
+     "re-oxidised by ferricyanide back to OsO₄ to close the "
+     "catalytic cycle.  **The Sharpless mnemonic for face "
+     "selectivity:** with the alkene drawn left-to-right and "
+     "the larger substituent at upper-left, AD-mix-β attacks "
+     "from below to give the *(R,R)* diol; AD-mix-α from "
+     "above to give *(S,S)*.  Pedagogically distinct from the "
+     "round-153 Sharpless asymmetric epoxidation: works on "
+     "any alkene (no allylic-OH substrate restriction), and "
+     "delivers a *syn*-diol rather than an epoxide.  Highly "
+     "general — trans-, cis-, mono-, di-, tri-substituted "
+     "alkenes all reactive — and routinely > 90 % ee.",
+     "c1ccc(/C=C/c2ccccc2)cc1.O=[Os](=O)(=O)=O.O"
+     ">>O[C@@H](c1ccccc1)[C@H](O)c1ccccc1.O=[Os]=O"),
+
+    # ---- Phase 31b round 154 — Jacobsen-Katsuki epoxidation --------
+    ("Jacobsen-Katsuki epoxidation (cis-β-methylstyrene → "
+     "(2R,3S)-2-methyl-3-phenyloxirane)",
+     "Asymmetric catalysis (oxidation)",
+     "Jacobsen 1990 + Katsuki 1990 (independent reports) — "
+     "asymmetric epoxidation of unfunctionalised cis- (and "
+     "tri-substituted) alkenes using a chiral Mn(III)(salen) "
+     "complex catalyst + a stoichiometric terminal oxidant "
+     "(NaOCl bleach is the cheapest; PhIO, NMO, mCPBA also "
+     "used).  The **(R,R)- or (S,S)-N,N'-bis(3,5-di-tert-"
+     "butylsalicylidene)-1,2-cyclohexanediamine-Mn(III)Cl** "
+     "catalyst is the canonical 'Jacobsen catalyst'.  "
+     "Mechanism: NaOCl oxidises Mn(III) → Mn(V)=O oxo-"
+     "intermediate; the alkene approaches over the chiral "
+     "salen ligand from the less-hindered face; concerted "
+     "(or radical, depending on substrate) oxygen transfer "
+     "gives the epoxide and regenerates Mn(III).  Critical "
+     "complement to Sharpless: **does NOT require an allylic "
+     "OH** (Mn coordinates the oxidant, not the substrate), "
+     "making cis-disubstituted aryl alkenes (cis-β-"
+     "methylstyrene, cis-stilbene, indene, dihydronaphthalene) "
+     "the sweet-spot substrates that Sharpless cannot touch.  "
+     "Together with Sharpless asymmetric epoxidation + "
+     "Sharpless asymmetric dihydroxylation, completes the "
+     "asymmetric-oxygen-installation toolkit.  Routinely "
+     "80-95 % ee.",
+     "C/C=C\\c1ccccc1.[Na+].[O-]Cl"
+     ">>C[C@H]1O[C@@H]1c1ccccc1.[Na+].[Cl-]"),
+
+    # ---- Phase 31b round 155 — Mukaiyama aldol ---------------------
+    ("Mukaiyama aldol (TMS enol ether of acetone + "
+     "benzaldehyde → 4-hydroxy-4-phenyl-2-butanone)",
+     "Asymmetric catalysis (C-C bond formation)",
+     "Mukaiyama 1973 — Lewis-acid-catalysed crossed aldol "
+     "between a pre-formed silyl enol ether (or silyl ketene "
+     "acetal) and an aldehyde / ketone.  Run at −78 °C in "
+     "CH₂Cl₂ with TiCl₄ or BF₃·OEt₂ as the Lewis-acid "
+     "activator (or, for the asymmetric variant — Mukaiyama "
+     "1990, Carreira 1994 — a chiral Ti-BINOL, Cu-BOX, or "
+     "oxazaborolidinone Lewis acid).  Mechanism: Lewis acid "
+     "binds the aldehyde carbonyl, activating it for "
+     "nucleophilic attack; the silyl enol ether attacks via an "
+     "**open** TS (not a Zimmerman-Traxler chair) — the silyl "
+     "group blocks the aldehyde-ene cyclic geometry — to give "
+     "a TMS-protected aldol; aqueous workup desilylates to the "
+     "β-hydroxy carbonyl.  Critical pedagogical advantages "
+     "over the classic acid- or base-catalysed aldol: pre-"
+     "formation of the enol ether sets the regiochemistry "
+     "(no α-proton ambiguity), the open TS gives the "
+     "**anti**-aldol with simple aldehyde + ketone substrates, "
+     "and the Mukaiyama protocol tolerates many Lewis-basic "
+     "functional groups that would deprotonate or coordinate "
+     "to a strong base.  Workhorse first C-C bond-formation "
+     "asymmetric-catalysis entry — opens the asymmetric C-C "
+     "bond-formation teaching surface alongside the C-O / "
+     "C=O entries (Sharpless AE / AD + Jacobsen + CBS).",
+     "C=C(O[Si](C)(C)C)C.O=Cc1ccccc1"
+     ">>O[C@H](c1ccccc1)CC(=O)C.O[Si](C)(C)C"),
+
+    # ---- Phase 31b round 155 — Evans aldol -------------------------
+    ("Evans aldol (N-propionyl-(S)-4-benzyloxazolidinone + "
+     "propanal → syn-(2S,3R)-aldol)",
+     "Asymmetric catalysis (C-C bond formation)",
+     "D. A. Evans 1981 — diastereoselective aldol via a chiral "
+     "**oxazolidinone auxiliary** + Bu₂BOTf + i-Pr₂NEt (or "
+     "Et₃N) at −78 °C in CH₂Cl₂.  The (S)-4-benzyl-2-"
+     "oxazolidinone auxiliary is acylated onto the carboxylic "
+     "acid via mixed-anhydride or DCC chemistry; soft "
+     "enolisation with Bu₂BOTf forms the (Z)-boron enolate; "
+     "addition to an aldehyde proceeds through a tightly "
+     "constrained **Zimmerman-Traxler chair TS** in which "
+     "(a) the aldehyde's R group adopts the equatorial "
+     "position, (b) the boron's two butyl ligands shield one "
+     "enolate face, and (c) the auxiliary's benzyl group "
+     "shields the other face — leaving exactly one geometry "
+     "open and giving the *Evans syn* aldol with > 95:5 dr.  "
+     "Auxiliary cleavage (LiOH / H₂O₂) then liberates the "
+     "carboxylic-acid product without epimerisation, and the "
+     "auxiliary recycles cleanly.  Pedagogically distinct "
+     "from the round-155 Mukaiyama aldol: Evans uses a "
+     "stoichiometric chiral *auxiliary* + a closed Zimmerman-"
+     "Traxler TS (gives *syn*-aldol), whereas Mukaiyama uses "
+     "a sub-stoichiometric Lewis-acid *catalyst* + an open TS "
+     "(gives *anti*-aldol when uncatalysed; many "
+     "stereo-outcomes possible with chiral catalysts).  "
+     "Together they cover the two main paradigms of "
+     "asymmetric aldol: chiral auxiliary vs chiral catalyst.",
+     "CCC(=O)N1[C@@H](Cc2ccccc2)COC1=O.CCC=O"
+     ">>CC[C@H](O)[C@@H](C)C(=O)N1[C@@H](Cc2ccccc2)COC1=O"),
+
+    # ---- Phase 31b round 156 — Stille coupling ---------------------
+    ("Stille coupling (bromobenzene + tributyl(vinyl)stannane "
+     "→ styrene)",
+     "Cross-coupling (Pd-catalysed)",
+     "Stille 1978 (Migita-Kosugi-Stille; Nobel 2010 was Negishi "
+     "+ Suzuki + Heck — Stille is the famous one that didn't "
+     "share the prize, JKS having died in 1989).  Pd(0)-"
+     "catalysed C(sp²)–C(sp²) (or C(sp²)–C(sp³)) coupling "
+     "between an aryl / vinyl halide (or pseudohalide — "
+     "triflate, iodonium, etc.) and an organostannane R₃Sn-R'.  "
+     "Catalytic cycle: oxidative addition of Ar–X to Pd(0); "
+     "transmetalation in which the R' group migrates from Sn "
+     "to Pd (typically Bu₃Sn–X is the by-product); reductive "
+     "elimination forms the C-C bond and regenerates Pd(0).  "
+     "Distinctive from Suzuki / Sonogashira / Negishi: the Sn "
+     "reagent is **air-, moisture-, and pH-stable** — Stille "
+     "couplings tolerate water, acidic and basic conditions, "
+     "and a huge range of polar functional groups.  Trade-off: "
+     "tributyltin is **toxic and environmentally persistent**, "
+     "so Stille has been largely replaced by Suzuki for "
+     "commercial work; still used in total synthesis where "
+     "the stannane's exquisite functional-group tolerance + "
+     "ability to make C(sp²)-C(sp³) bonds is irreplaceable.  "
+     "Closes the Pd-coupling family in the catalogue at "
+     "5/5 textbook canon entries (Suzuki + Negishi + Heck + "
+     "Sonogashira + Stille).",
+     "Brc1ccccc1.C=C[Sn](CCCC)(CCCC)CCCC"
+     ">>C=Cc1ccccc1.CCCC[Sn](CCCC)(CCCC)Br"),
+
+    # ---- Phase 31b round 156 — Corey-Chaykovsky epoxidation --------
+    ("Corey-Chaykovsky epoxidation (benzaldehyde + dimethyl"
+     "sulfonium methylide → styrene oxide)",
+     "Methylene transfer (sulfur ylide)",
+     "E. J. Corey + M. Chaykovsky 1965 — single-CH₂ transfer "
+     "from a sulfur ylide onto a carbonyl to give an epoxide.  "
+     "Two flavours: (a) the **dimethylsulfonium methylide** "
+     "(Me₂S=CH₂, generated in situ from trimethylsulfonium "
+     "iodide + n-BuLi or NaH) — kinetic, irreversible, "
+     "delivers CH₂ to **aldehydes + ketones** to give the "
+     "terminal epoxide and dimethyl sulfide as the by-product; "
+     "(b) the **dimethylsulfoxonium methylide** (Me₂S(O)=CH₂, "
+     "generated from trimethylsulfoxonium iodide + NaH) — "
+     "thermodynamic, reversible, prefers 1,4-addition to "
+     "α,β-unsaturated carbonyls (giving cyclopropanes from "
+     "enones).  Mechanism for (a): nucleophilic ylide carbon "
+     "attacks the carbonyl C → betaine; the alkoxide displaces "
+     "Me₂S in an intramolecular SN2 → epoxide.  Critical "
+     "pedagogical complement to **Wittig** (same overall C=O → "
+     "C-X transformation, but Wittig gives an alkene via "
+     "R₃P=CR₂ ylide + O ends up on phosphorus, while Corey-"
+     "Chaykovsky gives an epoxide via R₂S=CR₂ ylide + S "
+     "leaves intact).  Also complements **Sharpless asymmetric "
+     "epoxidation** + **Jacobsen** by being a *non-asymmetric* "
+     "+ *non-allylic-OH-required* epoxidation that comes from "
+     "a ketone substrate not an alkene — the only catalogue "
+     "entry that builds a brand-new oxirane CH₂ ring atom from "
+     "scratch (Sharpless / Jacobsen oxidise a pre-existing "
+     "C=C to an epoxide; Corey-Chaykovsky converts a C=O to "
+     "an epoxide that gains a new CH₂).",
+     "O=Cc1ccccc1.C[S+](C)[CH2-]>>C1OC1c1ccccc1.CSC"),
+
+    # ---- Phase 31b round 157 — Appel reaction ----------------------
+    ("Appel reaction (1-octanol → 1-chlorooctane)",
+     "Functional-group interconversion",
+     "Appel 1975 — alcohol → alkyl halide via PPh₃ + a "
+     "tetrahalomethane (CCl₄ for chloride, CBr₄ for bromide, "
+     "CI₄ for iodide).  Run in CH₂Cl₂ or DMF at 0 °C → rt.  "
+     "Mechanism: PPh₃ attacks one of the chlorines of CCl₄ "
+     "displacing trichloromethanide (CCl₃⁻) → "
+     "chlorotriphenylphosphonium chloride [Ph₃PCl]⁺ Cl⁻; the "
+     "alcohol substitutes one Cl on phosphorus to give an "
+     "alkoxytriphenylphosphonium intermediate "
+     "(R-O-P⁺Ph₃) plus HCCl₃ + Cl⁻; chloride then performs "
+     "an **SN2 displacement** of the excellent OPPh₃ leaving "
+     "group, delivering R-Cl with **inversion of "
+     "configuration** at the carbon and Ph₃P=O as the second "
+     "by-product.  **Pedagogical pairing with the seeded "
+     "Mitsunobu reaction**: both Appel and Mitsunobu activate "
+     "an alcohol's OH as a phosphonium leaving group via PPh₃ "
+     "and both deliver SN2 inversion at the carbon — but "
+     "Appel uses CCl₄/CBr₄/CI₄ as the halide-source "
+     "co-reagent (gives R-X), while Mitsunobu uses "
+     "DIAD/DEAD + a soft nucleophile pronucleophile (gives "
+     "R-O-CO-R', R-N-CO-R', R-O-Ar, etc.).  Workhorse for "
+     "halogenation of alcohols where harsher SOCl₂ / PCl₃ "
+     "conditions would touch other functional groups.",
+     "CCCCCCCCO.c1ccc(P(c2ccccc2)c2ccccc2)cc1.ClC(Cl)(Cl)Cl"
+     ">>CCCCCCCCCl.O=P(c1ccccc1)(c1ccccc1)c1ccccc1.ClC(Cl)Cl"),
+
+    # ---- Phase 31b round 157 — Jones oxidation ---------------------
+    ("Jones oxidation (1-octanol → octanoic acid)",
+     "Oxidation",
+     "Jones 1946 — Cr(VI) oxidation of a 1° alcohol all the "
+     "way to a **carboxylic acid** (or 2° alcohol → ketone) "
+     "using Jones reagent (CrO₃ + dilute H₂SO₄ in acetone, "
+     "added drop-wise to the substrate at 0–25 °C until the "
+     "characteristic orange-red Cr(VI) colour persists).  "
+     "Mechanism: alcohol forms the chromate ester R-O-CrO₃H; "
+     "α-H is removed in a cyclic E2-like TS to give the "
+     "carbonyl + reduced Cr(IV); for 1° alcohols the resulting "
+     "aldehyde is hydrated by aqueous acetone to a gem-diol, "
+     "which gets oxidised again by Cr(VI) to the carboxylic "
+     "acid — **the over-oxidation step that defines Jones**.  "
+     "Critical pedagogical role in the catalogue: every other "
+     "seeded oxidation (PCC + Swern + Dess-Martin) was "
+     "specifically designed to STOP at the aldehyde — Jones "
+     "is the **counterpoint** that shows what happens when "
+     "you don't.  Distinct from Sharpless / Jacobsen "
+     "asymmetric oxidations: substrate-driven, no chirality "
+     "transfer, just bulk Cr(VI)-mediated dehydrogenation.  "
+     "Modern green-chemistry trend is to replace Jones with "
+     "TEMPO / NaOCl / KBr or NaIO₄ / RuCl₃ to avoid the "
+     "Cr(VI) carcinogen + heavy-metal waste — but Jones is "
+     "still teaching-essential as the historical default + "
+     "the over-oxidation example.  Closes Phase 31b "
+     "named-reaction catalogue at the **50/50 milestone** "
+     "alongside the Appel reaction shipped this round.",
+     "CCCCCCCCO.O=[Cr](=O)=O>>CCCCCCCC(=O)O.O=[Cr]=O.O"),
+
+    # ---- Phase 31b round 164 — Wacker oxidation --------------------
+    ("Wacker oxidation (styrene → acetophenone)",
+     "Oxidation (Pd-catalysed)",
+     "Smidt et al. 1959 — first Pd-catalysed industrial "
+     "process; canonical Pd(II)/Cu(II)/O₂ catalytic system "
+     "that converts a terminal alkene to a methyl ketone "
+     "with **Markovnikov regioselectivity** (the oxygen ends "
+     "up on the more-substituted carbon).  Catalytic cycle: "
+     "(1) PdCl₂ activates the alkene as an η²-π-complex; "
+     "(2) external water attacks the internal carbon (Wacker "
+     "syn-/anti- mechanism debated for decades — modern "
+     "consensus is anti-hydroxypalladation for terminal "
+     "alkenes, syn for chelating substrates); (3) β-hydride "
+     "elimination + reductive elimination releases the "
+     "methyl ketone and Pd(0); (4) Pd(0) is re-oxidised to "
+     "Pd(II) by Cu(II); (5) Cu(I) is re-oxidised to Cu(II) "
+     "by O₂ — Cu acts as the electron-shuttle that closes "
+     "the catalytic cycle.  **The Tsuji-Wacker variant** "
+     "(stoichiometric PdCl₂ in DMF / H₂O without Cu / O₂) "
+     "is the lab-scale benchtop version.  Industrial "
+     "application: ethylene → acetaldehyde (Wacker process, "
+     "still ~ 2 Mt/yr globally).  Pedagogically: opens the "
+     "alkene-to-methyl-ketone disconnection AND illustrates "
+     "the redox-relay mechanism (Pd ↔ Cu ↔ O₂) that is the "
+     "template for many modern aerobic oxidations.",
+     "C=Cc1ccccc1.O.O=O>>CC(=O)c1ccccc1.O"),
+
+    # ---- Phase 31b round 164 — Brown hydroboration-oxidation -------
+    ("Brown hydroboration-oxidation (1-methylcyclohexene → "
+     "trans-2-methylcyclohexanol)",
+     "Addition (anti-Markovnikov, syn-addition)",
+     "H. C. Brown 1956-1959 (Nobel 1979, shared with G. "
+     "Wittig).  **Two-step alkene → alcohol** via (1) "
+     "concerted 4-centre hydroboration with BH₃·THF (or "
+     "9-BBN, disiamylborane for tighter selectivity) "
+     "delivering H and BR₂ across the alkene **syn** with "
+     "B going to the **less-substituted** carbon (steric "
+     "control over an empty B 2p orbital — opposite "
+     "regiochemistry to acid-catalysed hydration's "
+     "Markovnikov + opposite stereochemistry to Br₂ "
+     "addition's anti); then (2) oxidative work-up with "
+     "alkaline H₂O₂ converts the trialkylborane to the "
+     "alcohol via [1,2]-alkyl-shift to oxygen with "
+     "**retention of configuration** at the migrating "
+     "carbon.  Net result: anti-Markovnikov + syn-addition "
+     "OH on the alkene (Markovnikov OH would come from "
+     "acid-catalysed hydration; anti-Markovnikov from "
+     "radical HBr addition — but only Brown's reaction is "
+     "BOTH anti-Markovnikov AND stereo-controlled).  The "
+     "trans-2-methylcyclohexanol product locks in both "
+     "selectivity arguments at once: anti-Markovnikov puts "
+     "OH on the un-substituted carbon, syn-addition puts "
+     "OH and CH₃ trans across the ring.  Together with the "
+     "round-164 Wacker oxidation (Markovnikov methyl "
+     "ketone), Brown opens the **alkene functionalisation "
+     "regio-/stereo-selectivity teaching surface** that "
+     "the original 50-entry catalogue underserved.",
+     "CC1=CCCCC1.B.OO.[Na+].[OH-]"
+     ">>O[C@@H]1CCCC[C@H]1C.[Na+].O.B(O)(O)O"),
+
+    # ---- Phase 31b round 165 — Robinson annulation -----------------
+    ("Robinson annulation (cyclohexanone + methyl vinyl "
+     "ketone → Δ1,9-octalin-2-one)",
+     "Annulation (C-C ring formation cascade)",
+     "Sir Robert Robinson 1935 (Nobel 1947 for alkaloid + "
+     "morphine structure work) — **three-step cascade in "
+     "one pot**: (1) Michael addition of an enolate (from "
+     "the parent ketone, deprotonated by base — KOH, NaOEt, "
+     "or proline for the asymmetric Hajos-Parrish-Eder-"
+     "Sauer-Wiechert variant) onto an α,β-unsaturated "
+     "ketone (canonically methyl vinyl ketone, MVK, "
+     "CC(=O)C=C), giving a 1,5-diketone; (2) intramolecular "
+     "**aldol condensation** of the 1,5-diketone — the new "
+     "α-carbon of the MVK fragment enolises and attacks the "
+     "original ketone carbonyl, forming a new 6-membered "
+     "ring; (3) acid- or base-catalysed **dehydration** of "
+     "the β-hydroxy intermediate to give the **cyclohexenone "
+     "ring fused to the original ring**.  Net result: two "
+     "C-C bonds formed + one C-O bond cleaved + a new "
+     "α,β-unsaturated ring annulated onto the substrate "
+     "ketone.  **The canonical ring-construction reaction in "
+     "textbook total synthesis** — the steroid-numbering "
+     "Wieland-Miescher ketone (precursor for cortisone, "
+     "testosterone, oestrone, etc.) is built from "
+     "2-methylcyclohexan-1,3-dione + MVK by exactly this "
+     "cascade, and the asymmetric Hajos-Parrish proline-"
+     "catalysed variant (1971) is regarded as the "
+     "intellectual ancestor of modern enamine-catalysis "
+     "(List + Barbas + MacMillan, Nobel 2021).  Opens the "
+     "**ring-construction teaching surface** that the "
+     "round-152-157 catalogue extension didn't cover.",
+     "O=C1CCCCC1.CC(=O)C=C>>O=C1C=C2CCCCC2CC1.O"),
+
+    # ---- Phase 31b round 165 — Knoevenagel condensation ------------
+    ("Knoevenagel condensation (benzaldehyde + diethyl "
+     "malonate → diethyl benzylidene malonate)",
+     "Condensation (active-methylene C-C bond formation)",
+     "Emil Knoevenagel 1894 — variant of the aldol "
+     "condensation in which the nucleophile is an "
+     "**active-methylene compound** (between two electron-"
+     "withdrawing groups) rather than a simple ketone "
+     "enolate.  Pedagogically distinct from the seeded "
+     "aldol because the active-methylene C-H is far more "
+     "acidic (pKa ~ 11-13 for malonate / ~ 11 for "
+     "cyanoacetate / ~ 10 for nitromethane) than a simple "
+     "ketone α-C-H (pKa ~ 20) — so a **mild secondary-amine "
+     "base** (piperidine, pyridine, or — Doebner variant — "
+     "an amino acid like proline / glycine in pyridine "
+     "solvent) is sufficient.  Mechanism: (1) amine "
+     "deprotonates the active methylene; (2) resulting "
+     "carbanion attacks the aldehyde carbonyl; (3) E1cb "
+     "dehydration of the β-hydroxy intermediate gives the "
+     "**α,β-unsaturated** product; in the **Doebner "
+     "modification** (with monoacids like cyanoacetic acid "
+     "or malonic acid + pyridine), spontaneous "
+     "decarboxylation of one of the COOH / COOR groups "
+     "follows the dehydration → α,β-unsaturated mono-acid "
+     "/ mono-ester.  Workhorse for cinnamic-acid + α,β-"
+     "unsaturated-ester / nitrile syntheses; foundational "
+     "to materials chemistry (push-pull chromophores), "
+     "drug discovery (Michael acceptor warheads), and "
+     "the seeded **knoevenagel-doebner** route to "
+     "fluorescent dyes.  Pedagogically pairs with the "
+     "round-152 / 165 ring-construction theme via the "
+     "Hantzsch dihydropyridine synthesis (a one-pot "
+     "Knoevenagel-cum-Michael-cum-cyclisation cascade).",
+     "O=Cc1ccccc1.CCOC(=O)CC(=O)OCC"
+     ">>CCOC(=O)/C(=C\\c1ccccc1)C(=O)OCC.O"),
+
+    # ---- Phase 31b round 175 — Henry reaction (nitroaldol) ---------
+    ("Henry reaction (nitromethane + benzaldehyde → "
+     "2-nitro-1-phenylethanol)",
+     "Condensation (nitroaldol)",
+     "Louis Henry 1895 — base-catalysed addition of a "
+     "**nitroalkane** to an aldehyde or ketone, giving a "
+     "**β-nitro alcohol** (the 'nitroaldol' product).  "
+     "Functionally analogous to the aldol condensation but "
+     "with a nitroalkane as the nucleophile instead of a "
+     "ketone enolate; the α-CH of a nitroalkane has pKa "
+     "~ 10 (vs ~ 20 for a ketone α-H) thanks to the "
+     "extraordinary -NO₂ acidifying group, so a mild base "
+     "(amine, NaOH, KF, fluoride / phosphazene catalysts) "
+     "is sufficient.  Mechanism: base deprotonates the "
+     "nitroalkane to form the **aci-nitro carbanion**; "
+     "carbanion attacks the carbonyl carbon; protonation "
+     "gives the β-nitro alcohol.  Critically the product "
+     "is then a **valuable synthetic intermediate**: "
+     "(a) hydrogenation of the nitro group gives a 1,2-"
+     "amino-alcohol (β-blocker / chloramphenicol "
+     "scaffold); (b) Nef reaction converts -NO₂ to a "
+     "carbonyl (giving an α,β-dihydroxyketone or aldehyde); "
+     "(c) dehydration gives a nitroalkene / Michael "
+     "acceptor.  Asymmetric variants (Shibasaki Ln-BINOL "
+     "1992; Trost Zn-ProPhenol 2002) deliver the β-nitro "
+     "alcohol with > 90 % ee — workhorse of synthesis of "
+     "chiral 1,2-amino alcohols.",
+     "C[N+](=O)[O-].O=Cc1ccccc1"
+     ">>OC(c1ccccc1)C[N+](=O)[O-]"),
+
+    # ---- Phase 31b round 175 — Hantzsch dihydropyridine MCR --------
+    ("Hantzsch dihydropyridine synthesis (benzaldehyde + 2 "
+     "ethyl acetoacetate + NH₃ → diethyl 4-phenyl-2,6-"
+     "dimethyl-1,4-dihydropyridine-3,5-dicarboxylate)",
+     "Multi-component reaction (heterocycle synthesis)",
+     "Arthur R. Hantzsch 1881 — **the textbook multi-"
+     "component reaction (MCR)** that builds a 1,4-"
+     "dihydropyridine ring in one pot from an aldehyde + "
+     "two equivalents of a β-ketoester + ammonia (or "
+     "ammonium acetate).  Mechanism walk: (1) Knoevenagel "
+     "condensation of one β-ketoester with the aldehyde "
+     "→ unsaturated diketoester (Phase 31b's seeded "
+     "Knoevenagel reaction!); (2) the second β-ketoester "
+     "condenses with NH₃ → β-enaminone; (3) Michael "
+     "addition of the enaminone onto the unsaturated "
+     "Knoevenagel adduct closes the ring; (4) dehydration "
+     "gives the symmetric 1,4-dihydropyridine.  Three new "
+     "C-N + C-C bonds + four bond-rearrangements in one "
+     "pot — quintessential MCR efficiency.  **Pharmaceutical "
+     "significance**: the 1,4-dihydropyridine scaffold is "
+     "the core of the **calcium-channel-blocker antihypertensive "
+     "class** (nifedipine 1975, amlodipine 1990, felodipine, "
+     "nicardipine, isradipine, lacidipine).  Atom economy is "
+     "high (3 H₂O are the only by-products).  Sets up "
+     "Phase 31b's first explicit MCR teaching surface — "
+     "complements the existing Knoevenagel + Robinson "
+     "annulation cascade entries by going one step further "
+     "into the multi-component territory.",
+     "O=Cc1ccccc1.CCOC(=O)CC(C)=O.CCOC(=O)CC(C)=O.N"
+     ">>CCOC(=O)C1=C(C)NC(C)=C(C(=O)OCC)C1c1ccccc1.O.O.O"),
+
+    # ---- Phase 31b round 182 — Grubbs olefin metathesis ----------
+    ("Grubbs olefin metathesis (cross-metathesis of styrene + "
+     "1-hexene → 1-phenyl-1-hexene)",
+     "Olefin metathesis (Ru-catalysed)",
+     "Robert H. Grubbs 1995 (Nobel 2005, with Schrock + "
+     "Chauvin) — the **C=C bond shuffling** reaction that "
+     "transformed total synthesis.  Two olefins exchange their "
+     "alkylidene halves via a metallacyclobutane intermediate "
+     "on a ruthenium-carbene catalyst (Grubbs I = "
+     "RuCl₂(PCy₃)₂(=CHPh); Grubbs II uses a "
+     "dihydroimidazolylidene NHC ligand for higher TON + "
+     "wider substrate scope).  Three productive variants: "
+     "**cross-metathesis (CM)** between two different alkenes "
+     "(this entry), **ring-closing metathesis (RCM)** of a "
+     "diene to a cyclic alkene (workhorse of macrocyclisation), "
+     "**ring-opening metathesis polymerisation (ROMP)** of a "
+     "strained cyclic olefin to a linear polymer.  Functional-"
+     "group tolerance is exceptional: alcohols, ethers, esters, "
+     "ketones, amines all survive.  Total syntheses driven by "
+     "metathesis include Eribulin (Halichondrin B), the "
+     "Schreiber Sphingofungin, and most modern macrocyclic "
+     "natural-product routes.  **Phase 31b round 182 — fills "
+     "the olefin-metathesis gap**, complementing the Pd-"
+     "cross-coupling cluster (Suzuki / Heck / Negishi / Stille / "
+     "Buchwald-Hartwig / Sonogashira) with Ru-catalysed C=C "
+     "bond formation.",
+     "C=Cc1ccccc1.CCCCC=C>>CCCCC=Cc1ccccc1.C=C"),
+
+    # ---- Phase 31b round 182 — Wolff-Kishner reduction -----------
+    ("Wolff-Kishner reduction (acetophenone → ethylbenzene)",
+     "Reduction (carbonyl → methylene)",
+     "Ludwig Wolff 1912 + N. M. Kishner 1911 (independently) — "
+     "the **strongly basic** route to remove a carbonyl oxygen "
+     "and replace C=O with CH₂.  Two-stage mechanism: "
+     "(1) hydrazone formation from the ketone + hydrazine "
+     "(N₂H₄); (2) base-promoted (KOH) loss of N₂ via a "
+     "tautomer / diazene intermediate, with concerted protonation "
+     "of carbon, gives the alkane.  Originally a sealed-tube "
+     "high-temperature procedure; the Huang-Minlon modification "
+     "(diethylene glycol solvent, atmospheric pressure) made it "
+     "practical.  **Complementary to Clemmensen reduction** "
+     "(Zn(Hg) / HCl, strongly acidic) which targets the same "
+     "transformation but in molecules incompatible with strong "
+     "base; the Wolff-Kishner is the canonical choice for "
+     "acid-sensitive substrates.  Both methods together let "
+     "students see how mechanistic context (acid vs base) "
+     "drives reagent selection for the same overall functional-"
+     "group interconversion.  **Phase 31b round 182 — fills the "
+     "non-hydride-reduction gap** (existing reductions are "
+     "NaBH4 + Birch + CBS — all hydride or SET).",
+     "CC(=O)c1ccccc1>>CCc1ccccc1"),
+
+    # ---- Phase 31b round 182 — Hofmann elimination ---------------
+    ("Hofmann elimination (2-pentyltrimethylammonium hydroxide "
+     "→ 1-pentene + trimethylamine)",
+     "Elimination (anti-Zaitsev / Hofmann's rule)",
+     "August Wilhelm Hofmann 1851 — the **anti-Zaitsev** "
+     "β-elimination from a quaternary ammonium hydroxide that "
+     "preferentially gives the **less-substituted (Hofmann) "
+     "alkene** rather than the thermodynamically more-stable "
+     "Zaitsev product.  Bulky leaving group (NMe₃) + concerted "
+     "syn-periplanar transition state biases the deprotonation "
+     "toward the **less hindered β-hydrogen**, so the kinetic "
+     "product is the terminal alkene.  Standard procedure: "
+     "exhaustive methylation of the amine with MeI (3 ×) gives "
+     "the quaternary ammonium iodide; ion exchange to the "
+     "hydroxide + thermolysis (~ 100 °C) drives the syn-"
+     "elimination.  Diagnostic for amine structure determination "
+     "in the pre-NMR era (e.g. alkaloid skeleton mapping).  "
+     "**Pedagogical value**: pairs naturally with the existing "
+     "E1 + E2 entries to show that elimination regioselectivity "
+     "depends on leaving-group bulk + base bulk — Zaitsev for "
+     "small leaving groups (Br⁻ in E2), Hofmann for bulky NR₃⁺.  "
+     "**Phase 31b round 182 — fills the Hofmann-elimination gap** "
+     "and rounds out the elimination subcategory to 3 entries.",
+     "CCCC(C)[N+](C)(C)C.[OH-]>>C=CCCC.CN(C)C.O"),
+
+    # ---- Phase 31b round 182 — Ozonolysis ------------------------
+    ("Ozonolysis with reductive workup (cis-2-butene + O₃ / "
+     "Me₂S → 2 acetaldehyde)",
+     "Oxidative cleavage (alkene → carbonyls)",
+     "Christian Friedrich Schönbein 1840 (O₃ discovery) + "
+     "Carl Harries 1903 (synthetic application) — the "
+     "**oxidative cleavage** of a C=C double bond to two "
+     "carbonyl fragments.  Two-stage mechanism: (1) [3+2] "
+     "cycloaddition of ozone (1,3-dipole) onto the alkene gives "
+     "the unstable **molozonide** (primary ozonide); it "
+     "rearranges via retro-[3+2] / re-cycloaddition to the "
+     "**Criegee ozonide** (1,2,4-trioxolane); (2) workup "
+     "determines product oxidation state.  **Reductive workup** "
+     "(this entry — Me₂S / Zn-AcOH / PPh₃) gives **aldehydes + "
+     "ketones**; **oxidative workup** (H₂O₂) overoxidises "
+     "aldehydes to carboxylic acids; **reductive-amination "
+     "workup** (NaBH₄) gives alcohols directly.  **Diagnostic "
+     "value**: pre-NMR-era structure determination — count the "
+     "number of carbonyl fragments to map the position of every "
+     "C=C bond in a complex natural product (used to determine "
+     "the structure of cholesterol, pyrethrins, and many "
+     "terpenes).  **Modern use**: late-stage diversification "
+     "in total synthesis, atmospheric chemistry of biogenic VOCs.  "
+     "**Phase 31b round 182 — fills the oxidative-cleavage gap** "
+     "and rounds out the alkene-reaction cluster (addition-"
+     "halogenation + addition-hydrogenation + hydroboration + "
+     "now cleavage).",
+     "C/C=C\\C.O=[O+][O-]>>CC=O.CC=O"),
 ]
 
 

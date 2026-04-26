@@ -12,6 +12,10 @@ is short, structured, and linked to interactive molecules in the database.
 Click a molecule name in any lesson and the viewer on the left will snap
 to its 2D skeleton and rotatable 3D model.
 
+The early lessons cover **carbon hybridisation** (sp³ / sp² / sp), bond
+energies, and how a compound's **pKa** sets its acid–base behaviour —
+these three ideas anchor everything that follows.
+
 ## How to use this app
 
 - **Left dock — Molecules**: the local database, searchable by name,

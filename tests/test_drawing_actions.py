@@ -43,6 +43,7 @@ def test_actions_registered_in_registry():
         "drawing_to_smiles",
         "drawing_export",
         "drawing_clear",
+        "make_reaction_scheme",
     }
 
 
@@ -168,6 +169,60 @@ def test_drawing_clear_empties_canvas(app):
     after = invoke("drawing_to_smiles")
     assert after["n_atoms"] == 0
     assert after["smiles"] == ""
+
+
+# ---- make_reaction_scheme (Phase 36f.1, round 131) -------------
+
+def test_make_reaction_scheme_basic_round_trip(app):
+    from orgchem.agent.actions import invoke
+    res = invoke("make_reaction_scheme",
+                 lhs_smiles="CCO", rhs_smiles="CC=O")
+    assert "error" not in res
+    assert res["reaction_smiles"] == "CCO>>CC=O"
+    assert res["arrow"] == "forward"
+    assert res["reagents"] == ""
+    assert res["balanced"] is True
+
+
+def test_make_reaction_scheme_with_reagents(app):
+    from orgchem.agent.actions import invoke
+    res = invoke("make_reaction_scheme",
+                 lhs_smiles="CCO", rhs_smiles="CC=O",
+                 reagents="[Cr]")
+    assert res["reaction_smiles"] == "CCO>[Cr]>CC=O"
+    assert res["reagents"] == "[Cr]"
+
+
+def test_make_reaction_scheme_unbalanced_flag(app):
+    from orgchem.agent.actions import invoke
+    res = invoke("make_reaction_scheme",
+                 lhs_smiles="CC", rhs_smiles="CCO")
+    assert res["balanced"] is False
+
+
+def test_make_reaction_scheme_garbage_smiles_returns_error(app):
+    from orgchem.agent.actions import invoke
+    res = invoke("make_reaction_scheme",
+                 lhs_smiles="!!nope", rhs_smiles="C")
+    assert "error" in res
+    assert "parse" in res["error"].lower()
+
+
+def test_make_reaction_scheme_invalid_arrow_rejected(app):
+    from orgchem.agent.actions import invoke
+    res = invoke("make_reaction_scheme",
+                 lhs_smiles="C", rhs_smiles="C",
+                 arrow="circular")
+    assert "error" in res
+    assert "arrow" in res["error"].lower()
+
+
+def test_make_reaction_scheme_reversible_arrow_preserved(app):
+    from orgchem.agent.actions import invoke
+    res = invoke("make_reaction_scheme",
+                 lhs_smiles="CCO", rhs_smiles="CC=O",
+                 arrow="reversible")
+    assert res["arrow"] == "reversible"
 
 
 # ---- round trip ------------------------------------------------

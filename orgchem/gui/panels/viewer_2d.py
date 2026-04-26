@@ -3,7 +3,10 @@ from __future__ import annotations
 import logging
 
 from PySide6.QtSvgWidgets import QSvgWidget
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QHBoxLayout, QLabel
+from PySide6.QtWidgets import (
+    QComboBox, QHBoxLayout, QLabel, QPushButton,
+    QVBoxLayout, QWidget,
+)
 
 from rdkit import Chem
 
@@ -27,6 +30,20 @@ class Viewer2DPanel(QWidget):
         self.style.currentIndexChanged.connect(self._redraw)
         top.addWidget(self.style)
         top.addStretch(1)
+        # Phase 48d (round 173) — inline 'View isomers'
+        # button.  One-click jump from the current 2D
+        # molecule to the Phase-48 isomer-relationships
+        # dialog with the SMILES pre-filled.
+        self._isomers_btn = QPushButton("View isomers…")
+        self._isomers_btn.setToolTip(
+            "Open Tools → Isomer relationships… "
+            "(Ctrl+Shift+B) with this molecule's SMILES "
+            "pre-filled in the Stereoisomers tab "
+            "(Phase 48d).")
+        self._isomers_btn.clicked.connect(
+            self._on_view_isomers)
+        self._isomers_btn.setEnabled(False)
+        top.addWidget(self._isomers_btn)
         lay.addLayout(top)
 
         self.svg = QSvgWidget()
@@ -41,7 +58,44 @@ class Viewer2DPanel(QWidget):
         if row is None:
             return
         self._current_smiles = row.smiles
+        self._isomers_btn.setEnabled(bool(row.smiles))
         self._redraw()
+
+    def _on_view_isomers(self) -> None:
+        """Phase 48d (round 173) — open the Phase-48 isomer
+        explorer dialog with the current molecule's SMILES
+        pre-filled in the Stereoisomers + Tautomers tabs."""
+        if not self._current_smiles:
+            return
+        try:
+            from orgchem.gui.dialogs.isomer_explorer import (
+                IsomerExplorerDialog,
+            )
+        except Exception as e:
+            log.warning(
+                "Isomer explorer dialog unavailable: %s", e)
+            return
+        # Walk up parents to find the main window for the
+        # singleton owner.  Fallback to no parent.
+        parent_widget = self
+        while parent_widget.parent() is not None:
+            parent_widget = parent_widget.parent()
+        dlg = IsomerExplorerDialog.singleton(
+            parent=parent_widget)
+        # Pre-fill BOTH enumeration tabs' SMILES inputs +
+        # the Classify-pair "A" input so the user lands in a
+        # ready-to-run state on whichever tab they switch to.
+        dlg._stereo_smiles.setText(self._current_smiles)
+        dlg._taut_smiles.setText(self._current_smiles)
+        dlg._cls_a.setText(self._current_smiles)
+        # Auto-run the stereoisomers enumeration so the user
+        # sees results immediately on the default tab —
+        # they don't have to click Enumerate themselves.
+        dlg.select_tab("Stereoisomers")
+        dlg._on_stereo_run()
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
 
     def _redraw(self) -> None:
         if not self._current_smiles:

@@ -20,7 +20,7 @@ from orgchem.db.session import session_scope
 
 log = logging.getLogger(__name__)
 
-SEED_VERSION = 8
+SEED_VERSION = 10
 
 
 # (term, aliases, category, see_also, definition_md)

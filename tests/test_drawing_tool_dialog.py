@@ -232,3 +232,146 @@ def test_send_to_workspace_surfaces_invocation_error(
         lambda *a, **k: warnings.append(a))
     d._on_send_to_workspace()
     assert warnings, "expected warning dialog when invoke raises"
+
+
+# ---- Phase 36f.2 (round 132) — Send to Reactions tab -----------
+
+def test_send_to_reactions_button_visible(app, qtbot):
+    from orgchem.gui.dialogs.drawing_tool import DrawingToolDialog
+    d = DrawingToolDialog(parent=app.window)
+    qtbot.addWidget(d)
+    assert d.send_rxn_btn is not None
+    assert d.send_rxn_btn.isEnabled()
+
+
+def test_send_to_reactions_complains_when_no_arrow(
+        app, qtbot, monkeypatch):
+    from orgchem.gui.dialogs.drawing_tool import DrawingToolDialog
+    from PySide6.QtWidgets import QMessageBox
+    d = DrawingToolDialog(parent=app.window)
+    qtbot.addWidget(d)
+    info = []
+    monkeypatch.setattr(QMessageBox, "information",
+                        lambda *a, **k: info.append(a))
+    d._on_send_to_reactions()
+    assert info
+    # Message text mentions arrow.
+    assert any("arrow" in str(args).lower() for args in info)
+
+
+def test_send_to_reactions_invokes_add_reaction(
+        app, qtbot, monkeypatch):
+    """Build LHS + RHS + arrow, click Send → add_reaction is
+    invoked with a syntactically-valid reaction SMILES."""
+    from orgchem.gui.dialogs.drawing_tool import DrawingToolDialog
+    from PySide6.QtWidgets import QMessageBox, QInputDialog
+    from PySide6.QtCore import QPointF
+    d = DrawingToolDialog(parent=app.window)
+    qtbot.addWidget(d)
+    # LHS atom.
+    d.panel.handle_canvas_press(QPointF(-50, 0))
+    # RHS atom.
+    d.panel.set_tool("atom-O")
+    d.panel.handle_canvas_press(QPointF(50, 0))
+    # Arrow at x=0.
+    d.panel.set_tool("arrow-forward")
+    d.panel.handle_canvas_press(QPointF(0, 0))
+
+    # Stub the name prompt + invoke + result-popup + tab switch.
+    monkeypatch.setattr(
+        QInputDialog, "getText",
+        lambda *a, **k: ("Drawn-rxn-test", True))
+    monkeypatch.setattr(QMessageBox, "information",
+                        lambda *a, **k: None)
+    invoked = []
+    import orgchem.agent.actions as actions_mod
+
+    def _stub_invoke(name, **kw):
+        invoked.append((name, kw))
+        return {"status": "accepted", "id": 999, "name": kw["rxn_name"]}
+
+    monkeypatch.setattr(actions_mod, "invoke", _stub_invoke)
+    monkeypatch.setattr(d, "_open_reaction", lambda rid: None)
+
+    d._on_send_to_reactions()
+    assert invoked, "expected add_reaction to fire"
+    name, kw = invoked[0]
+    assert name == "add_reaction"
+    assert kw["rxn_name"] == "Drawn-rxn-test"
+    assert ">>" in kw["reaction_smiles"]
+
+
+def test_send_to_reactions_handles_duplicate_existing_id(
+        app, qtbot, monkeypatch):
+    from orgchem.gui.dialogs.drawing_tool import DrawingToolDialog
+    from PySide6.QtWidgets import QMessageBox, QInputDialog
+    from PySide6.QtCore import QPointF
+    d = DrawingToolDialog(parent=app.window)
+    qtbot.addWidget(d)
+    d.panel.handle_canvas_press(QPointF(-30, 0))
+    d.panel.set_tool("atom-O")
+    d.panel.handle_canvas_press(QPointF(30, 0))
+    d.panel.set_tool("arrow-forward")
+    d.panel.handle_canvas_press(QPointF(0, 0))
+
+    monkeypatch.setattr(
+        QInputDialog, "getText",
+        lambda *a, **k: ("Existing rxn", True))
+    monkeypatch.setattr(QMessageBox, "information",
+                        lambda *a, **k: None)
+    import orgchem.agent.actions as actions_mod
+    monkeypatch.setattr(
+        actions_mod, "invoke",
+        lambda *a, **k: {"status": "rejected",
+                         "reason": "duplicate name",
+                         "existing_id": 42})
+    opened = []
+    monkeypatch.setattr(d, "_open_reaction",
+                        lambda rid: opened.append(rid))
+    d._on_send_to_reactions()
+    assert opened == [42]
+
+
+def test_send_to_reactions_user_cancels_name_prompt(
+        app, qtbot, monkeypatch):
+    """If the user cancels the name prompt, no DB invocation
+    happens."""
+    from orgchem.gui.dialogs.drawing_tool import DrawingToolDialog
+    from PySide6.QtWidgets import QInputDialog
+    from PySide6.QtCore import QPointF
+    d = DrawingToolDialog(parent=app.window)
+    qtbot.addWidget(d)
+    d.panel.handle_canvas_press(QPointF(-30, 0))
+    d.panel.set_tool("atom-O")
+    d.panel.handle_canvas_press(QPointF(30, 0))
+    d.panel.set_tool("arrow-forward")
+    d.panel.handle_canvas_press(QPointF(0, 0))
+
+    monkeypatch.setattr(
+        QInputDialog, "getText",
+        lambda *a, **k: ("", False))   # user clicks Cancel
+    invoked = []
+    import orgchem.agent.actions as actions_mod
+    monkeypatch.setattr(actions_mod, "invoke",
+                        lambda *a, **k: invoked.append((a, k)))
+    d._on_send_to_reactions()
+    assert not invoked
+
+
+def test_send_to_reactions_complains_when_one_side_empty(
+        app, qtbot, monkeypatch):
+    """Arrow placed off to one side so RHS is empty → should
+    complain about an incomplete scheme, not crash."""
+    from orgchem.gui.dialogs.drawing_tool import DrawingToolDialog
+    from PySide6.QtWidgets import QMessageBox
+    from PySide6.QtCore import QPointF
+    d = DrawingToolDialog(parent=app.window)
+    qtbot.addWidget(d)
+    d.panel.handle_canvas_press(QPointF(-30, 0))
+    d.panel.set_tool("arrow-forward")
+    d.panel.handle_canvas_press(QPointF(50, 0))   # arrow far right
+    info = []
+    monkeypatch.setattr(QMessageBox, "information",
+                        lambda *a, **k: info.append(a))
+    d._on_send_to_reactions()
+    assert info, "expected an info popup explaining the empty side"

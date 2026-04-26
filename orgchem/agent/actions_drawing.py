@@ -150,6 +150,58 @@ def drawing_export(path: str) -> Dict[str, Any]:
     return run_on_main_thread_sync(_write)
 
 
+# ---- reaction scheme (Phase 36f.1, round 131) -------------------
+
+@action(category="drawing")
+def make_reaction_scheme(
+    lhs_smiles: str,
+    rhs_smiles: str,
+    arrow: str = "forward",
+    reagents: str = "",
+) -> Dict[str, Any]:
+    """Bundle two SMILES strings into a reaction-SMILES record.
+
+    The natural Phase-36f workflow before the canvas-arrow GUI
+    lands: the user (or tutor) drew two structures separately,
+    knows which is the reactant and which is the product, and
+    wants to ship them off to the Reactions tab as a single
+    rendered scheme.  No GUI required — pure headless call.
+
+    Returns ``{"reaction_smiles": str, "lhs_canonical": str,
+    "rhs_canonical": str, "arrow": str, "reagents": str,
+    "balanced": bool}`` on success, ``{"error": str}`` on parse
+    failure.  ``balanced`` is the heavy-atom-count sanity hint
+    from :func:`is_balanced_atom_counts` — useful as a "did the
+    student forget the leaving group?" prompt.
+    """
+    from orgchem.core.drawing_scheme import (
+        Scheme, is_balanced_atom_counts,
+    )
+
+    if arrow not in ("forward", "reversible"):
+        return {"error": f"Unknown arrow type {arrow!r}; "
+                         "use 'forward' or 'reversible'."}
+    scheme = Scheme.from_smiles_pair(
+        lhs_smiles or "", rhs_smiles or "",
+        arrow=arrow, reagents=reagents or "",
+    )
+    if scheme is None:
+        return {"error": "Could not parse one or both SMILES "
+                         "strings — check syntax and try again."}
+    rxn = scheme.to_reaction_smiles()
+    if rxn is None:
+        return {"error": "Could not assemble reaction SMILES "
+                         "(structure → SMILES conversion failed)."}
+    return {
+        "reaction_smiles": rxn,
+        "lhs_canonical": scheme.lhs_smiles(),
+        "rhs_canonical": scheme.rhs_smiles(),
+        "arrow": scheme.arrow,
+        "reagents": scheme.reagents,
+        "balanced": is_balanced_atom_counts(scheme),
+    }
+
+
 # ---- clear --------------------------------------------------------
 
 @action(category="drawing")

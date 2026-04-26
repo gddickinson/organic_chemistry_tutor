@@ -146,3 +146,15 @@ Open the Carbohydrates tab and compare:
 Then try *Copy SMILES* on sucrose, paste into the *Tools →
 Spectroscopy* IR dialog, and confirm the broad 3400 cm⁻¹ O–H
 stretch + 1050 cm⁻¹ C–O region that identifies polyols.
+
+## Sugar biosynthesis — link to the named-reaction catalogue
+
+The biosynthesis of fructose-1,6-bisphosphate from
+dihydroxyacetone phosphate (DHAP) and glyceraldehyde-3-phosphate
+(G3P) runs as a textbook **Aldolase class I** Schiff-base
+aldol — open the *Reactions* tab and find the
+*"Aldolase class I: DHAP + G3P → F1,6BP"* entry to see the
+mechanism rendered with the catalytic-lysine intermediate.  The
+same enzyme runs in reverse for gluconeogenesis, showing how a
+single C–C bond-forming reaction underpins both halves of
+central carbon metabolism.

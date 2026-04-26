@@ -90,7 +90,7 @@ _EXTENDED: List[Tuple[str, str, str]] = [
     ("Fluoxetine",
         "CNCCC(Oc1ccc(C(F)(F)F)cc1)c1ccccc1",                         "drug"),
     ("Citalopram",
-        "N#CC1(CCCN(C)C)c2ccc(F)cc2CO1",                              "drug"),
+        "CN(C)CCCC1(c2ccc(F)cc2)OCc2cc(C#N)ccc21",                    "drug"),
     ("Atorvastatin",
         "CC(C)c1c(C(=O)Nc2ccccc2)c(-c2ccccc2)c(-c2ccc(F)cc2)n1CC[C@@H](O)C[C@@H](O)CC(=O)O",
                                                                        "drug"),

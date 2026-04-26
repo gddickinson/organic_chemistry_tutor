@@ -349,4 +349,495 @@ EXTRA_TERMS: List[Dict[str, Any]] = [
         "properties* (bp, mp, logP, spectra); stereoisomers often "
         "don't (with the notable exception of enantiomer optical "
         "activity)."},
+
+    # ---- Phase 48a (round 170) — isomerism vocabulary --------------
+    {"term": "Isomerism",
+     "aliases": ["isomers"],
+     "category": "stereochemistry",
+     "see_also": ["Constitutional isomer", "Stereoisomer",
+                  "Enantiomer", "Diastereomer", "Tautomer",
+                  "Conformer", "Atropisomer",
+                  "Cis-trans isomerism"],
+     "definition_md":
+        "**Isomerism** is the umbrella term for molecules that "
+        "share a molecular formula but differ in some other "
+        "respect.  The hierarchy: (a) **constitutional / "
+        "structural isomers** differ in connectivity (n-butanol "
+        "vs sec-butanol vs tert-butanol — same C₄H₁₀O); (b) "
+        "**stereoisomers** share connectivity but differ in 3D "
+        "arrangement — split into **enantiomers** (mirror "
+        "images, non-superimposable, same physical properties "
+        "except optical rotation) and **diastereomers** (NOT "
+        "mirror images — different physical properties); (c) "
+        "**conformational isomers / conformers** differ only "
+        "in single-bond rotation, freely interconverting at "
+        "room temperature; (d) **tautomers** are "
+        "constitutional isomers in dynamic proton-transfer "
+        "equilibrium (keto / enol; amide / iminol); (e) "
+        "**atropisomers** are stereoisomers arising from "
+        "restricted rotation about a single bond."},
+
+    {"term": "Stereoisomer",
+     "aliases": ["stereochemistry"],
+     "category": "stereochemistry",
+     "see_also": ["Enantiomer", "Diastereomer", "Meso compound",
+                  "Conformer", "Atropisomer",
+                  "Cis-trans isomerism", "R/S configuration"],
+     "definition_md":
+        "**Stereoisomers** share the same molecular formula AND "
+        "connectivity but differ in their 3D spatial "
+        "arrangement.  Two main classes: (a) **enantiomers** — "
+        "mirror-image stereoisomers that cannot be superimposed; "
+        "have identical physical properties except for opposite "
+        "optical rotation + opposite biological activity at "
+        "chiral receptors (the **chirality** of life); (b) "
+        "**diastereomers** — stereoisomers that are NOT mirror "
+        "images; have *different* physical properties (mp, bp, "
+        "solubility) AND different biological activity.  A "
+        "molecule with *n* stereocentres has at most 2ⁿ "
+        "stereoisomers (less when symmetry creates meso "
+        "compounds).  Distinguish from **constitutional "
+        "isomers** (different connectivity) and **conformers** "
+        "(different rotational state, no bond-breaking required "
+        "to interconvert)."},
+
+    {"term": "Conformer",
+     "aliases": ["conformational isomer", "rotamer",
+                 "conformational analysis"],
+     "category": "stereochemistry",
+     "see_also": ["Stereoisomer", "Anti / gauche / eclipsed",
+                  "Newman projection", "Ring flip"],
+     "definition_md":
+        "**Conformers** (or *conformational isomers*) are "
+        "different 3D shapes a molecule adopts by **single-bond "
+        "rotation alone** — no bonds are broken, so they "
+        "interconvert freely (typically ~ kJ/mol barriers, "
+        "milliseconds to picoseconds at room temperature).  "
+        "Classic examples: **butane** has anti / gauche / "
+        "eclipsed conformers around the central C-C bond; "
+        "**cyclohexane** flips between two equivalent chair "
+        "forms (and accessible boat / twist-boat states); "
+        "**proteins** continuously sample conformer ensembles "
+        "around their backbone φ/ψ angles + side-chain χ "
+        "angles.  Distinguish from **stereoisomers** (different "
+        "configuration — bond-breaking required to "
+        "interconvert).  In drug discovery, the **bioactive "
+        "conformer** is often a higher-energy conformer that "
+        "the receptor selectively binds — driving conformational "
+        "constraint as a potency-improvement strategy."},
+
+    {"term": "Tautomer",
+     "aliases": ["tautomerism", "tautomerisation"],
+     "category": "stereochemistry",
+     "see_also": ["Keto-enol tautomerism", "Constitutional isomer",
+                  "Stereoisomer"],
+     "definition_md":
+        "**Tautomers** are constitutional isomers in **dynamic "
+        "proton-transfer equilibrium** at ambient conditions — "
+        "proton + double-bond shift between adjacent atoms, "
+        "with no other bond breaking.  Major classes: "
+        "(a) **keto / enol** (CH₃COCH₃ ⇌ CH₂=C(OH)CH₃ — "
+        "acetone is > 99.9999% keto at equilibrium); (b) "
+        "**amide / iminol** (R-CO-NHR' ⇌ R-C(OH)=NR'); (c) "
+        "**lactam / lactim** (cyclic amide / iminol — drives "
+        "uracil / cytosine / guanine base-pairing geometry); "
+        "(d) **nitroso / oxime** (R-N=O ⇌ R-NH-OH); (e) "
+        "**ring-chain** in sugars (open-chain aldehyde ⇌ "
+        "cyclic hemiacetal — the α/β anomers of glucose).  "
+        "Tautomeric ratio is **environment-dependent** "
+        "(solvent, pH, hydrogen-bond partners) — a major "
+        "complication in computational drug discovery + "
+        "spectral interpretation."},
+
+    {"term": "Atropisomer",
+     "aliases": ["atropisomerism", "axial chirality"],
+     "category": "stereochemistry",
+     "see_also": ["Enantiomer", "Stereoisomer",
+                  "BINAP",
+                  "Restricted rotation"],
+     "definition_md":
+        "**Atropisomers** are stereoisomers that arise from "
+        "**restricted rotation about a single bond** — usually "
+        "a biaryl C-C bond with bulky ortho substituents that "
+        "raise the rotation barrier so high (≥ ~ 20 kcal/mol) "
+        "that the two rotamers can be isolated as discrete "
+        "compounds.  Classic example: **BINAP** "
+        "(2,2'-bis(diphenylphosphino)-1,1'-binaphthyl) — the "
+        "(R) + (S) atropisomers are stable enantiomers used "
+        "as the chiral ligand for Noyori asymmetric "
+        "hydrogenation (Nobel 2001).  The FDA classifies "
+        "atropisomers as separate molecules requiring separate "
+        "regulatory approval — atropisomerism is a "
+        "**pharmaceutical-development gotcha** for biaryl drugs "
+        "(telmisartan, lesinurad, gefitinib all carry "
+        "atropisomeric centres that had to be characterised + "
+        "controlled in manufacturing)."},
+
+    {"term": "Cis-trans isomerism",
+     "aliases": ["geometric isomerism", "E/Z isomerism",
+                 "cis isomer", "trans isomer"],
+     "category": "stereochemistry",
+     "see_also": ["Diastereomer", "Stereoisomer",
+                  "E/Z designation"],
+     "definition_md":
+        "**Cis-trans isomerism** (more formally **E/Z "
+        "isomerism** under the CIP priority system) is the "
+        "diastereomeric relationship between two molecules that "
+        "differ in the relative position of substituents around "
+        "a **non-rotating bond** — typically a C=C double bond "
+        "or a ring.  *Cis* / *Z* = higher-priority substituents "
+        "on the same side; *trans* / *E* = on opposite sides.  "
+        "Different physical + biological properties: "
+        "*cis*-2-butene boils at 4 °C, *trans*-2-butene at "
+        "1 °C; *cis*-platin is a frontline chemotherapy, "
+        "*trans*-platin is therapeutically inactive; *cis* + "
+        "*trans* fatty acids in food have dramatically "
+        "different cardiovascular profiles (industrial trans "
+        "fats from partial hydrogenation are now banned in "
+        "many countries).  Replaced 'cis/trans' with 'E/Z' for "
+        "polysubstituted alkenes where 'same side' is "
+        "ambiguous."},
+
+    {"term": "Optical activity",
+     "aliases": ["specific rotation", "optical rotation",
+                 "polarimetry"],
+     "category": "stereochemistry",
+     "see_also": ["Enantiomer", "Chirality",
+                  "Enantiomeric excess", "Racemic mixture"],
+     "definition_md":
+        "**Optical activity** is the rotation of plane-"
+        "polarised light by a chiral molecule in solution — "
+        "the macroscopic signature of molecular chirality, "
+        "discovered by Biot 1815 + Pasteur's tartaric-acid "
+        "crystals 1848.  Measured as **specific rotation** "
+        "[α]ᴅ²⁰ = α / (l × c), where α = observed rotation in "
+        "degrees, l = path length in dm, c = concentration in "
+        "g/mL, the D subscript = sodium D-line (589 nm), and "
+        "20 = temperature in °C.  The two enantiomers of a "
+        "chiral molecule give **equal-magnitude opposite-"
+        "sign** rotations: (R)-(+)-glucose has [α]ᴅ²⁰ = "
+        "+52.7°, (S)-(–)-glucose −52.7°.  A 1:1 racemic "
+        "mixture is optically inactive ([α] = 0); intermediate "
+        "compositions give intermediate rotations, which is "
+        "how **enantiomeric excess (ee)** can be measured by "
+        "polarimetry: ee = (observed [α]) / (pure-enantiomer "
+        "[α]) × 100%."},
+
+    # ---- Phase 49a (round 176) — cross-module integration sweep ----
+    # Foundational chemistry terms referenced by many catalogues
+    # but not previously in the glossary.
+    {"term": "pH",
+     "aliases": ["acidity"],
+     "category": "physical chemistry",
+     "see_also": ["pKa", "Buffer", "Henderson-Hasselbalch",
+                  "Buffer capacity"],
+     "definition_md":
+        "**pH** = −log₁₀[H₃O⁺].  Quantifies the acidity / "
+        "basicity of an aqueous solution on a 0-14 scale "
+        "(at 25 °C; the upper limit shifts with temperature "
+        "since K_w varies).  Pure water has [H⁺] = "
+        "10⁻⁷ M → pH 7 (neutral).  Strong acids (HCl, "
+        "H₂SO₄, HNO₃) give pH 0-3; strong bases (NaOH, KOH) "
+        "give pH 11-14.  Biological systems are **tightly "
+        "buffered near pH 7.4** (blood) — the bicarbonate / "
+        "phosphate / protein buffers in the body resist "
+        "pH change against the 100 mEq/day acid load from "
+        "metabolism.  Measured with a glass pH electrode + "
+        "Ag/AgCl reference, calibrated against 2-3 "
+        "standard buffer solutions."},
+
+    {"term": "pKa",
+     "aliases": ["acid dissociation constant", "Ka"],
+     "category": "physical chemistry",
+     "see_also": ["pH", "Buffer", "Henderson-Hasselbalch"],
+     "definition_md":
+        "**pKa** = −log₁₀(Kₐ), where Kₐ is the acid "
+        "dissociation constant for HA ⇌ H⁺ + A⁻.  Lower "
+        "pKa = stronger acid.  Useful pKa anchors: HCl "
+        "−7, H₂SO₄ −3 (first), AcOH 4.76, H₂CO₃ 6.35, H₂S "
+        "7.0, NH₄⁺ 9.25, methanol 15.5, water 15.7, "
+        "alkanes ~ 50.  At **pH = pKa**, the acid is half-"
+        "dissociated — the inflection point on a titration "
+        "curve and the maximum-buffer-capacity point.  See "
+        "the Phase-46 pH explorer for the seeded 46-acid "
+        "catalogue + the buffer-designer + titration-curve "
+        "simulator that exploit this principle."},
+
+    {"term": "Buffer",
+     "aliases": ["buffer solution"],
+     "category": "physical chemistry",
+     "see_also": ["pH", "pKa", "Buffer capacity",
+                  "Henderson-Hasselbalch"],
+     "definition_md":
+        "A **buffer** is a solution that resists pH change "
+        "when small amounts of acid or base are added.  "
+        "Composed of a **weak acid + its conjugate base** "
+        "(or weak base + conjugate acid) at comparable "
+        "concentrations.  Common biological buffers include "
+        "phosphate (pKa₂ 7.20 — perfect for physiological "
+        "pH 7.4), bicarbonate (the major plasma buffer), "
+        "Tris (pKa 8.10), HEPES (pKa 7.55).  Best buffering "
+        "**within ±1 pH unit** of the buffer's pKa; outside "
+        "that window the capacity drops to ~ 30 % of "
+        "maximum (see **Buffer capacity**).  See the "
+        "Phase-46 pH explorer's buffer-designer tab + the "
+        "Phase-45 lab-reagents catalogue's 11 seeded "
+        "buffers."},
+
+    {"term": "Buffer capacity",
+     "aliases": ["β", "buffering capacity"],
+     "category": "physical chemistry",
+     "see_also": ["Buffer", "pH", "pKa",
+                  "Henderson-Hasselbalch"],
+     "definition_md":
+        "The **buffer capacity β** = 2.303 · C_total · α · "
+        "(1 − α), where C_total is the sum of acid + "
+        "conjugate-base concentrations and α = [A⁻] / "
+        "C_total is the fraction in the deprotonated form.  "
+        "β has units of mol·L⁻¹ per pH unit — the moles of "
+        "strong base needed to shift the buffer's pH by 1.  "
+        "Maximum at **pH = pKa** where α = 0.5 and β = "
+        "0.576 · C_total.  Drops to ~ 30 % of max at |ΔpH| "
+        "= 1, ~ 4 % at |ΔpH| = 2.  Drives the **'pick a "
+        "buffer with a pKa within ±1 of your target pH'** "
+        "rule of thumb."},
+
+    {"term": "Henderson-Hasselbalch",
+     "aliases": ["Henderson-Hasselbalch equation",
+                 "HH equation"],
+     "category": "physical chemistry",
+     "see_also": ["pH", "pKa", "Buffer", "Buffer capacity"],
+     "definition_md":
+        "The **Henderson-Hasselbalch equation** is the "
+        "log-form of the acid-dissociation equilibrium: "
+        "**pH = pKa + log₁₀([A⁻] / [HA])**.  Lawrence J. "
+        "Henderson 1908; Karl A. Hasselbalch 1916 (logged "
+        "version).  At pH = pKa, log = 0 → [A⁻] = [HA] "
+        "(half-dissociated).  Practical use: design a "
+        "buffer at any target pH within ±1 of a chosen "
+        "pKa by choosing the [A⁻]/[HA] ratio.  See the "
+        "Phase-46 pH explorer's buffer-designer tab — "
+        "enter target pH + pKa + total concentration, get "
+        "back the [HA]/[A⁻] split + the moles of each "
+        "needed."},
+
+    {"term": "Hydrogen bonding",
+     "aliases": ["H-bond", "hydrogen bond", "hydrogen bonds"],
+     "category": "bonding",
+     "see_also": ["Polarity", "Hydrophobic effect",
+                  "Solvation"],
+     "definition_md":
+        "**Hydrogen bonding** is the directional, partially-"
+        "covalent attractive interaction between an H atom "
+        "covalently bonded to a strongly electronegative "
+        "atom (O, N, F) and a lone pair on another "
+        "electronegative atom.  Strength typically 5-30 "
+        "kJ/mol — much weaker than a covalent bond (~ 350-"
+        "400 kJ/mol) but stronger than dispersion.  Drives "
+        "water's anomalously high boiling point (100 °C "
+        "vs ~ −60 °C predicted from group trends), the "
+        "α-helix + β-sheet of protein secondary structure, "
+        "the Watson-Crick base-pairing of DNA + RNA, and "
+        "the recognition geometry of every drug-target "
+        "binding pocket.  Often shown as dotted lines in "
+        "structural diagrams + chemical drawings."},
+
+    {"term": "Hydrophobic effect",
+     "aliases": ["hydrophobicity", "hydrophobic interaction"],
+     "category": "bonding",
+     "see_also": ["Hydrogen bonding", "Solvation",
+                  "logP"],
+     "definition_md":
+        "The **hydrophobic effect** is the entropic driving "
+        "force that makes non-polar molecules cluster "
+        "together in water.  Origin: water molecules around "
+        "a non-polar solute lose orientational freedom "
+        "(forming a 'clathrate' cage of H-bonded waters) — "
+        "an entropic penalty.  Aggregating non-polar solutes "
+        "minimises the surface area that has to be "
+        "clathrate-coated, releasing structured water back "
+        "to bulk → entropy gain.  **Drives** protein "
+        "folding (hydrophobic core), lipid-bilayer "
+        "self-assembly, micelle / detergent action, drug-"
+        "binding-pocket selectivity, and the high "
+        "solubility of polar drugs vs the low solubility of "
+        "lipophilic drugs."},
+
+    {"term": "Lithium diisopropylamide",
+     "aliases": ["LDA"],
+     "category": "reagents",
+     "see_also": ["Strong base", "Enolate", "Aldol reaction"],
+     "definition_md":
+        "**LDA** (lithium diisopropylamide, "
+        "[(CH₃)₂CH]₂NLi) is a **strong, non-nucleophilic "
+        "base** used to quantitatively deprotonate ketone / "
+        "ester / amide α-CH (pKa ~ 20-30) to the lithium "
+        "enolate without competing nucleophilic addition.  "
+        "Generated in situ from diisopropylamine + n-BuLi "
+        "in THF at −78 °C; pKa of the conjugate acid ~ 36, "
+        "so deprotonation is essentially irreversible.  "
+        "**Kinetic vs thermodynamic enolate control**: "
+        "LDA at −78 °C gives the **kinetic enolate** (less-"
+        "hindered side); equilibration at higher T gives "
+        "the **thermodynamic enolate** (more-substituted "
+        "= more-stable conjugation).  The standard base for "
+        "directed aldol + alkylation chemistry."},
+
+    {"term": "Multi-component reaction",
+     "aliases": ["MCR", "multicomponent reaction"],
+     "category": "synthesis",
+     "see_also": ["Hantzsch dihydropyridine synthesis",
+                  "Atom economy", "Step economy"],
+     "definition_md":
+        "A **multi-component reaction (MCR)** combines "
+        "**three or more starting materials in a single "
+        "pot** to give a product that incorporates "
+        "essentially all of their atoms — high atom "
+        "economy + step economy.  Classics: **Hantzsch "
+        "dihydropyridine synthesis** (1881; aldehyde + 2 "
+        "β-ketoester + NH₃ → 1,4-DHP, the calcium-channel-"
+        "blocker scaffold); **Strecker amino-acid synthesis** "
+        "(1850; aldehyde + NH₃ + HCN → α-aminonitrile → "
+        "α-amino acid); **Mannich reaction** (1912; "
+        "aldehyde + amine + ketone → β-amino ketone); "
+        "**Ugi 4-component reaction** (1959; aldehyde + "
+        "amine + isocyanide + carboxylic acid → α-acylamino "
+        "amide).  Workhorses in combinatorial library "
+        "synthesis + medicinal-chem fragment growth."},
+
+    {"term": "Active-methylene compound",
+     "aliases": ["active methylene", "acidic methylene"],
+     "category": "synthesis",
+     "see_also": ["pKa", "Knoevenagel condensation",
+                  "Aldol reaction"],
+     "definition_md":
+        "An **active-methylene compound** has a CH₂ flanked "
+        "by **two electron-withdrawing groups**, typically "
+        "carbonyls or nitro / nitrile.  Examples: malonate "
+        "esters (CH₂(COOR)₂, pKa ~ 13), β-ketoesters "
+        "(R-CO-CH₂-COOR', pKa ~ 11), 1,3-diketones (R-CO-"
+        "CH₂-CO-R', pKa ~ 9), nitroalkanes (R-CH₂-NO₂, "
+        "pKa ~ 10), cyanoacetate (NC-CH₂-COOR, pKa ~ 11).  "
+        "The two EWGs **dramatically acidify** the α-CH (vs "
+        "pKa ~ 20 for a simple ketone α-CH), so a mild "
+        "secondary-amine base (piperidine, pyridine) is "
+        "sufficient to generate the stabilised carbanion — "
+        "drives the **Knoevenagel condensation** + "
+        "**Hantzsch dihydropyridine synthesis** cascades."},
+
+    {"term": "Endosymbiotic theory",
+     "aliases": ["endosymbiosis"],
+     "category": "biology",
+     "see_also": ["Mitochondrion", "Chloroplast"],
+     "definition_md":
+        "The **endosymbiotic theory** (Lynn Margulis 1967) "
+        "holds that eukaryotic mitochondria descended from "
+        "an α-proteobacterium engulfed by an archaeal host, "
+        "and chloroplasts descended from a cyanobacterium "
+        "engulfed by a primordial photosynthetic eukaryote.  "
+        "Evidence: (a) mitochondrial + chloroplast genomes "
+        "are **circular** like bacterial chromosomes; (b) "
+        "their ribosomes are **70S** like bacteria, "
+        "sensitive to macrolides + tetracyclines that don't "
+        "touch the cytoplasmic 80S; (c) their inner "
+        "membranes lack cholesterol; (d) phylogenetic "
+        "placement of mitochondrial 16S rRNA within "
+        "α-proteobacteria; (e) **double membranes** "
+        "(engulfment signature).  See the Phase-47 "
+        "biochemistry-by-kingdom catalogue's eukarya-"
+        "genetics topic."},
+
+    {"term": "Horizontal gene transfer",
+     "aliases": ["HGT", "lateral gene transfer", "LGT"],
+     "category": "biology",
+     "see_also": ["CRISPR-Cas", "Plasmid"],
+     "definition_md":
+        "**Horizontal gene transfer (HGT)** — between "
+        "non-parental cells, contrasted with vertical "
+        "Darwinian descent — dominates bacterial + "
+        "archaeal evolution.  Three mechanisms: (a) "
+        "**transformation** = uptake of naked environmental "
+        "DNA via competence machinery (*S. pneumoniae*, "
+        "*B. subtilis*, *N. gonorrhoeae*); (b) "
+        "**transduction** = DNA transfer via bacteriophage "
+        "particles (generalised + specialised); (c) "
+        "**conjugation** = direct cell-to-cell DNA transfer "
+        "via a sex pilus + Type-IV secretion system, "
+        "encoded by conjugative plasmids (F-factor) or "
+        "integrative + conjugative elements (ICEs).  HGT is "
+        "the engine of **antibiotic-resistance spread** — "
+        "β-lactamases, NDM-1 carbapenem-resistance, mcr-1 "
+        "colistin-resistance all dispersed globally on "
+        "plasmids in < 5 years."},
+
+    {"term": "CRISPR-Cas",
+     "aliases": ["CRISPR", "CRISPR-Cas9", "Cas9",
+                 "Cas12", "Cas13"],
+     "category": "biology",
+     "see_also": ["Horizontal gene transfer",
+                  "Restriction-modification"],
+     "definition_md":
+        "**CRISPR-Cas** (Clustered Regularly Interspaced "
+        "Short Palindromic Repeats + CRISPR-associated "
+        "nucleases) is the **adaptive immune system of "
+        "bacteria + archaea against bacteriophages + "
+        "plasmid invasion**.  Short fragments (~ 30 bp "
+        "'spacers') of invading DNA are integrated into "
+        "the host's CRISPR locus, transcribed into guide "
+        "RNAs, and used by Cas nucleases (Cas9 / Cas12 / "
+        "Cas13) to cleave any future invader carrying a "
+        "matching protospacer + PAM motif.  **Repurposed "
+        "for genome editing** by Doudna + Charpentier 2012 "
+        "(Nobel 2020) — Cas9 + a programmed guide RNA can "
+        "introduce a double-strand break at any genomic "
+        "locus carrying a matching 20 bp + PAM.  In 2023 "
+        "the FDA approved **Casgevy** for sickle-cell "
+        "disease — the first CRISPR therapy."},
+
+    {"term": "Chirality",
+     "aliases": ["chiral", "achiral"],
+     "category": "stereochemistry",
+     "see_also": ["Stereocentre", "Enantiomer",
+                  "Optical activity"],
+     "definition_md":
+        "A molecule is **chiral** if it is not superimposable "
+        "on its mirror image — like a left vs right hand.  "
+        "Most commonly arises from an **sp³ carbon with 4 "
+        "different substituents** (a stereocentre).  Chiral "
+        "molecules are **optically active** (rotate plane-"
+        "polarised light) and often have stereo-specific "
+        "biological activity (one enantiomer of carvone "
+        "smells like spearmint, the other like caraway; "
+        "L-DOPA treats Parkinson's, D-DOPA does nothing).  "
+        "Most biological molecules — amino acids, sugars, "
+        "lipids — are chiral and biology uses essentially "
+        "one enantiomer of each.  Distinguish from "
+        "**achiral** molecules (superimposable on mirror "
+        "image — most simple alkanes, water, CO₂).  See "
+        "the Phase-48 isomer explorer's enantiomer "
+        "classifier."},
+
+    {"term": "Chiral switch",
+     "aliases": [],
+     "category": "medicinal chemistry",
+     "see_also": ["Enantiomer", "Chirality",
+                  "Enantiomeric excess"],
+     "definition_md":
+        "A **chiral switch** is a pharmaceutical-development "
+        "strategy where a marketed **racemic drug** is "
+        "re-developed as the **single more-active "
+        "enantiomer** to extend patent life + reduce "
+        "off-target effects from the inactive enantiomer.  "
+        "Two textbook examples: (a) **citalopram → "
+        "escitalopram** — Lundbeck took racemic citalopram "
+        "off-patent, then released the (S)-enantiomer "
+        "(escitalopram, 2002) as a new product with fresh "
+        "patent life — (R)-citalopram contributes only ~ "
+        "1% of the SERT-inhibition activity AND blocks the "
+        "histamine H1 receptor as the source of sedation "
+        "side effect; (b) **omeprazole → esomeprazole** — "
+        "AstraZeneca's (S)-omeprazole (Nexium 2001) "
+        "eliminated the inter-patient CYP2C19-polymorphism "
+        "variability of the racemate.  See the Phase-31k "
+        "SSRI + PPI SAR series."},
 ]

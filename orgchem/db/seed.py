@@ -118,6 +118,16 @@ def seed_if_empty(cfg: AppConfig) -> int:
     from orgchem.db.seed_synonyms import seed_synonyms_if_needed
     seed_synonyms_if_needed()
 
+    # Round 177 — Phase 49b.  Backfill catalogue molecules
+    # (Phase-29 lipid/carb/NA + Phase-31k SAR variants) that
+    # aren't already in the molecule DB.  Generalises the
+    # round-58 InChIKey reconciliation by ADDING missing rows
+    # rather than only adding aliases.
+    from orgchem.db.seed_catalogue_molecules import (
+        seed_catalogue_molecules_if_needed,
+    )
+    seed_catalogue_molecules_if_needed()
+
     return mol_added + rxn_added + mech_added + path_added + ep_added + g_added
 
 

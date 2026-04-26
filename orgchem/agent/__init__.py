@@ -44,6 +44,22 @@ from orgchem.agent import actions_phys_org       # noqa: F401 — Phase 17e Hamm
 from orgchem.agent import actions_authoring      # noqa: F401 — round 55 content-authoring
 from orgchem.agent import actions_search         # noqa: F401 — Phase 33a full-text search
 from orgchem.agent import actions_drawing        # noqa: F401 — Phase 36h drawing tool
+from orgchem.agent import actions_qualitative    # noqa: F401 — Phase 37a qualitative tests
+from orgchem.agent import actions_clinical       # noqa: F401 — Phase 37b clinical lab panels
+from orgchem.agent import actions_chromatography # noqa: F401 — Phase 37c chromatography
+from orgchem.agent import actions_spectrophotometry  # noqa: F401 — Phase 37d spectrophotometry
+from orgchem.agent import actions_lab_equipment   # noqa: F401 — Phase 38a lab equipment
+from orgchem.agent import actions_lab_setups      # noqa: F401 — Phase 38b lab setups
+from orgchem.agent import actions_calc            # noqa: F401 — Phase 39b lab calculator
+from orgchem.agent import actions_centrifugation  # noqa: F401 — Phase 41 centrifugation
+from orgchem.agent import actions_lab_analysers   # noqa: F401 — Phase 40a lab analysers
+from orgchem.agent import actions_metabolic_pathways  # noqa: F401 — Phase 42a pathways
+from orgchem.agent import actions_ph_explorer    # noqa: F401 — Phase 46c pH + buffers
+from orgchem.agent import actions_lab_reagents   # noqa: F401 — Phase 45 lab reagents
+from orgchem.agent import actions_microscopy     # noqa: F401 — Phase 44 microscopy
+from orgchem.agent import actions_cell_components  # noqa: F401 — Phase 43 cell components
+from orgchem.agent import actions_biochemistry_by_kingdom  # noqa: F401 — Phase 47 kingdom topics
+from orgchem.agent import actions_isomers              # noqa: F401 — Phase 48 isomers
 from orgchem.agent import script_context         # noqa: F401 — Phase 32a scripting
 
 __all__ = ["action", "registry", "invoke", "ActionSpec"]

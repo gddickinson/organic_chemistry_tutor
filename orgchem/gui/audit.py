@@ -306,6 +306,331 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
         "Tools → Drawing tool… → Export drawing… footer button.",
     "drawing_clear":
         "Tools → Drawing tool… → Clear canvas toolbar button.",
+    "make_reaction_scheme":
+        "Tools → Drawing tool… — Phase 36f.1 headless helper, "
+        "exposed to the tutor / scripts via the agent registry "
+        "(canvas-side reaction-arrow tool ships in 36f.2).",
+
+    # ---- Qualitative inorganic tests (Phase 37a) ----------------
+    "list_inorganic_tests":
+        "Tools → Qualitative inorganic tests… (Ctrl+Shift+Q) — "
+        "category combo + filter + list rows.",
+    "get_inorganic_test":
+        "Tools → Qualitative inorganic tests… → click a list "
+        "row → detail pane.",
+    "find_inorganic_tests_for":
+        "Tools → Qualitative inorganic tests… → free-text "
+        "filter (target ion).",
+    "open_qualitative_tests":
+        "Tools → Qualitative inorganic tests… (Ctrl+Shift+Q).",
+
+    # ---- Clinical lab panels (Phase 37b) ------------------------
+    "list_lab_panels":
+        "Tools → Clinical lab panels… (Ctrl+Shift+L) — "
+        "panel-picker combo.",
+    "get_lab_panel":
+        "Tools → Clinical lab panels… → switch combo + read "
+        "the panel meta + analyte table.",
+    "list_lab_analytes":
+        "Tools → Clinical lab panels… → analyte rows are the "
+        "union of every panel.",
+    "find_lab_analyte":
+        "Tools → Clinical lab panels… (text-lookup is "
+        "implicit — pick from the panel's table).",
+    "open_clinical_panels":
+        "Tools → Clinical lab panels… (Ctrl+Shift+L).",
+
+    # ---- Chromatography (Phase 37c) -----------------------------
+    "list_chromatography_methods":
+        "Tools → Chromatography techniques… "
+        "(Ctrl+Shift+G) — category combo + list rows.",
+    "get_chromatography_method":
+        "Tools → Chromatography techniques… → click a list "
+        "row → detail card.",
+    "find_chromatography_methods":
+        "Tools → Chromatography techniques… → free-text "
+        "filter (name / abbreviation).",
+    "open_chromatography_methods":
+        "Tools → Chromatography techniques… (Ctrl+Shift+G).",
+
+    # ---- Spectrophotometry (Phase 37d) --------------------------
+    "list_spectrophotometry_methods":
+        "Tools → Spectrophotometry techniques… "
+        "(Ctrl+Shift+W) — category combo + list rows.",
+    "get_spectrophotometry_method":
+        "Tools → Spectrophotometry techniques… → click a "
+        "list row → detail card.",
+    "find_spectrophotometry_methods":
+        "Tools → Spectrophotometry techniques… → free-text "
+        "filter (name / abbreviation).",
+    "beer_lambert":
+        "Tools → Spectrophotometry techniques… → "
+        "Beer-Lambert calculator panel at the bottom of "
+        "the right pane.",
+    "open_spectrophotometry":
+        "Tools → Spectrophotometry techniques… (Ctrl+Shift+W).",
+
+    # ---- Lab equipment (Phase 38a) ------------------------------
+    "list_lab_equipment":
+        "Tools → Lab equipment… (Ctrl+Shift+I) — category "
+        "combo + list rows.",
+    "get_lab_equipment":
+        "Tools → Lab equipment… → click a list row → "
+        "detail card.",
+    "find_lab_equipment":
+        "Tools → Lab equipment… → free-text filter "
+        "(name / category).",
+    "open_lab_equipment":
+        "Tools → Lab equipment… (Ctrl+Shift+I).",
+
+    # ---- Lab setups (Phase 38b) ---------------------------------
+    "list_lab_setups":
+        "Tools → Lab setups… (Ctrl+Shift+U) — list rows.",
+    "get_lab_setup":
+        "Tools → Lab setups… → click a list row → detail card.",
+    "find_lab_setups":
+        "Tools → Lab setups… → free-text filter.",
+    "validate_lab_setup":
+        "Tools → Lab setups… → detail card surfaces "
+        "validation errors at the bottom; agent action "
+        "drives this directly.",
+    "open_lab_setups":
+        "Tools → Lab setups… (Ctrl+Shift+U).",
+
+    # ---- Lab calculator (Phase 39b) -----------------------------
+    "open_lab_calculator":
+        "Tools → Lab calculator… (Ctrl+Shift+C) — tabbed "
+        "dialog with 7 categories of bench calculators.",
+
+    # ---- Lab calculator per-solver actions (Phase 39c) ----------
+    # Every solver from Phase 39a is exposed via the agent
+    # registry; the dialog itself is the human-facing path,
+    # these actions are the script / tutor entry point.  All
+    # 31 wrappers point at the same Tools → Lab calculator…
+    # dialog tab where the equivalent UI lives.
+    "molarity":
+        "Tools → Lab calculator… → Solution tab → Molarity panel.",
+    "dilution":
+        "Tools → Lab calculator… → Solution tab → Dilution panel.",
+    "serial_dilution":
+        "Tools → Lab calculator… (no UI panel; agent-only "
+        "convenience for a step-by-step dilution table).",
+    "molarity_from_mass_percent":
+        "Tools → Lab calculator… → Solution tab → "
+        "Molarity from %w/w panel.",
+    "ppm_to_molarity":
+        "Tools → Lab calculator… (agent-only convenience; "
+        "Solution tab covers M ↔ %w/w but not the dedicated "
+        "ppm helper).",
+    "molarity_to_ppm":
+        "Tools → Lab calculator… (agent-only — same).",
+    "limiting_reagent":
+        "Tools → Lab calculator… (agent-only; the list-shaped "
+        "input doesn't fit the spin-box dialog pattern).",
+    "theoretical_yield":
+        "Tools → Lab calculator… → Stoichiometry tab → "
+        "Theoretical-yield panel.",
+    "percent_yield":
+        "Tools → Lab calculator… → Stoichiometry tab → "
+        "Percent-yield panel.",
+    "percent_purity":
+        "Tools → Lab calculator… → Stoichiometry tab → "
+        "Percent-purity panel.",
+    "ph_from_h":
+        "Tools → Lab calculator… → Acid-base tab → "
+        "[H⁺] → pH button.",
+    "h_from_ph":
+        "Tools → Lab calculator… → Acid-base tab → "
+        "pH → [H⁺] button.",
+    "pka_to_ka":
+        "Tools → Lab calculator… → Acid-base tab → "
+        "pKa → Ka button.",
+    "ka_to_pka":
+        "Tools → Lab calculator… → Acid-base tab → "
+        "Ka → pKa button.",
+    "henderson_hasselbalch":
+        "Tools → Lab calculator… → Acid-base tab → "
+        "Henderson-Hasselbalch panel.",
+    "ideal_gas":
+        "Tools → Lab calculator… → Gas-law tab → "
+        "Ideal-gas panel.",
+    "combined_gas_law":
+        "Tools → Lab calculator… → Gas-law tab → "
+        "Combined-gas-law panel.",
+    "gas_density":
+        "Tools → Lab calculator… → Gas-law tab → "
+        "Gas-density panel.",
+    "boiling_point_elevation":
+        "Tools → Lab calculator… → Colligative tab → "
+        "BP-elevation panel.",
+    "freezing_point_depression":
+        "Tools → Lab calculator… → Colligative tab → "
+        "FP-depression panel.",
+    "osmotic_pressure":
+        "Tools → Lab calculator… → Colligative tab → "
+        "Osmotic-pressure panel.",
+    "heat_capacity":
+        "Tools → Lab calculator… → Thermo + kinetics tab → "
+        "Heat-capacity panel.",
+    "hess_law_sum":
+        "Tools → Lab calculator… (agent-only convenience; "
+        "list-shaped input).",
+    "first_order_half_life":
+        "Tools → Lab calculator… → Thermo + kinetics tab → "
+        "Half-life panel.",
+    "first_order_integrated":
+        "Tools → Lab calculator… (agent-only — extends the "
+        "half-life panel for full [A]_t solves).",
+    "arrhenius":
+        "Tools → Lab calculator… → Thermo + kinetics tab → "
+        "Arrhenius panel.",
+    "eyring_rate_constant":
+        "Tools → Lab calculator… (agent-only; closed-form "
+        "Eyring solve, no widget panel).",
+    "equilibrium_constant":
+        "Tools → Lab calculator… (agent-only; species-list "
+        "shape doesn't fit the spin-box panel).",
+    "ksp_from_solubility":
+        "Tools → Lab calculator… → Equilibrium tab → "
+        "K_sp ↔ s direction button.",
+    "solubility_from_ksp":
+        "Tools → Lab calculator… → Equilibrium tab → "
+        "K_sp ↔ s direction button.",
+    "ice_solve_a_plus_b":
+        "Tools → Lab calculator… → Equilibrium tab → "
+        "ICE-solver panel.",
+
+    # ---- Centrifugation (Phase 41) ------------------------------
+    "list_centrifuges_action":
+        "Tools → Centrifugation… (Ctrl+Shift+F) → "
+        "Centrifuges tab → category combo + list rows.",
+    "get_centrifuge_action":
+        "Tools → Centrifugation… → Centrifuges tab → click "
+        "a list row → detail card.",
+    "list_rotors_action":
+        "Tools → Centrifugation… → Rotors tab → category "
+        "combo + list rows.",
+    "get_rotor_action":
+        "Tools → Centrifugation… → Rotors tab → click row.",
+    "list_centrifugation_applications":
+        "Tools → Centrifugation… → Applications tab.",
+    "rpm_to_g_action":
+        "Tools → Centrifugation… → g↔RPM calculator tab → "
+        "RPM → ×g button.",
+    "g_to_rpm_action":
+        "Tools → Centrifugation… → g↔RPM calculator tab → "
+        "×g → RPM button.",
+    "open_centrifugation":
+        "Tools → Centrifugation… (Ctrl+Shift+F).",
+
+    # ---- Lab analysers (Phase 40a) ------------------------------
+    "list_lab_analysers":
+        "Tools → Lab analysers… (Ctrl+Shift+A) — category "
+        "combo + list rows.",
+    "get_lab_analyser":
+        "Tools → Lab analysers… → click a list row → "
+        "detail card.",
+    "find_lab_analysers":
+        "Tools → Lab analysers… → free-text filter.",
+    "open_lab_analysers":
+        "Tools → Lab analysers… (Ctrl+Shift+A).",
+
+    # ---- Metabolic pathways (Phase 42a) ------------------------
+    "list_metabolic_pathways":
+        "Tools → Metabolic pathways… (Ctrl+Alt+P) → "
+        "category combo + pathway list.",
+    "get_metabolic_pathway":
+        "Tools → Metabolic pathways… → click a pathway "
+        "→ meta block + step table.",
+    "find_metabolic_pathways":
+        "Tools → Metabolic pathways… → free-text "
+        "filter (name / overview).",
+    "list_pathway_steps":
+        "Tools → Metabolic pathways… → pathway "
+        "selection populates the step table.",
+    "open_metabolic_pathways":
+        "Tools → Metabolic pathways… (Ctrl+Alt+P).",
+
+    # ---- pH + buffer explorer (Phase 46) ------------------------
+    "list_pka_acids":
+        "Tools → pH explorer… (Ctrl+Alt+H) → pKa lookup tab.",
+    "get_pka_acid":
+        "Tools → pH explorer… → pKa lookup tab → click row.",
+    "find_pka_acids":
+        "Tools → pH explorer… → pKa lookup tab → free-text "
+        "filter.",
+    "design_buffer":
+        "Tools → pH explorer… → Buffer designer tab → "
+        "Design buffer button.",
+    "buffer_capacity":
+        "Tools → pH explorer… → Buffer designer tab → "
+        "Compute β at this pH button.",
+    "simulate_titration":
+        "Tools → pH explorer… → Titration curve tab → "
+        "Simulate titration button.",
+    "open_ph_explorer":
+        "Tools → pH explorer… (Ctrl+Alt+H).",
+
+    # ---- Lab reagents (Phase 45) --------------------------------
+    "list_lab_reagents":
+        "Tools → Lab reagents… (Ctrl+Shift+R) → category combo.",
+    "get_lab_reagent":
+        "Tools → Lab reagents… (Ctrl+Shift+R) → click row.",
+    "find_lab_reagents":
+        "Tools → Lab reagents… (Ctrl+Shift+R) → filter box.",
+    "open_lab_reagents":
+        "Tools → Lab reagents… (Ctrl+Shift+R).",
+
+    # ---- Microscopy techniques (Phase 44) -----------------------
+    "list_microscopy_methods":
+        "Tools → Microscopy techniques… (Ctrl+Alt+M) → "
+        "resolution-scale combo.",
+    "get_microscopy_method":
+        "Tools → Microscopy techniques… → click row.",
+    "find_microscopy_methods":
+        "Tools → Microscopy techniques… → filter box.",
+    "microscopy_methods_for_sample":
+        "Tools → Microscopy techniques… → sample-type combo.",
+    "open_microscopy":
+        "Tools → Microscopy techniques… (Ctrl+Alt+M).",
+
+    # ---- Cell components (Phase 43) -----------------------------
+    "list_cell_components":
+        "Tools → Cell components… (Ctrl+Shift+J) → "
+        "domain + sub-domain combos.",
+    "get_cell_component":
+        "Tools → Cell components… → click row.",
+    "find_cell_components":
+        "Tools → Cell components… → filter box.",
+    "cell_components_for_category":
+        "Tools → Cell components… → category combo.",
+    "open_cell_components":
+        "Tools → Cell components… (Ctrl+Shift+J).",
+
+    # ---- Biochemistry by Kingdom (Phase 47) ---------------------
+    "list_kingdom_topics":
+        "Window → Biochemistry by Kingdom… (Ctrl+Shift+K) → "
+        "kingdom outer tabs + subtab inner tabs.",
+    "get_kingdom_topic":
+        "Window → Biochemistry by Kingdom… → click a topic row.",
+    "find_kingdom_topics":
+        "Window → Biochemistry by Kingdom… → per-pane filter "
+        "box.",
+    "open_biochemistry_by_kingdom":
+        "Window → Biochemistry by Kingdom… (Ctrl+Shift+K).",
+
+    # ---- Isomers (Phase 48) -------------------------------------
+    "find_stereoisomers":
+        "Tools → Isomer relationships… (Ctrl+Shift+B) → "
+        "Stereoisomers tab.",
+    "find_tautomers":
+        "Tools → Isomer relationships… (Ctrl+Shift+B) → "
+        "Tautomers tab.",
+    "classify_isomer_pair":
+        "Tools → Isomer relationships… (Ctrl+Shift+B) → "
+        "Classify pair tab.",
+    "open_isomer_explorer":
+        "Tools → Isomer relationships… (Ctrl+Shift+B).",
 
     # ---- Periodic table (Phase 27) ------------------------------
     "list_elements": "Tools → Periodic table… (grid)",
@@ -313,6 +638,10 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
         "Tools → Periodic table… (click a cell → side-pane)",
     "elements_by_category":
         "Tools → Periodic table… (legend row)",
+    "open_periodic_table":
+        "Tools → Periodic table… (Ctrl+Shift+T)",
+    "open_naming_rules":
+        "Tools → IUPAC naming rules…",
 
     # ---- Session (Phase 20d) ------------------------------------
     "list_sessions": "File → Recent sessions ▸",

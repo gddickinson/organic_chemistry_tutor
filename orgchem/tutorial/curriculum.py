@@ -37,6 +37,7 @@ CURRICULUM: Dict[str, List[Dict[str, Any]]] = {
         _lesson("Radical reactions & chain mechanisms",   "intermediate/08_radicals.md"),
         _lesson("Polymer chemistry (step + chain growth)","intermediate/09_polymers.md"),
         _lesson("Protecting groups — orthogonal strategies","intermediate/10_protecting_groups.md"),
+        _lesson("Isomerism — a unified hierarchy",          "intermediate/11_isomerism.md"),
     ],
     "advanced": [
         _lesson("Pericyclic reactions",                   "advanced/01_pericyclic.md"),
