@@ -40,18 +40,21 @@ with export to PNG / SVG / MOL and one-click send-to-workspace.
 Every feature is reachable from the GUI — the audit gate pins
 **100 % coverage** (every registered agent action has a corresponding
 menu / panel / dialog entry). The full regression suite is
-**2 754 tests** green as of round 226 (2026-04-26).  Six -1
-sibling catalogues + six -2 deep-phase catalogues all live;
-the **-3 tutorial-expansion chain** is in flight — Cell Bio
-(round 224) grew 1 → 13 lessons; Biochem (round 225) grew
-1 → 14 lessons; **Pharm** (round 226, **Phase PH-3.0**)
-grew 1 → 13 lessons covering PK + PD + dose-response +
-DDIs, drug development pipeline + biologics +
-pharmacogenomics (advanced), computational drug discovery
-+ RWE/RCT methodology + modern modalities like PROTACs +
-mRNA + AAV + CAR-T (graduate). User has requested a 7th
-sibling — **Genetics + Molecular Biology Studio** —
-queued after the -3 chain completes.
+**2 856 tests** green as of round 232 (2026-04-27).  The
+7-sibling platform is in the **-4 tutorial-expansion
+chain** (2 of 7 rounds done).  Round 231 shipped GM-3.0
+(genetics 1 → 14 lessons); **round 232 ships CB-4.0**
+(Cell Biology 13 → 25 lessons): added 12 new lessons
+across all 4 tiers covering organelles deep-dive +
+cytoskeleton + motility (intro) + membrane lipids + rafts
+(beginner); autophagy + UPS + cell-cell adhesion + ECM +
+ion channels + electrical signalling (intermediate);
+calcium signalling + cell migration + cancer invasion +
+lysosomal degradation + LSDs (advanced); organelle
+contact sites + oxidative stress + redox signalling +
+intracellular + organelle pH (graduate).  Five more
+rounds queued (BC-4.0 → AB-4.0).  +7 new tests this
+round; total **2 849 → 2 856**, zero regressions.
 
 ![Main window — molecule workspace](screenshots/tour/01_caffeine.png)
 

@@ -141,9 +141,12 @@ class MainWindow(QMainWindow):
         self._microbio_window: Optional[QMainWindow] = None
         # Botany Studio (Phase BT-1.0) — fifth sibling.
         self._botany_window: Optional[QMainWindow] = None
-        # Animal Biology Studio (Phase AB-1.0) — sixth + final
-        # sibling.  Completes the 6-studio life-sciences platform.
+        # Animal Biology Studio (Phase AB-1.0) — sixth sibling
+        # of the original 6-studio platform.
         self._animal_window: Optional[QMainWindow] = None
+        # Genetics + Molecular Biology Studio (Phase GM-1.0) —
+        # seventh sibling, post -3 chain extension.
+        self._genetics_window: Optional[QMainWindow] = None
 
         self.setCentralWidget(self.tabs)
 
@@ -591,6 +594,25 @@ class MainWindow(QMainWindow):
         a_animal.triggered.connect(
             self.open_animal_studio_window)
         m_window.addAction(a_animal)
+        a_genetics = QAction(
+            "Genetics + Molecular Biology Studio…", self)
+        a_genetics.setShortcut(QKeySequence("Ctrl+Alt+G"))
+        a_genetics.setToolTip(
+            "Open Genetics + Molecular Biology Studio — "
+            "seventh sibling life-sciences studio (Phase "
+            "GM-1.0).  Ships a 40-entry molecular-biology-"
+            "techniques catalogue across 14 categories "
+            "(PCR / sequencing / cloning / CRISPR / blots "
+            "/ in-situ / chromatin / transcriptomics / "
+            "spatial / proteomics / interactions / "
+            "structural / epigenetics / delivery) + a "
+            "cross-references bridge into biochem.core."
+            "enzymes filtered to nucleic-acid-acting "
+            "enzymes + a starter Welcome lesson."
+        )
+        a_genetics.triggered.connect(
+            self.open_genetics_studio_window)
+        m_window.addAction(a_genetics)
 
         m_tutor = mb.addMenu("T&utor")
         a_focus_tutor = QAction("Open chat console", self)
@@ -844,6 +866,35 @@ class MainWindow(QMainWindow):
         if self._animal_window is None:
             self._animal_window = AnimalMainWindow(parent=self)
         win = self._animal_window
+        if tab_label:
+            win.switch_to(tab_label)
+        win.show()
+        win.raise_()
+        win.activateWindow()
+        return win
+
+    def open_genetics_studio_window(
+        self, tab_label: Optional[str] = None,
+    ):
+        """Show (and raise) the Genetics + Molecular Biology
+        Studio window.  Lazily constructs on first call.
+        Optional ``tab_label`` focuses one of the inner tabs
+        (``"Techniques"`` / ``"Cross-references"`` /
+        ``"Tutorials"``).
+
+        Phase GM-1.0 — seventh sibling.  Ships a 40-entry
+        molecular-biology-techniques catalogue across 14
+        categories with typed cross-references into biochem
+        enzymes + cellbio cell-cycle + signalling pathways +
+        animal model organisms + orgchem molecules.
+        """
+        from genetics.gui.windows.genetics_main_window import (
+            GeneticsMainWindow,
+        )
+        if self._genetics_window is None:
+            self._genetics_window = GeneticsMainWindow(
+                parent=self)
+        win = self._genetics_window
         if tab_label:
             win.switch_to(tab_label)
         win.show()

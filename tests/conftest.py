@@ -32,7 +32,8 @@ import biochem  # noqa: F401, E402  # Phase BC-1.0 — second sibling
 import pharm    # noqa: F401, E402  # Phase PH-1.0 — third sibling
 import microbio  # noqa: F401, E402  # Phase MB-1.0 — fourth sibling
 import botany   # noqa: F401, E402  # Phase BT-1.0 — fifth sibling
-import animal   # noqa: F401, E402  # Phase AB-1.0 — sixth + final sibling
+import animal   # noqa: F401, E402  # Phase AB-1.0 — sixth sibling
+import genetics  # noqa: F401, E402  # Phase GM-1.0 — seventh sibling (post -3 chain)
 
 log = logging.getLogger(__name__)
 

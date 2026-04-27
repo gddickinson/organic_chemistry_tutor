@@ -65,6 +65,9 @@ class HeadlessApp:
         import microbio  # noqa: F401
         import botany   # noqa: F401
         import animal   # noqa: F401
+        # Phase GM-1.0 (round 230) — seventh sibling, post
+        # -3 chain extension.
+        import genetics  # noqa: F401
 
         self.cfg = AppConfig.load()
         setup_logging(self.cfg)

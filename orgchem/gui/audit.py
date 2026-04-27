@@ -877,6 +877,30 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
         "Animal Biology Studio → Organ systems tab → filter box",
     "organ_systems_for_category":
         "Animal Biology Studio → Organ systems tab → category combo",
+
+    # ----- Phase GM-1.0 (round 230) — Genetics + Molecular
+    # Biology Studio.  Seventh sibling, post -3 chain.  40-
+    # entry molecular-biology-techniques catalogue across 14
+    # categories (PCR / sequencing / cloning / CRISPR / blots
+    # / in-situ / chromatin / transcriptomics / spatial /
+    # proteomics / interactions / structural / epigenetics /
+    # delivery) with 5-way typed cross-references into biochem
+    # enzymes + cellbio cell-cycle + signalling + animal taxa
+    # + orgchem molecules.
+    "open_genetics_studio":
+        "Window → Genetics + Molecular Biology Studio… "
+        "(Ctrl+Alt+G)",
+    "list_genetics_techniques":
+        "Genetics + Molecular Biology Studio → Techniques tab",
+    "get_genetics_technique":
+        "Genetics + Molecular Biology Studio → Techniques "
+        "tab (selection)",
+    "find_genetics_techniques":
+        "Genetics + Molecular Biology Studio → Techniques "
+        "tab → filter box",
+    "genetics_techniques_for_application":
+        "Genetics + Molecular Biology Studio → Techniques "
+        "tab → category combo",
 }
 
 

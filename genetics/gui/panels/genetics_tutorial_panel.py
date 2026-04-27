@@ -1,0 +1,82 @@
+"""Phase GM-1.0 (round 230) — Genetics + Molecular Biology
+Studio tutorial panel."""
+from __future__ import annotations
+import logging
+from typing import Any, Dict, Optional
+
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
+    QLabel, QSplitter, QTextBrowser, QTreeWidget,
+    QTreeWidgetItem, QVBoxLayout, QWidget,
+)
+
+from genetics.tutorial.curriculum import CURRICULUM
+from genetics.tutorial.loader import load_lesson
+
+log = logging.getLogger(__name__)
+
+
+class GeneticsTutorialPanel(QWidget):
+    """Tree of genetics lessons + markdown reader."""
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super().__init__(parent)
+        self._build_ui()
+        self._populate()
+
+    def _build_ui(self) -> None:
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(6, 6, 6, 6)
+        outer.addWidget(QLabel(
+            "<b>Genetics + Molecular Biology Studio — "
+            "tutorials.</b>  Phase GM-1.0 ships a Welcome "
+            "lesson covering the studio + the 7-sibling-"
+            "platform context.  The deeper Genetics + "
+            "Molecular Biology curriculum is queued for "
+            "Phase GM-3.0 (mirroring the -3 tutorial-"
+            "expansion chain that ran for the other 6 "
+            "siblings)."))
+
+        split = QSplitter(Qt.Horizontal)
+        outer.addWidget(split, stretch=1)
+
+        self.tree = QTreeWidget()
+        self.tree.setHeaderLabels(["Lesson"])
+        self.tree.itemSelectionChanged.connect(self._on_select)
+        split.addWidget(self.tree)
+
+        self.viewer = QTextBrowser()
+        self.viewer.setOpenExternalLinks(True)
+        split.addWidget(self.viewer)
+        split.setStretchFactor(0, 1)
+        split.setStretchFactor(1, 3)
+
+    def _populate(self) -> None:
+        self.tree.clear()
+        first_item: Optional[QTreeWidgetItem] = None
+        for level, lessons in CURRICULUM.items():
+            top = QTreeWidgetItem(self.tree, [level.title()])
+            top.setExpanded(True)
+            for lesson in lessons:
+                child = QTreeWidgetItem(top, [lesson["title"]])
+                child.setData(0, Qt.UserRole, lesson)
+                if first_item is None:
+                    first_item = child
+        if first_item is not None:
+            self.tree.setCurrentItem(first_item)
+
+    def _on_select(self) -> None:
+        items = self.tree.selectedItems()
+        if not items:
+            return
+        data: Optional[Dict[str, Any]] = items[0].data(
+            0, Qt.UserRole)
+        if not data:
+            self.viewer.clear()
+            return
+        try:
+            md = load_lesson(data["path"])
+        except Exception as e:  # noqa: BLE001
+            self.viewer.setHtml(f"<pre>Error loading: {e}</pre>")
+            return
+        self.viewer.setMarkdown(md)

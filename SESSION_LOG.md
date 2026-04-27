@@ -1,5 +1,598 @@
 # Session Log — OrgChem Studio
 
+## 2026-04-27 — Round 232 (Phase CB-4.0: Cell Biology tutorial expansion — round 2 of -4 chain)
+
+**Wakeup-driven build, round 2 of 7 in the -4 chain.**
+Day 2 of the user-requested "expand all tutorials"
+sweep.  CB-4.0 ships 12 new cell-bio lessons
+(curriculum 13 → 25).  Test count **2 849 → 2 856**
+(+7 new tutorial tests, zero regressions).
+
+| Lesson | Tier | Topic |
+|--------|------|-------|
+| Organelles deep-dive | beginner | nucleus + ER + Golgi + mitochondria + lysosomes + peroxisomes + endosomes + plant + bacterial + LLPS condensates |
+| Cytoskeleton + motility (intro) | beginner | 3 filament systems (actin + microtubules + intermediate filaments) + motors + classes + drug pharmacology |
+| Membrane lipids + rafts | beginner | bilayer architecture + asymmetry + flippases/floppases/scramblases + glycero/sphingolipids + cholesterol + phosphoinositides + lipid rafts + lipid signalling |
+| Autophagy + UPS | intermediate | ubiquitin cascade + Cullin-RING + APC/C + 26S proteasome + DUBs + 3 autophagy flavours (macro/CMA/micro) + ERAD + targeted protein degradation |
+| Cell-cell adhesion + ECM | intermediate | tight + adherens + desmosome + gap junctions + cadherins + integrins + focal adhesions + collagens + elastin + proteoglycans + GAGs + basement membrane + matrix remodelling + mechanotransduction |
+| Ion channels + electrical signalling | intermediate | voltage-gated Nav/Cav/Kv/HCN + ligand-gated nAChR/GABA-A/glycine/glutamate/5-HT3/P2X + Hodgkin-Huxley + cardiac AP + channelopathies + patch-clamp |
+| Calcium signalling | advanced | PM/ER/mito Ca²⁺ handling + IP3R/RyR/SERCA/PMCA + STIM-Orai SOCE + CaM + CaMKII + calcineurin + ECC + Ca²⁺ in fertilisation + apoptosis + gene expression + drugs + GECIs |
+| Cell migration + cancer invasion | advanced | 5-step migration cycle + 4 migration modes + Rho-GTPases + focal adhesion dynamics + chemotaxis + 7-step metastatic cascade + EMT + pre-metastatic niche + CTCs + organ tropism + therapeutic targeting |
+| Lysosomal degradation + LSDs | advanced | M6P pathway + 3 cargo input streams + 70+ LSDs catalogued by substrate class + ERT + SRT + chaperones + gene therapy + lysosomes-as-signalling-hubs (mTORC1 + TFEB + lysosomal Ca²⁺) |
+| Organelle contact sites | graduate | ER-mito MAMs + ER-PM + mito-PM + ER-endosome/lysosome + ER-lipid droplet + ER-peroxisome + lipid-transfer proteins (OSBP/ORP + CERT + STARD + VPS13 + ATG2) + disease relevance |
+| Oxidative stress + redox signalling | graduate | major ROS species + sources (mito + NOX + others) + antioxidant defences (SOD + catalase + GPx + Trx + Prx) + H₂O₂ as signalling currency + KEAP1-NRF2 + ferroptosis + cuproptosis + drugs + ageing context |
+| Intracellular pH + organelle pH | graduate | compartmental pH atlas + cytosolic pH regulators (NHE + NBC + AE + MCT + V-ATPase) + V-ATPase architecture + counterion conductance + viral entry + cancer microenvironment pH + pH probes + V-ATPase signalling |
+
+Each lesson follows OrgChem-tutorial template +
+cross-references to existing CB-1.0/2.0/3.0
+catalogues + sibling-studio entries throughout.
+Lessons 200-450 lines each.
+
+**Test scaffolding.**  `tests/test_cellbio_tutorial_
+expansion_v4.py` — 7 tests including a new gate
+that all 12 CB-4.0-specific titles are present (in
+addition to the standard 6: ≥ 24 lessons / ≥ 6
+per tier / paths exist / load / titles + content +
+cellbio-keyword reference).
+
+**-4 chain progress: 2 of 7.**  GM-3.0 + CB-4.0
+done; BC-4.0 + PH-4.0 + MB-4.0 + BT-4.0 + AB-4.0
+queued.
+
+**Next: BC-4.0 (Biochem +12 lessons).**
+
+---
+
+## 2026-04-27 — Round 231 (Phase GM-3.0: Genetics tutorial expansion — launches the -4 chain)
+
+**User request: "Please expand all tutorials across
+the siblings."**  Started the day after GM-1.0 shipped.
+Day 1 of the new -4 tutorial-expansion chain.
+
+The genetics sibling had only 1 starter Welcome lesson
+(GM-1.0 ships with techniques catalogue + minimal
+tutorial); the other 6 siblings already have 13-14
+lessons each from the -3 chain.  GM-3.0 brings genetics
+up to par as the first round of the new -4 chain; the
+following 6 rounds (CB-4.0 → AB-4.0) will add ~ 12 more
+lessons to each existing sibling.
+
+**12 new genetics lessons (curriculum 1 → 14).**
+
+| Lesson | Tier | Topic |
+|--------|------|-------|
+| What molecular biology is | beginner | Central dogma, the genome at three scales, what mol-biologists do, history (Miescher → AlphaFold), 7-sibling-platform context |
+| DNA + RNA chemistry basics | beginner | Bases (purine + pyrimidine + Watson-Crick + wobble + Hoogsteen + G-quadruplex), sugars (deoxyribose vs ribose), phosphodiester backbone, helix forms, Tm + denaturation, modified bases (5mC + 5hmC + 6mA + Ψ + m1Ψ + 2'-OMe), damage + repair, RNA structure, why every technique rests on this chemistry |
+| Mendelian genetics + classical chromosomes | beginner | Mendel's 3 laws, allele relationships, autosomal/X/Y/mitochondrial inheritance patterns, anticipation/imprinting/X-inactivation/mosaicism, polygenic, karyotype, aneuploidies, structural rearrangements, microdeletion syndromes, modern diagnostic methods (karyotype → CMA → WES → WGS), pedigree analysis, carrier + reproductive genetics |
+| Reading sequence data | beginner | FASTA / FASTQ / SAM-BAM-CRAM / VCF / GFF-GTF / BED / bedGraph-bigWig formats, Phred Q-scores, CIGAR, 0-based vs 1-based, GRCh38 + T2T + HPRC reference assemblies, canonical pipelines (5 stages), public databases (NCBI + EMBL-EBI + UCSC + gnomAD + TCGA + HCA + GTEx + ENCODE), cloud + workflow languages |
+| PCR + qPCR + diagnostics | intermediate | Primer design (length + Tm + GC + 3' end + specificity + duplex avoidance + concentration), polymerase choice, cycling parameters, controls, qPCR analysis (curve interpretation + standard curve + ΔΔCt + Pfaffl + efficiency + melt-curve + MIQE), multiplexing, dPCR practicalities, troubleshooting table, sample prep across matrices, diagnostic-context (LoD + LoQ + sensitivity + specificity + PPV + NPV) |
+| NGS workflow + bioinformatics | intermediate | 7-stage workflow (sample → library → sequencing → primary processing → alignment → variant calling → annotation), library-prep choices (PCR-free + tagmentation + amplicon + capture), QC (FastQC + MultiQC + NanoPlot), aligners (BWA-MEM + STAR + minimap2 + Salmon), GATK + DeepVariant + Strelka, structural-variant + CNV callers, somatic vs germline, annotation tools + databases, workflow languages (Nextflow + Snakemake + WDL + CWL), cloud platforms (Terra + DNAnexus + AWS HealthOmics) |
+| CRISPR experimental design | intermediate | 6 design decisions (target + Cas variant + sgRNA + delivery + screening + validation), Cas variants table (SpCas9 + Cas12a + Cas12f + Cas13 + base + prime editors + dCas9), sgRNA-design tools (CHOPCHOP + CRISPOR + DeepCRISPR), delivery mode trade-offs, single-target vs pooled-screen analytics, validation gates, common pitfalls, special cases (HDR + multiplex + base/prime editing) |
+| Cloning + synthetic biology basics | intermediate | Vector toolkit (high/low-copy + BAC + expression + organism-specific), selection markers, tags + fusion partners, 5 cloning approaches (restriction + Gibson + Golden Gate + Gateway + direct synthesis), construct design (codon optimisation + promoter + tags + termination + IRES + 2A peptides), Gibson workflow, QC, synthetic-biology design (BioBricks + standard parts + circuits + foundation models + cell-free), industrial + clinical applications, ecosystem |
+| Mendelian + polygenic disease genetics | advanced | OMIM + Mendelian disease catalogue, diagnostic workup (Sanger + MLPA + WES + WGS + newborn + carrier + reproductive), ACMG/AMP framework, polygenic disease (UK Biobank + All of Us + FinnGen + MVP + GWAS Catalog + PGS), GWAS methodology, polygenic risk scores, heritability + missing heritability, linkage disequilibrium, burden + collapsing tests, Mendelian randomisation, pharmacogenomics summary, therapeutic implications (existing + modern: AAV + CRISPR + base/prime editor + ASO + siRNA + n=1), equity + ancestry |
+| Cancer genomics | advanced | Cancer as somatic evolution + Hanahan-Weinberg hallmarks, drivers vs passengers, COSMIC + OncoKB + CIViC, TCGA + ICGC + PCAWG + GENIE consortia, mutational signatures (Alexandrov / COSMIC v3.3), TMB + MSI, liquid biopsy + ctDNA + MRD, single-cell + spatial cancer genomics, clinical-grade NGS panels (MSK-IMPACT + FoundationOne CDx + Tempus + Caris + Guardant), structural-variant + fusion-gene detection, tumour heterogeneity + clonal evolution, neoantigens + cancer vaccines, epigenetics in cancer, targeted-therapy pharmacogenomics |
+| Single-cell + spatial omics workflows | advanced | When to use single-cell, platform comparison table, sample-prep paths (fresh dissociation vs single-nucleus), library-prep workflow, 7-stage pipeline (Cell Ranger + alevin-fry + starsolo + kb-python), QC (per-cell metrics + doublet detection + ambient-RNA correction), analysis (normalization + PCA + Harmony + UMAP + Leiden + cell-type annotation + trajectory + DE + cell-cell communication), spatial workflows (Visium + Xenium + MERSCOPE + CosMx + Slide-seq + Stereo-seq), multi-modal integration (CITE-seq + Multiome + WNN + MOFA + scVI), reference atlases, current pipeline stack |
+| Population genetics + ancient DNA | graduate | Foundational concepts (allele freq + HWE + Ne + drift + mutation rate + selection coefficients + coalescents), major datasets (1KGP + gnomAD + UK Biobank + All of Us + TOPMed + national biobanks), inferring population structure (PCA + admixture + F-statistics + IBD), detecting selection (within-species + between-species + famous examples), ancient DNA methods (recovery + library + authentication), Pääbo Nobel 2022 + Neanderthal + Denisovan + landmark aDNA studies, modern human history insights, pan-genome shifts, V2F + Mendelian randomisation, forensic IGG |
+| Comparative + functional genomics | graduate | Comparative methods (whole-genome alignment + synteny + orthology + dN/dS + branch + site models + PCMs), CNEs + UCEs, pan-genomes, functional methods (transcriptomics + chromatin + epigenomic + cis-regulatory + protein-DNA + protein-protein), reference projects (ENCODE + Roadmap + IHEC + GTEx + FANTOM + 4D Nucleome + single-cell atlases), variant prioritisation (CADD + REVEL + AlphaMissense + SpliceAI + Enformer), V2F approach, lineage-specific innovations + gene loss + convergent evolution + intra-species variation |
+| AI for genomics | graduate | AlphaFold2/3 + ESMFold + open follow-ons, protein language models (ESM-2/3 + ProtBERT + AlphaMissense), generative protein design (RFdiffusion + ProteinMPNN), regulatory + sequence ML (Enformer + Borzoi + Aleph + Lyra), single-cell ML (scVI + Geneformer + scGPT + UCE + CellPLM), clinical genomics ML (variant-effect + diagnostic + prognostic + PRS), drug discovery + AI-designed candidates (Insilico INS018_055 + RFdiffusion-designed binders), foundation models for genomics, real-world impact + caution + future directions |
+
+Each lesson follows the OrgChem-tutorial template:
+hook + 3-7 sections + cross-link callouts + "Try it
+in the app" + "Next:" pointer.  Lessons 200-450 lines
+each.  Cross-references throughout to the GM-1.0
+techniques catalogue + sibling-studio catalogues
+(BC enzymes / CB cell-cycle + signalling / AB taxa /
+PH drug classes / OrgChem molecules) + tutorial
+lessons.
+
+**Test scaffolding.**  `tests/test_genetics_tutorial_
+expansion.py` — 7 tests: ≥ 12 lessons, all 4 tiers
+populated, paths exist, titles non-empty, lessons
+load + > 100 chars, every lesson references a
+genetics keyword (dna / rna / gene / genome / sequence
+/ crispr / pcr / variant / allele / chromosome /
+molecular / protein), AND a 7th gate that the GM-1.0
+Welcome lesson is preserved.
+
+**-4 chain progress: 1 of 7.**  GM-3.0 done; CB-4.0 →
+BC-4.0 → PH-4.0 → MB-4.0 → BT-4.0 → AB-4.0 queued.
+After all 7 rounds the platform's tutorial scaffold
+will reach ~ 175-180 lessons total across 7 siblings
+(~ 25/sibling).
+
+**Test count 2 842 → 2 849** (+7, zero regressions).
+
+**Next: CB-4.0 (Cell Bio tutorial expansion +12 lessons).**
+
+---
+
+## 2026-04-27 — Round 230 (Phase GM-1.0: Genetics + Molecular Biology Studio v0.1 — 7th sibling)
+
+**User-requested mid-round-226 + queued via task #86:**
+the platform's 7th sibling.  Built the day after the -3
+chain closed, demonstrating the sibling-package pattern
+remains crisply repeatable.  Test count **2 773 → 2 842**
+(+69 new tests, zero regressions).
+
+**Sibling package `genetics/` shipped.**  ~ 1 100 lines of
+catalogue data + 800 lines of GUI + tests.  Same scaffolding
+pattern as CB-1.0 → AB-1.0:
+
+| File / dir | Purpose |
+|------------|---------|
+| `genetics/__init__.py` | Imports `actions_techniques` to register agent actions on import. |
+| `genetics/INTERFACE.md` | Sibling-package map. |
+| `genetics/core/techniques.py` | `MolecularBiologyTechnique` frozen dataclass + 14-tuple `CATEGORIES` + lookup helpers + the BC-2.0 `__post_init__` tuple validator (closes trailing-comma bug class for the new dataclass too). |
+| `genetics/core/techniques_data.py` | 40-entry catalogue spanning all 14 categories (PCR / sequencing / cloning / CRISPR / blots / in-situ / chromatin / transcriptomics / spatial / proteomics / interactions / structural / epigenetics / delivery).  Each entry: principle / sample types / throughput / typical readout / key reagents / representative platforms / year of introduction / key references / strengths / limitations / notes + 5-way typed cross-references. |
+| `genetics/agent/actions_techniques.py` | 5 actions in new `genetics-techniques` category (list / get / find / techniques-for-application / open-studio). |
+| `genetics/gui/windows/genetics_main_window.py` | `GeneticsMainWindow` singleton; 3 inner tabs (Techniques / Cross-references / Tutorials); QSettings geometry persistence. |
+| `genetics/gui/panels/techniques_panel.py` | Category combo + free-text filter + list + HTML detail card with 5 cross-reference sections. |
+| `genetics/gui/panels/molecular_biology_bridge_panel.py` | Read-only bridge to `biochem.core.enzymes` filtered to nucleic-acid-acting enzymes (polymerase / ligase / restriction / endonuclease / exonuclease / nuclease / topoisomerase / helicase / transcriptase / primase / telomerase / integrase / recombinase keyword filter).  *Open in Biochem Studio…* hand-off button. |
+| `genetics/gui/panels/genetics_tutorial_panel.py` | Same minimal pattern as previous siblings. |
+| `genetics/tutorial/curriculum.py` | 1 starter Welcome lesson at beginner tier. |
+| `genetics/tutorial/loader.py` | `load_lesson(path)`. |
+| `genetics/tutorial/content/beginner/01_welcome_genetics.md` | Welcome + 7-sibling-platform overview + the 14-category catalogue tour. |
+
+**OrgChem-side glue (6 files, standard pattern).**
+`orgchem/agent/headless.py` imports `genetics` after `animal`;
+`tests/conftest.py` imports `genetics`;
+`MainWindow._build_menu()` adds the *Window → Genetics +
+Molecular Biology Studio…* entry with shortcut **Ctrl+Alt+G**
+(Ctrl+Shift+G already taken by chromatography);
+`MainWindow.open_genetics_studio_window()` lazy slot;
+`gui/audit.py::GUI_ENTRY_POINTS` extended with all 5
+actions; `core/agent_surface_audit.py::EXPECTED_SURFACES`
+extended with the new genetics surface spec;
+`agent/actions_meta.py::_CATEGORY_SUMMARIES` extended with
+the `genetics-techniques` summary.
+
+**Cross-reference graph (5 edges per entry possible).**
+40 entries carry typed edges to:
+- BC-1.0 enzymes: `dna-ligase-i` (PCR / Gibson / Golden Gate / Hi-C), `trypsin` + `chymotrypsin` (proteomics).
+- CB-2.0 cell-cycle: `s-phase` / `g1-phase` / `m-phase` / `g2-m-checkpoint` / `intra-s-checkpoint` (CRISPR / ChIP / FISH / Hi-C / PCR).
+- CB-1.0 signalling pathways: `p53` (CRISPR-Cas9 → DDR).
+- AB-1.0 animal taxa: `homo-sapiens`, `mus-musculus`, `danio-rerio`, `drosophila-melanogaster`, `caenorhabditis-elegans` (CRISPR / sequencing / scRNA-seq / delivery).
+- OrgChem `Molecule.name`: `Adenine`, `Guanine`, `Cytosine`, `Thymine`, `Methylene blue` (PCR / Sanger / base-editor / bisulfite-seq / methylation-array).
+
+All cross-reference IDs verified at write time + validated
+at test time so a future rename in any sibling catalogue
+surfaces the broken edge immediately.
+
+**Test scaffolding (69 new tests across 6 files).**
+
+| File | Tests |
+|------|-------|
+| `tests/test_genetics_core_techniques.py` | 23 — catalogue size, 14 categories all populated, every entry has unique id + non-empty required fields, dataclass validator refuses str-for-tuple-fields + unknown categories, lookup helpers (get / list-by-category / find-substring / techniques-for-application / categories-helper-matches-constant), 5 cross-reference-resolution gates (enzymes / cell-cycle / signalling / animal-taxa / molecules), principle field substantive (≥ 50 chars), 33 canonical entries present. |
+| `tests/test_genetics_agent_actions.py` | 12 — all 5 actions registered with correct category, list returns full + filtered + error-on-unknown-category, get returns record + error-on-unknown-id, find returns substring matches + empty-needle / no-match cases, techniques-for-application alias works, open-studio returns error without main window. |
+| `tests/test_genetics_main_window.py` | 6 — window constructs with 3 tabs, title set, switch-to focuses named tab, switch-to-unknown returns False, open-studio action lazily constructs singleton, open-studio with tab focuses that tab. |
+| `tests/test_genetics_techniques_panel.py` | 6 — panel constructs + populates, category combo narrows list, text filter narrows list, select-technique focuses row, select-unknown returns False, detail card renders cross-references. |
+| `tests/test_genetics_bridge_panel.py` | 6 — panel constructs, filter helper returns only nucleic-acid enzymes, DNA ligase appears in filtered list, select-enzyme focuses row, select-unknown returns False, detail card renders. |
+| `tests/test_genetics_tutorial.py` | 6 — curriculum has Welcome lesson, all 4 tier keys present, every lesson path exists + loads + > 100 chars, Welcome references seventh-sibling context, Welcome references catalogue keywords (pcr / crispr / sequencing). |
+| `tests/test_genetics_orgchem_glue.py` | 10 — genetics imported via headless + conftest, actions_meta has summary, GUI audit has all 5 actions, agent surface audit has Genetics entry with correct opener / list / get / find, main window has _genetics_window attribute, has open_genetics_studio_window method, Window menu has entry with Ctrl+Alt+G shortcut, open creates singleton, open with tab focuses tab. |
+
+**Long-write recovery pattern reused.**  The
+techniques_data.py file grew via a 5-chunk
+heredoc-+-Python-string-replace sequence: write seed (2
+entries closing tuple) → chunk 1 (6 PCR / sequencing
+entries) → chunk 2 (8 cloning / CRISPR entries) → chunk 3
+(8 CRISPR-diagnostic / blot / in-situ / chromatin entries
+— hit unescaped-double-quote bug in 2 places, fixed via
+inline Edit) → chunk 4 (12 final entries — 1 more
+unescaped-quote fix) → chunk 5 (4 entries to round out
+under-covered categories).  Final size: 40 entries / ~
+2 000 lines.
+
+**Issues encountered + fixed:**
+- Unescaped `"` inside f"…" body strings caused 3
+  syntax errors during chunked writes; each fixed with a
+  one-line Edit replacing `"x"` with `\"x\"`.
+- Initial bridge-panel filter assumed `e.ec_class` was
+  str; it's int.  Fixed by `str(e.ec_class)` in both the
+  filter + the test.
+- Initial tests assumed `app.main_window()` method on
+  HeadlessApp; actually `app.window` attribute.  Fixed
+  via sed replacement across 2 test files.
+- One `find_techniques("thermocycler")` test assumed
+  the word appeared in the principle text; actually it's
+  only in `representative_platforms`.  Switched to
+  `"thermostable"` which is in the principle.
+
+**Platform shape after round 230:**
+- 7 sibling studios (was 6 after AB-1.0 + AB-3.0).
+- 13 catalogues total: 7 -1 catalogues (1 per sibling)
+  + 6 -2 deep-phase catalogues (none yet for genetics).
+- 7 main windows + ~ 35 panels / dialogs across all
+  siblings.
+- 80+ tutorial lessons (the -3 chain expanded 6 siblings
+  from 1-2 starter lessons to 13-14; genetics still has
+  1 welcome lesson, queued for a future GM-3.0 expansion).
+- 2 842 tests passing.
+
+**Natural pause point.**  The platform now has a coherent
+7-sibling configuration matching the user's requested
+extension.  Future direction is user-picked:
+- GM-2.0 deep-phase build (Mendelian disorders + gene-
+  disease associations catalogue) per task #86's
+  locked-in plan.
+- GM-3.0 tutorial expansion (mirroring the -3 chain).
+- A new -2-extension chain across the existing 6 siblings
+  (each gains another catalogue).
+- A new -4 chain (~ 150 lessons per sibling) — much
+  larger scope.
+- Or pivot entirely to a different feature area.
+
+Per the round-230 wakeup brief's recommendation, the runtime
+is about to fire a slow idle ping rather than auto-launching
+GM-2.0 — the user has been driving direction + may want to
+redirect.
+
+---
+
+## 2026-04-26 — Round 229 (Phase AB-3.0: Animal Biology tutorial expansion — CLOSES the -3 chain)
+
+**Wakeup-driven build — round 6 of 6 in the -3 tutorial-
+expansion chain.**  CB + BC + PH + MB + BT done; AB-3.0
+ships 12 new animal-biology lessons (curriculum grows
+2 → 14, preserving the AB-1.0 platform-retrospective
+lesson at slot 2).  Test count **2 766 → 2 773** (+7
+new tutorial tests including a platform-retrospective
+preservation gate, zero regressions).
+
+| Lesson | Tier | Topic |
+|--------|------|-------|
+| What animal biology is | beginner | metazoan kingdom, 9 phyla, why animals matter, history (Darwin → Brenner), model organisms |
+| Animal body plans | beginner | symmetry / cephalisation / germ layers / coelom / segmentation / protostome vs deuterostome / Hox / evo-devo |
+| Tissue + organ systems overview | beginner | epithelial / connective / muscle / nervous tissues + 11 mammalian organ systems + comparative variants |
+| How animals develop | beginner | fertilisation → cleavage → gastrulation → neurulation → organogenesis; Spemann organiser; morphogen gradients; Hox; model organisms (worm + fly + xenopus + zebrafish + mouse) |
+| Comparative animal physiology | intermediate | open vs closed circulation, single vs double circuit, gills / tracheae / lungs / air sacs, ruminant vs avian vs hindgut digestion, protonephridia / metanephridia / Malpighian / kidneys, ammonia vs urea vs uric acid, ectothermy vs endothermy + heterothermy, sensory ecology |
+| Nervous systems + neuroscience essentials | intermediate | nerve nets vs centralised; Hodgkin-Huxley action potentials; SNARE-driven synaptic transmission; classical NTs + neuropeptides + others; channelopathies; brain regions; plasticity (LTP / LTD); adult neurogenesis; major diseases |
+| Animal endocrinology + hormones | intermediate | HPA + HPT + HPG axes + RAAS; insulin / glucagon + diabetes drug revolution (metformin / SU / DPP-4 / GLP-1 / SGLT2); Ca + P + PTH + calcitriol; reproductive endocrinology; insect ecdysone + JH; endocrine disruptors |
+| Animal immunology essentials | intermediate | innate (PRRs + complement + phagocytes + inflammasomes) + adaptive (B cells + Ab + V(D)J + class switch + T cells + MHC); mucosal; tolerance + autoimmunity; allergy + Gell-Coombs; cancer immunology + checkpoint + CAR-T; comparative immunology (invertebrates + lamprey VLRs + plants) |
+| Animal evolution + phylogenetics | advanced | the animal tree + open questions; Cambrian explosion + Burgess + Chengjiang + Ediacaran; 5 mass extinctions; evo-devo + Hox + 2R / 3R WGDs; molecular clocks; convergent evolution; ongoing rapid evolution; paleogenomics + Pääbo |
+| Behaviour + ethology | advanced | Tinbergen's four questions; innate vs learned (FAPs + imprinting + classical + operant + insight + social); communication; foraging; social behaviour + dominance + territoriality + mating systems + parental care + eusociality + altruism; cognition + tool use + theory of mind + numerical + language; migration + navigation; sensory ecology |
+| Conservation biology + biodiversity loss | advanced | IUCN Red List; 6 drivers (habitat / climate / exploitation / invasives / pollution / disease); sixth extinction; in situ + ex situ + reintroduction + rewilding; conservation genetics + eDNA; insect decline; marine; climate impacts; CITES + CBD + IPBES; equity + Indigenous stewardship; One Health |
+| Comparative genomics + animal evolution | graduate | genome-size diversity; gene-number conservatism; WGDs; transposable elements + ERVs + syncytin + RAG; cis-regulatory evolution; pan-genomes; ancient DNA + Pääbo Nobel + introgression; recent human adaptation; convergent molecular evolution; cephalopod + cnidarian + insect + vertebrate genome insights |
+| Neuroscience frontiers | graduate | connectomics (worm → fly → mouse → human cortex); calcium + voltage imaging + Neuropixels; optogenetics + chemogenetics; brain organoids; BCIs (BrainGate + Neuralink + Synchron + speech decoding); LLMs + brain decoding; AI-neuroscience interface; cell-type taxonomies; sleep + consciousness + disease neurobiology |
+| Modern animal biotech + One Health | graduate | gene drives + Oxitec + Target Malaria; xenotransplantation (Revivicor + eGenesis + 2022/2024 clinical milestones); CRISPR-edited livestock; animal models + 3Rs + FDA Modernization 2.0; conservation biotech + de-extinction; One Health Quadripartite + pandemic preparedness + planetary health; ethics + governance |
+
+Each lesson follows the OrgChem-tutorial template: hook +
+3-7 sections + "Try it in the app" + "Next:" pointer.
+Cross-references to existing AB-1.0 + AB-2.0 + CB-1.0 +
+BC-1.0 + PH-1.0 + MB-1.0 + Botany catalogue + signalling
+entries throughout.  Several lessons explicitly reference
+the planned **Genetics + Molecular Biology Studio** sibling.
+Lessons 200-400 lines each.
+
+**Test scaffolding.**  `tests/test_animal_tutorial_
+expansion.py` — 7 tests: ≥ 12 lessons, all 4 tiers
+populated, paths exist, titles non-empty, lessons load +
+substantive (> 100 chars), reference an animal-biology
+keyword (animal / vertebrate / mammal / neuron / behaviour
+/ evolution / organ / hormone / immunity / development /
+species), AND a NEW gate that the AB-1.0 platform-
+retrospective lesson is preserved (sanity check that the
+expansion didn't accidentally remove the special chain-
+completion lesson).
+
+**-3 chain progress: 6 of 6 — COMPLETE.**  See chain
+retrospective immediately below.
+
+**Next: GM-1.0 (Genetics + Molecular Biology Studio v0.1)
+— the 7th sibling, task #86.**  This is NOT a continuation
+of the -3 chain — it's a fresh -1-style sibling-package
+build.  Wakeup scheduled.
+
+---
+
+## -3 tutorial-expansion chain retrospective (rounds 224-229)
+
+The user's mid-AB-1.0 ask — "All the new siblings need to
+be expanded with more content, including populating all of
+the tutorials" — became the **-3 tutorial-expansion
+chain**: six rounds, one per sibling, each growing a
+sibling's curriculum from 1-2 starter lessons up to
+13-14 lessons spanning all four tiers (beginner /
+intermediate / advanced / graduate).  Below the
+chain-wide stats + per-sibling summary + pattern
+observations.
+
+### Chain stats
+
+| Round | Phase | Sibling | Lessons before → after | New lessons | New tests | Total tests |
+|-------|-------|---------|------------------------|-------------|-----------|-------------|
+| 224 | CB-3.0 | Cell Biology | 1 → 13 | 12 | 6 | 2 736 → 2 742 |
+| 225 | BC-3.0 | Biochem | 1 → 14 | 13 | 6 | 2 742 → 2 748 |
+| 226 | PH-3.0 | Pharm | 1 → 13 | 12 | 6 | 2 748 → 2 754 |
+| 227 | MB-3.0 | Microbio | 1 → 13 | 12 | 6 | 2 754 → 2 760 |
+| 228 | BT-3.0 | Botany | 1 → 13 | 12 | 6 | 2 760 → 2 766 |
+| 229 | AB-3.0 | Animal Biology | 2 → 14 | 12 | 7 | 2 766 → 2 773 |
+| **Total** |  |  | **7 → 80** | **73** | **37** | **2 736 → 2 773** |
+
+(Animal biology started with 2 because AB-1.0 shipped a
+special platform-retrospective lesson alongside the
+welcome.  The AB-3.0 test suite includes a 7th gate
+verifying that lesson was preserved.)
+
+### Topic coverage per sibling
+
+**Cell Biology (CB-3.0)** — 5 beginner (cells + signalling
+basics + receptors + 2nd messengers) / 4 intermediate
+(MAPK + GPCR + RTK / JAK-STAT + apoptosis) / 3 advanced
+(Wnt + DDR + cancer signalling networks) / 3 graduate
+(quantitative signalling + cytoskeleton + membrane
+trafficking + SNARE).
+
+**Biochem (BC-3.0)** — 4 beginner (what biochem is +
+amino acids / proteins + enzymes basics + cofactors) /
+4 intermediate (Michaelis-Menten + inhibition + allostery
++ glycolysis-TCA) / 3 advanced (oxidative phosphorylation
++ signalling enzymes + drug metabolism enzymology) / 3
+graduate (computational enzymology + enzyme engineering /
+directed evolution + metabolomics + flux analysis).
+
+**Pharm (PH-3.0)** — 5 beginner (what pharm is + drug
+names / classes + routes of administration + drug-receptor
+basics) / 4 intermediate (PK + PD + dose-response +
+DDIs) / 3 advanced (drug development pipeline + biologics
++ pharmacogenomics) / 3 graduate (computational drug
+discovery + RWE + RCTs + modern modalities).
+
+**Microbio (MB-3.0)** — 5 beginner (microbial diversity +
+bacterial cell architecture + microbial diversity by
+domain + identification methods) / 4 intermediate
+(antibiotic mechanisms + resistance + vaccines + virology)
+/ 3 advanced (microbiome + metagenomics + emerging /
+zoonotic infections + mycology / parasitology) / 3
+graduate (phage therapy + CRISPR + microbial molecular
+biology + AMR epidemiology + stewardship).
+
+**Botany (BT-3.0)** — 5 beginner (what botany is + plant
+cell architecture + tissues / organs + life cycles) / 4
+intermediate (photosynthesis + water / nutrient transport
++ phytohormones + plant defence) / 3 advanced (evolution
+of land plants + biotechnology + crop improvement +
+secondary metabolism) / 3 graduate (climate-change
+biology + single-cell / spatial transcriptomics +
+synthetic biology + plant engineering).
+
+**Animal Biology (AB-3.0)** — 4 beginner additions (what
+animal biology is + body plans + tissue / organ overview
++ how animals develop) / 4 intermediate (comparative
+physiology + nervous systems / neuroscience + endocrinology
++ immunology) / 3 advanced (animal evolution + phylogenetics
++ behaviour / ethology + conservation biology) / 3
+graduate (comparative genomics + neuroscience frontiers +
+animal biotech + One Health) — preserved AB-1.0
+welcome + platform-retrospective.
+
+### Pattern observations
+
+What worked:
+- **The 6-step template** — each round followed the same
+  workflow: write all lessons → update curriculum.py →
+  create test file → run full suite → update README +
+  PROJECT_STATUS + SESSION_LOG → schedule next wakeup.
+  Highly repeatable.
+- **The OrgChem-tutorial-style template** — every lesson:
+  hook paragraph + 3-7 sections + tables / examples +
+  "Cross-link" pointers to other siblings + "Try it in
+  the app" final section + "Next:" pointer to the
+  upcoming lesson.  Reading order: prereq lessons cited
+  by future lessons; later lessons reference earlier
+  ones explicitly.
+- **6 standardised tests per round** —
+  (1) total ≥ 12 lessons, (2) all 4 tiers populated,
+  (3) every lesson path exists, (4) every lesson title
+  non-empty, (5) every lesson loads + has > 100 chars,
+  (6) every lesson references a sibling-specific
+  keyword.  Cheap + high-signal.
+- **Cross-referencing the planned GM-1.0 sibling** —
+  several lessons in MB-3.0 + BT-3.0 + AB-3.0
+  explicitly mention "the upcoming Genetics + Molecular
+  Biology Studio will deepen technique-level coverage of
+  X" — primes future readers + maintains coherence
+  across the build chain.
+- **Average lesson size 200-400 lines** — long enough
+  for substantive content, short enough to remain
+  focused.  Largest lessons (~ 400 lines) typically
+  cover dense modern domains (PROTACs, CRISPR
+  diagnostics, drug-development pipeline).
+- **Per-round timing** — each round writing + testing +
+  doc updates fits comfortably in a single autonomous
+  cycle (2-min wakeup).
+
+What surprised:
+- **Cross-sibling cross-references** densified
+  organically.  By round 4-5, most new lessons were
+  citing 2-3 sibling studios per topic (e.g. AB-3.0
+  immunology cited MB-1.0 microbes, PH-1.0 drugs, BT-3.0
+  plant defence).  The platform's knowledge-graph
+  density grew faster than expected.
+- **Animal biology** (AB-3.0) had the most content
+  density per topic — neuroscience, immunology,
+  genomics, behaviour, conservation each could
+  comfortably fill multi-lesson sub-curricula.
+- **Cellbio + Pharm + Microbio + Animal** lessons
+  trended longer than Biochem + Botany — pharmacology
+  + immunology + neuroscience + organism diversity all
+  carry dense + clinically-relevant content.
+
+### Test count growth
+
+Started -3 chain at **2 736 passing** (post-AB-2.0).
+Ended at **2 773 passing**.  Net **+37 tests** across
+6 rounds, all gating tutorial scaffolding.  Zero
+regressions in any of the 6 rounds.
+
+### Cross-references to GM-1.0
+
+Several -3 chain lessons explicitly anticipate
+**Genetics + Molecular Biology Studio (GM-1.0,
+task #86)**:
+- **MB-3.0 advanced microbiome** — references upcoming
+  GM coverage of 16S sequencing + shotgun metagenomics
+  + metatranscriptomics protocols.
+- **MB-3.0 graduate CRISPR** — references upcoming GM
+  coverage of CRISPR delivery methods + genome
+  editing techniques.
+- **BT-3.0 advanced biotechnology** — references
+  upcoming GM coverage of *Agrobacterium*
+  transformation + particle bombardment + RNP delivery.
+- **BT-3.0 graduate single-cell + spatial** —
+  references upcoming GM coverage of single-cell +
+  spatial sequencing techniques.
+- **BT-3.0 graduate synthetic biology** — references
+  GM cell-free + organoid + transformation methods.
+- **AB-3.0 graduate comparative genomics** — references
+  upcoming GM coverage of NGS + ancient DNA + pan-
+  genome assembly + single-cell genomics.
+- **AB-3.0 graduate neuroscience frontiers** —
+  references upcoming GM coverage of optogenetics
+  + voltage indicators + connectomic-EM workflows.
+- **AB-3.0 graduate animal biotech** — references
+  upcoming GM coverage of CRISPR + base / prime
+  editing + transgenic methods.
+
+These forward-references give the GM-1.0 sibling
+ready hooks to integrate with — the techniques
+catalogue can pick up + deepen what the -3 chain
+introduced descriptively.
+
+### What's next
+
+- **GM-1.0 (round 230)** — Genetics + Molecular Biology
+  Studio v0.1.  Sibling package #7.  Molecular-
+  biology-techniques catalogue (~ 30-40 entries:
+  PCR / Sanger / NGS / cloning / CRISPR / blots /
+  in-situ / chromatin / scRNA-seq / spatial / proteomics
+  / interactions / structure / epigenetics).  Same
+  -1-style build pattern as CB-1.0 → AB-1.0.  Test
+  count target ~ 2 800-2 820 passing.  Wakeup
+  scheduled.
+
+- **Future deeper-phase chains** — likely a -2-extension
+  chain (one new catalogue per existing sibling, like
+  rounds 218-223 added) + a -4 chain
+  (~ 150 tutorial lessons per sibling, dwarfing the -3
+  chain).  Picked manually by the user as priorities
+  shift.
+
+The -3 chain has tripled the platform's tutorial content
++ established a clean cross-sibling knowledge-graph
+substrate for future expansion.
+
+---
+
+## 2026-04-26 — Round 228 (Phase BT-3.0: Botany tutorial expansion)
+
+**Wakeup-driven build — round 5 of 6 in the -3 tutorial-
+expansion chain.**  CB + BC + PH + MB done; BT-3.0 ships
+12 new botany lessons (curriculum grows 1 → 13).  Test
+count **2 760 → 2 766** (+6 new tutorial tests, zero
+regressions).
+
+| Lesson | Tier | Topic |
+|--------|------|-------|
+| What botany is | beginner | plant scope, why plants matter, evolutionary history, model plants |
+| Plant cell architecture | beginner | cellulose + hemicellulose + pectin + lignin walls, plastid family, vacuole, plasmodesmata, peroxisomes, AOX |
+| Plant tissues + organs | beginner | apical / lateral / intercalary meristems, dermal / ground / vascular tissues, stomata, root + stem + leaf |
+| Plant life cycles + reproduction | beginner | alternation of generations across bryo / fern / gymno / angio, ABC model, pollination syndromes, double fertilisation, fruits, vegetative repro |
+| Photosynthesis | intermediate | Z-scheme, PSII OEC + PSI Fd, cyclic vs linear, Calvin cycle, photorespiration salvage, C3 / C4 / CAM, NPQ, C4 Rice Project |
+| Plant water + nutrient transport | intermediate | water potential Ψ, cavitation, macro / micronutrients, Casparian strip, AM + ECM, N-fixing nodule signalling, Münch flow + sources/sinks, stomatal regulation |
+| Phytohormones in depth | intermediate | TIR1 / GID1 / PYR-PP2C-SnRK2 / ETR1 / BRI1 / COI1 / NPR1 / D14 + 10-hormone overview, applications, hormone crosstalk |
+| Plant defence | intermediate | constitutive (cuticle + thorns + secondary metabolites + cyanogenic glycosides + glucosinolates) + induced (PTI + ETI + R-genes + HR + SAR + ISR), JA / SA antagonism, RNA silencing |
+| Evolution of land plants | advanced | streptophyte ancestor → bryophyte / lyco / monilo / gymno / angio, key innovations table, polyploidy, convergent evolution, future plant evolution |
+| Plant biotechnology + crop improvement | advanced | domestication syndrome, Mendel → Green Revolution → MAS → GS → transgenic (Bt + Roundup-Ready + Golden Rice) → CRISPR-edited crops → cisgenic / intragenic frameworks |
+| Plant secondary metabolism | advanced | alkaloids + terpenoids + phenylpropanoids + cyanogenic glycosides + glucosinolates + saponins + cardiac glycosides + microbial heterologous production (artemisinin in yeast, opioids, cannabinoids) |
+| Plant climate-change biology | graduate | CO2 fertilisation, C4 vs C3 in warming, drought + stomatal regulation, heat / drought / cold / salt / flood stress, phenology, forest carbon sink, sequestration potential, biodiversity loss |
+| Plant single-cell + spatial transcriptomics | graduate | protoplast vs nuclei scRNA-seq, Visium + Slide-seq + MERFISH + Stereo-seq, root + SAM + vascular + reproductive cell-type atlases, multi-modal integration |
+| Synthetic biology + plant engineering | graduate | photosynthesis enhancement (RIPE), N-fixation transfer, chloroplast engineering, plant pharming (Elelyso + ZMapp + Covifenz), CRISPR multiplex + de novo domestication, regulatory landscape |
+
+Each lesson follows the OrgChem-tutorial template: hook +
+3-7 sections + "Try it in the app" + "Next:" pointer.
+Cross-references to existing BT-1.0 + BT-2.0 + BC-1.0 +
+CB-1.0 + Animal-Biology + OrgChem entries throughout.
+Several lessons explicitly reference the planned
+**Genetics + Molecular Biology Studio** sibling for
+upcoming molecular-technique deep-dives (single-cell
++ spatial sequencing, CRISPR delivery + plant
+transformation, transgenic + cisgenic methods).
+
+**Test scaffolding.**  `tests/test_botany_tutorial_
+expansion.py` — 6 tests covering: ≥ 12 lessons total, all
+4 tiers populated, every lesson path exists, every lesson
+has a title, every lesson loads via the loader + has
+substantive content (> 100 chars), every lesson references
+a botany keyword (plant / leaf / root / photosynthesis /
+chlorophyll / hormone / flower / seed / pollination /
+ecosystem / chloroplast / stem).
+
+**-3 chain progress: 5 of 6.**  Cell Bio + Biochem + Pharm
++ Microbio + Botany done; only Animal Biology (AB-3.0)
+remains.  Average expansion: 12-13 new lessons per round,
+6 new tests per round, 200-400 lines per lesson.
+
+**Next: AB-3.0 (Animal Biology tutorial expansion) wakeup
+scheduled — CLOSES the -3 chain.**  After AB-3.0 ships,
+the chain retrospective will be written + GM-1.0
+(Genetics + Molecular Biology Studio v0.1, task #86) will
+fire as a separate wakeup.
+
+---
+
+## 2026-04-26 — Round 227 (Phase MB-3.0: Microbio tutorial expansion)
+
+**Wakeup-driven build — round 4 of 6 in the -3 tutorial-
+expansion chain.**  CB-3.0 + BC-3.0 + PH-3.0 done; MB-3.0
+ships 12 new microbio lessons (curriculum grows 1 → 13).
+Test count **2 754 → 2 760** (+6 new tutorial tests, zero
+regressions).
+
+| Lesson | Tier | Topic |
+|--------|------|-------|
+| What microbiology is | beginner | 5 microbial classes, size scales, history (Leeuwenhoek → Doudna), modern toolkit |
+| Bacterial cell architecture | beginner | Gram divide, peptidoglycan synthesis + drug targets, mycomembrane, capsule, flagella, pili, endospores, biofilms |
+| Microbial diversity | beginner | 3 domains + Asgard + eocyte hypothesis, bacterial / archaeal / fungal / protist phyla, helminths, virus diversity, extremophiles |
+| How we identify microbes | beginner | Gram + special stains + culture + biochemistry + MALDI-TOF + molecular (FilmArray + GeneXpert + 16S + WGS + mNGS) + AST methods |
+| Antibiotic mechanisms + classes | intermediate | β-lactams + glycopeptides + polypeptides; aminoglycosides + tetracyclines + macrolides + oxazolidinones; FQs + rifamycins + nitroimidazoles; sulfas; polymyxins + daptomycin |
+| Antibiotic resistance | intermediate | enzymatic + target mod + efflux + reduced uptake; ESKAPE; CRE / MRSA / VRE / VRSA / NDM; mcr-1; HGT; ESKAPE drug arsenal (cefiderocol / sulbactam-durlobactam / ceftaz-avi / etc.) |
+| Vaccines | intermediate | every platform (live att / inactivated / subunit / conjugate / toxoid / viral vector / mRNA / DNA) + adjuvants + schedule + herd-immunity thresholds + cold chain + safety surveillance + COVID-19 platform impact |
+| Virology essentials | intermediate | Baltimore I-VII, generic life cycle, receptor / tropism, lytic vs latent, antiviral classes (NRTI / NNRTI / PI / INSTI / NS5A / fusion / NA / cap-snatching / capsid), pathogen tour |
+| Microbiome + metagenomics | advanced | 16S vs shotgun vs metatranscriptomics + metabolomics; gut + skin + oral + vaginal + lung + virome; FMT + LBPs (Rebyota + Vowst); causal inference; industry |
+| Emerging + zoonotic infections | advanced | filo + corona + henipa + arena + hanta + bunya + flavi + paramyxo + mpox + avian flu + plague; One Health; WHO blueprint; CEPI 100-day; Pandemic Treaty + IHR |
+| Mycology + parasitology | advanced | superficial + endemic dimorphic + opportunistic Candida auris + Aspergillus + Cryptococcus + PJP + mucor; antifungal classes (polyenes + azoles + echinocandins + allylamines); malaria + Leishmania + Trypanosoma + Toxoplasma + helminths; NTDs + MDA programmes |
+| Phage therapy + bacteriophage biology | graduate | phage diversity + lytic vs lysogenic; Patterson UCSD case + Belgium personalised programme; Locus + Adaptive + Armata pipelines; endolysins; phage-antibiotic synergy; phage display + PACE |
+| CRISPR + microbial molecular biology | graduate | adaptive-immunity origin + 6 types; Cas9 / 12 / 13 / 12f; base editors + prime editors; anti-CRISPRs; Casgevy + Verve + Beam + Intellia + Prime Medicine + Editas; SHERLOCK + DETECTR diagnostics; restriction-modification + Abi + DISARM + BREX; bacterial genetics + cloning roots |
+| AMR epidemiology + stewardship | graduate | Lancet 2022 1.27M deaths + O'Neill 10M / yr by 2050; WHO BPPL + GLASS + EARS-Net + ResistanceMap; drug-development gap; push-pull MERs (UK NICE + PASTEUR Act); CARB-X + GARDP; ASP core elements + IPC + diagnostic stewardship; vaccine impact + One Health Quadripartite |
+
+Each lesson follows the OrgChem-tutorial template: hook +
+3-7 sections + "Try it in the app" + "Next:" pointer.
+Cross-references to existing MB-1.0 + MB-2.0 + PH-1.0 +
+BC-1.0 + CB-1.0 catalogue entries throughout.  Several
+lessons explicitly reference the planned **Genetics +
+Molecular Biology Studio** sibling for upcoming molecular-
+technique deep-dives.  Lessons 200-400 lines each.
+
+**Test scaffolding.**  `tests/test_microbio_tutorial_
+expansion.py` — 6 tests covering: ≥ 12 lessons total, all
+4 tiers populated, every lesson path exists, every lesson
+has a title, every lesson loads via the loader + has
+substantive content (> 100 chars), every lesson references
+a microbio keyword (bacteria / virus / fungus / antibiotic
+/ infection / microbe / pathogen / immunity / resistance /
+microbiome / phage / antimicrobial).
+
+**-3 chain progress: 4 of 6.**  Cell Bio + Biochem + Pharm
++ Microbio done; Botany + Animal Biology queued.  Average
+expansion: 12-13 new lessons per round, 6 new tests per
+round, 200-400 lines per lesson.
+
+**Next: BT-3.0 (Botany tutorial expansion) wakeup
+scheduled.**  AB-3.0 wakeup will then mention the GM-1.0
+follow-on (task #86).
+
+---
+
 ## 2026-04-26 — Round 226 (Phase PH-3.0: Pharm tutorial expansion + 7th-sibling request)
 
 **Wakeup-driven build — round 3 of 6 in the -3 tutorial-

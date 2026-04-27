@@ -334,6 +334,31 @@ _CATEGORY_SUMMARIES: Dict[str, str] = {
                    "Bio signalling-pathway ids (developmental, "
                    "apoptosis, immune) + Biochem enzyme ids "
                    "(animal-source enzymes).",
+    # Phase GM-1.0 — Genetics + Molecular Biology Studio
+    # sibling (round 230) — seventh sibling, post -3 chain.
+    "genetics-techniques": "Molecular-biology-techniques "
+                           "catalogue (Genetics + Molecular "
+                           "Biology Studio) — 40 entries "
+                           "spanning all 14 categories (PCR "
+                           "/ sequencing / cloning / CRISPR "
+                           "/ blots / in-situ hybridisation "
+                           "/ chromatin profiling / "
+                           "transcriptomics / spatial "
+                           "transcriptomics / proteomics / "
+                           "interactions / structural + "
+                           "3D-genome / epigenetics / "
+                           "delivery).  Each entry: "
+                           "principle, sample types, "
+                           "throughput, key reagents, "
+                           "typical readouts, limitations, "
+                           "representative platforms, year "
+                           "of introduction, key references, "
+                           "and 5-way typed cross-references "
+                           "to BC-1.0 enzymes + CB-2.0 "
+                           "cell-cycle ids + CB-1.0 "
+                           "signalling pathways + AB-1.0 "
+                           "animal-taxon ids + OrgChem "
+                           "molecule names.",
 }
 
 

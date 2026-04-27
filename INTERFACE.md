@@ -3,21 +3,25 @@
 Read this file FIRST before opening any source file. It is the navigation map
 for the project. Update it whenever the module layout changes.
 
-> **All 6 sibling studios shipped — Phase CB-1.0 → AB-1.0
-> (rounds 212-217, 2026-04-26)**.  The 6-studio life-sciences
-> platform is complete.  Six sibling packages live alongside
-> `orgchem/`:
+> **All 7 sibling studios shipped — Phase CB-1.0 → AB-1.0 →
+> GM-1.0 (rounds 212-217 + 230, 2026-04-26 → 2026-04-27)**.
+> The 7-studio life-sciences platform.  Seven sibling
+> packages live alongside `orgchem/`:
 > **Cell Biology Studio** (`cellbio/`, CB-1.0, Ctrl+Shift+B),
 > **Biochem Studio** (`biochem/`, BC-1.0, Ctrl+Shift+Y),
 > **Pharmacology Studio** (`pharm/`, PH-1.0, Ctrl+Shift+H),
 > **Microbiology Studio** (`microbio/`, MB-1.0, Ctrl+Shift+N),
-> **Botany Studio** (`botany/`, BT-1.0, Ctrl+Shift+V), and
-> **Animal Biology Studio** (`animal/`, AB-1.0, Ctrl+Shift+X).
-> Each ships its own `INTERFACE.md`. Every sibling shares
-> OrgChem's bus, agent registry, SQLite DB, and global
-> glossary; each opens from the OrgChem *Window* menu.  See
+> **Botany Studio** (`botany/`, BT-1.0, Ctrl+Shift+V),
+> **Animal Biology Studio** (`animal/`, AB-1.0, Ctrl+Shift+X),
+> and **Genetics + Molecular Biology Studio**
+> (`genetics/`, GM-1.0, Ctrl+Alt+G — seventh sibling, post
+> -3 chain).  Each ships its own `INTERFACE.md`. Every
+> sibling shares OrgChem's bus, agent registry, SQLite DB,
+> and global glossary; each opens from the OrgChem *Window*
+> menu.  See
 > `animal/tutorial/content/beginner/02_platform_retrospective.md`
-> for the full retrospective.
+> for the original 6-sibling retrospective + the SESSION_LOG.md
+> round-230 entry for the GM-1.0 7th-sibling addition.
 
 ## Top-level
 
@@ -30,7 +34,8 @@ for the project. Update it whenever the module layout changes.
 | `pharm/`            | Sibling life-sciences package (Phase PH-1.0 drug classes + PH-2.0 receptor pharmacology catalogues). See `pharm/INTERFACE.md`. |
 | `microbio/`         | Sibling life-sciences package (Phase MB-1.0 microbes + MB-2.0 virulence-factors catalogues). See `microbio/INTERFACE.md`. |
 | `botany/`           | Sibling life-sciences package (Phase BT-1.0 plant-taxa + BT-2.0 plant-hormones catalogues). See `botany/INTERFACE.md`. |
-| `animal/`           | Sibling life-sciences package (Phase AB-1.0 animal-taxa + AB-2.0 organ-systems catalogues — sixth + final sibling). See `animal/INTERFACE.md`. |
+| `animal/`           | Sibling life-sciences package (Phase AB-1.0 animal-taxa + AB-2.0 organ-systems catalogues — sixth sibling of the original 6-studio platform). See `animal/INTERFACE.md`. |
+| `genetics/`         | Sibling life-sciences package (Phase GM-1.0 molecular-biology-techniques catalogue — seventh sibling, post -3 chain). See `genetics/INTERFACE.md`. |
 | `data/`             | Bundled static data (optional seeds, tutorial assets). |
 | `tests/`            | pytest suite. |
 | `refs/`             | Reference papers (e.g. Verma et al. 2024 whose formula calculator we reimplement). |

@@ -192,6 +192,15 @@ EXPECTED_SURFACES: Tuple[SurfaceSpec, ...] = (
                 list_action="list_organ_systems",
                 get_action="get_organ_system",
                 find_action="find_organ_systems"),
+    # Phase GM-1.0 — Genetics + Molecular Biology Studio
+    # sibling (seventh, post -3 chain).  40-entry molecular-
+    # biology-techniques catalogue across 14 categories.
+    SurfaceSpec("Molecular-biology techniques "
+                "(Genetics + Molecular Biology Studio)",
+                "open_genetics_studio",
+                list_action="list_genetics_techniques",
+                get_action="get_genetics_technique",
+                find_action="find_genetics_techniques"),
 )
 
 
