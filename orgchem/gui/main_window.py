@@ -129,6 +129,21 @@ class MainWindow(QMainWindow):
         self.nucleic_acids = NucleicAcidsPanel()
         self._macromolecules_window: Optional[QMainWindow] = None
         self._biochemistry_by_kingdom_window: Optional[QMainWindow] = None
+        # Cell Bio Studio (Phase CB-1.0) — sibling life-sciences
+        # studio.  Lazily constructed on first menu click; cached
+        # so subsequent clicks raise / focus instead of rebuilding.
+        self._cellbio_window: Optional[QMainWindow] = None
+        # Biochem Studio (Phase BC-1.0) — second sibling.
+        self._biochem_window: Optional[QMainWindow] = None
+        # Pharmacology Studio (Phase PH-1.0) — third sibling.
+        self._pharm_window: Optional[QMainWindow] = None
+        # Microbiology Studio (Phase MB-1.0) — fourth sibling.
+        self._microbio_window: Optional[QMainWindow] = None
+        # Botany Studio (Phase BT-1.0) — fifth sibling.
+        self._botany_window: Optional[QMainWindow] = None
+        # Animal Biology Studio (Phase AB-1.0) — sixth + final
+        # sibling.  Completes the 6-studio life-sciences platform.
+        self._animal_window: Optional[QMainWindow] = None
 
         self.setCentralWidget(self.tabs)
 
@@ -500,6 +515,82 @@ class MainWindow(QMainWindow):
         a_kingdom.triggered.connect(
             self.open_biochemistry_by_kingdom_window)
         m_window.addAction(a_kingdom)
+        a_cellbio = QAction("Cell Biology Studio…", self)
+        a_cellbio.setShortcut(QKeySequence("Ctrl+Shift+B"))
+        a_cellbio.setToolTip(
+            "Open Cell Biology Studio — sibling life-sciences "
+            "studio sharing this app's process, agent registry, "
+            "and database.  Phase CB-1.0 ships a 25-pathway "
+            "signalling catalogue + starter tutorial."
+        )
+        a_cellbio.triggered.connect(self.open_cellbio_studio_window)
+        m_window.addAction(a_cellbio)
+        a_biochem = QAction("Biochem Studio…", self)
+        a_biochem.setShortcut(QKeySequence("Ctrl+Shift+Y"))
+        a_biochem.setToolTip(
+            "Open Biochemistry Studio — second sibling life-"
+            "sciences studio (Phase BC-1.0).  Ships a 30-"
+            "enzyme EC-class catalogue + a read-only bridge "
+            "panel to OrgChem's metabolic-pathways data."
+        )
+        a_biochem.triggered.connect(
+            self.open_biochem_studio_window)
+        m_window.addAction(a_biochem)
+        a_pharm = QAction("Pharmacology Studio…", self)
+        a_pharm.setShortcut(QKeySequence("Ctrl+Shift+H"))
+        a_pharm.setToolTip(
+            "Open Pharmacology Studio — third sibling life-"
+            "sciences studio (Phase PH-1.0).  Ships a 30-"
+            "drug-class catalogue + multi-hop bridge panels "
+            "to Biochem enzymes + Cell Bio signalling."
+        )
+        a_pharm.triggered.connect(
+            self.open_pharm_studio_window)
+        m_window.addAction(a_pharm)
+        a_microbio = QAction("Microbiology Studio…", self)
+        a_microbio.setShortcut(QKeySequence("Ctrl+Shift+N"))
+        a_microbio.setToolTip(
+            "Open Microbiology Studio — fourth sibling life-"
+            "sciences studio (Phase MB-1.0).  Ships a 30-"
+            "microbe catalogue across the 5 microbial kingdoms "
+            "+ a read-only bridge panel into pharm.core."
+            "drug_classes filtered to the 6 antimicrobial "
+            "classes."
+        )
+        a_microbio.triggered.connect(
+            self.open_microbio_studio_window)
+        m_window.addAction(a_microbio)
+        a_botany = QAction("Botany Studio…", self)
+        a_botany.setShortcut(QKeySequence("Ctrl+Shift+V"))
+        a_botany.setToolTip(
+            "Open Botany Studio — fifth sibling life-sciences "
+            "studio (Phase BT-1.0).  Ships a 30-plant-taxon "
+            "catalogue spanning all 6 major plant divisions + "
+            "a live DB-read bridge into orgchem.db.Molecule "
+            "filtered to plant-derived natural products + a "
+            "starter tutorial.  Plant entries carry typed "
+            "cross-references into orgchem molecules + "
+            "metabolic pathways + pharm drug classes."
+        )
+        a_botany.triggered.connect(
+            self.open_botany_studio_window)
+        m_window.addAction(a_botany)
+        a_animal = QAction("Animal Biology Studio…", self)
+        a_animal.setShortcut(QKeySequence("Ctrl+Shift+X"))
+        a_animal.setToolTip(
+            "Open Animal Biology Studio — sixth + FINAL sibling "
+            "life-sciences studio (Phase AB-1.0).  Completes the "
+            "6-studio platform.  Ships a 30-animal-taxon "
+            "catalogue spanning all 9 major animal phyla "
+            "(porifera → chordata) + a Cell-signalling-bridge "
+            "panel into cellbio.core.cell_signaling filtered to "
+            "developmental + apoptosis + immune pathways + a "
+            "starter Welcome lesson + a platform retrospective "
+            "documenting the entire 6-sibling build chain."
+        )
+        a_animal.triggered.connect(
+            self.open_animal_studio_window)
+        m_window.addAction(a_animal)
 
         m_tutor = mb.addMenu("T&utor")
         a_focus_tutor = QAction("Open chat console", self)
@@ -584,6 +675,175 @@ class MainWindow(QMainWindow):
                 panels, parent=self,
             )
         win = self._macromolecules_window
+        if tab_label:
+            win.switch_to(tab_label)
+        win.show()
+        win.raise_()
+        win.activateWindow()
+        return win
+
+    def open_cellbio_studio_window(
+        self, tab_label: Optional[str] = None,
+    ):
+        """Show (and raise) the Cell Biology Studio window.
+        Lazily constructs on first call.  Optional ``tab_label``
+        focuses one of Cell Bio's inner tabs (``"Signalling"`` /
+        ``"Tutorials"``).  Returns the window so callers + agent
+        actions can introspect it.
+
+        Phase CB-1.0 — first slice of the multi-studio life-
+        sciences platform.  Cell Bio Studio is a sibling to
+        OrgChem Studio sharing this app's process, agent
+        registry, and database.
+        """
+        from cellbio.gui.windows.cellbio_main_window import (
+            CellBioMainWindow,
+        )
+        if self._cellbio_window is None:
+            self._cellbio_window = CellBioMainWindow(parent=self)
+        win = self._cellbio_window
+        if tab_label:
+            win.switch_to(tab_label)
+        win.show()
+        win.raise_()
+        win.activateWindow()
+        return win
+
+    def open_biochem_studio_window(
+        self, tab_label: Optional[str] = None,
+    ):
+        """Show (and raise) the Biochem Studio window. Lazily
+        constructs on first call.  Optional ``tab_label``
+        focuses one of Biochem's inner tabs (``"Enzymes"`` /
+        ``"Metabolic pathways"`` / ``"Tutorials"``).
+
+        Phase BC-1.0 — second sibling in the multi-studio
+        platform.  Notably, the *Metabolic pathways* tab
+        surfaces ``orgchem.core.metabolic_pathways`` read-only
+        — validates the cross-studio data-sharing pattern.
+        """
+        from biochem.gui.windows.biochem_main_window import (
+            BiochemMainWindow,
+        )
+        if self._biochem_window is None:
+            self._biochem_window = BiochemMainWindow(parent=self)
+        win = self._biochem_window
+        if tab_label:
+            win.switch_to(tab_label)
+        win.show()
+        win.raise_()
+        win.activateWindow()
+        return win
+
+    def open_pharm_studio_window(
+        self, tab_label: Optional[str] = None,
+    ):
+        """Show (and raise) the Pharmacology Studio window.
+        Lazily constructs on first call.  Optional ``tab_label``
+        focuses one of Pharm's inner tabs (``"Drug classes"`` /
+        ``"Bridges"`` / ``"Tutorials"``).
+
+        Phase PH-1.0 — third sibling.  Bridges tab surfaces
+        BOTH ``biochem.core.enzymes`` AND
+        ``cellbio.core.cell_signaling`` read-only — multi-hop
+        cross-studio data sharing.
+        """
+        from pharm.gui.windows.pharm_main_window import (
+            PharmMainWindow,
+        )
+        if self._pharm_window is None:
+            self._pharm_window = PharmMainWindow(parent=self)
+        win = self._pharm_window
+        if tab_label:
+            win.switch_to(tab_label)
+        win.show()
+        win.raise_()
+        win.activateWindow()
+        return win
+
+    def open_microbio_studio_window(
+        self, tab_label: Optional[str] = None,
+    ):
+        """Show (and raise) the Microbiology Studio window.
+        Lazily constructs on first call.  Optional ``tab_label``
+        focuses one of Microbio's inner tabs (``"Microbes"`` /
+        ``"Antibiotic spectrum"`` / ``"Tutorials"``).
+
+        Phase MB-1.0 — fourth sibling.  The Antibiotic-spectrum
+        tab surfaces ``pharm.core.drug_classes`` filtered to
+        the 6 antimicrobial classes — another multi-hop
+        cross-studio link.  Each microbe entry carries typed
+        cross-references into orgchem cell components + biochem
+        enzymes.
+        """
+        from microbio.gui.windows.microbio_main_window import (
+            MicrobioMainWindow,
+        )
+        if self._microbio_window is None:
+            self._microbio_window = MicrobioMainWindow(parent=self)
+        win = self._microbio_window
+        if tab_label:
+            win.switch_to(tab_label)
+        win.show()
+        win.raise_()
+        win.activateWindow()
+        return win
+
+    def open_botany_studio_window(
+        self, tab_label: Optional[str] = None,
+    ):
+        """Show (and raise) the Botany Studio window.  Lazily
+        constructs on first call.  Optional ``tab_label``
+        focuses one of Botany's inner tabs (``"Plant taxa"`` /
+        ``"Plant secondary metabolites"`` / ``"Tutorials"``).
+
+        Phase BT-1.0 — fifth sibling.  The Plant-secondary-
+        metabolites tab is the first sibling bridge that reads
+        the OrgChem SQLite molecule store directly (rather
+        than another sibling Python catalogue) — confirms the
+        cross-studio data-sharing pattern works for live DB
+        rows too.  Each plant entry carries typed cross-
+        references into orgchem molecules + metabolic pathways
+        + pharm drug classes.
+        """
+        from botany.gui.windows.botany_main_window import (
+            BotanyMainWindow,
+        )
+        if self._botany_window is None:
+            self._botany_window = BotanyMainWindow(parent=self)
+        win = self._botany_window
+        if tab_label:
+            win.switch_to(tab_label)
+        win.show()
+        win.raise_()
+        win.activateWindow()
+        return win
+
+    def open_animal_studio_window(
+        self, tab_label: Optional[str] = None,
+    ):
+        """Show (and raise) the Animal Biology Studio window.
+        Lazily constructs on first call.  Optional
+        ``tab_label`` focuses one of Animal's inner tabs
+        (``"Animal taxa"`` / ``"Cell signalling bridge"`` /
+        ``"Tutorials"``).
+
+        Phase AB-1.0 — sixth + final sibling.  Completes the
+        6-studio life-sciences platform.  AB-1.0's Cell-
+        signalling-bridge tab makes it the second sibling
+        whose bridge reads ``cellbio.core.cell_signaling``
+        directly (the first was Pharm) — confirms the cellbio
+        API is stable enough to support multiple consumers.
+        Each animal entry carries typed cross-references into
+        orgchem molecules + cellbio signalling pathways +
+        biochem enzymes.
+        """
+        from animal.gui.windows.animal_main_window import (
+            AnimalMainWindow,
+        )
+        if self._animal_window is None:
+            self._animal_window = AnimalMainWindow(parent=self)
+        win = self._animal_window
         if tab_label:
             win.switch_to(tab_label)
         win.show()

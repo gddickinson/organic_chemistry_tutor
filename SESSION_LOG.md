@@ -1,5 +1,999 @@
 # Session Log — OrgChem Studio
 
+## 2026-04-26 — Round 226 (Phase PH-3.0: Pharm tutorial expansion + 7th-sibling request)
+
+**Wakeup-driven build — round 3 of 6 in the -3 tutorial-
+expansion chain.**  CB-3.0 + BC-3.0 done; PH-3.0 ships
+12 new pharm lessons (curriculum grows 1 → 13).  Test
+count **2 748 → 2 754** (+6 new tutorial tests, zero
+regressions).
+
+| Lesson | Tier | Topic |
+|--------|------|-------|
+| What pharmacology is | beginner | Paracelsus dose-poison, PK vs PD, receptor concept (Langley + Ehrlich), ~1 500 human drug targets |
+| Drug names + classes | beginner | chemical / generic / brand / INN, USAN, ATC codes, INN stems (-mab, -tinib, -prazole, -sartan, ...), generic vs biosimilar |
+| Routes of administration | beginner | PO / IV / IM / SC / SL / inhaled / topical / transdermal / rectal / intrathecal; bioavailability F + first-pass + BBB |
+| Drug-receptor basics | beginner | full / partial agonist, antagonist (competitive vs non-competitive), inverse agonist, allosteric modulators (PAM / NAM / SAM), affinity vs efficacy vs potency |
+| Pharmacokinetics | intermediate | ADME, Vd, CL, t1/2 = 0.693·Vd/CL, one-compartment model, hepatic + renal clearance, loading / maintenance dose, special populations |
+| Pharmacodynamics | intermediate | Emax model + Hill, full vs partial agonism, occupancy theory + receptor reserve, Schild analysis, biased agonism, therapeutic index |
+| Dose-response in practice | intermediate | quantal vs graded, TI, Schild pK_B, operational model (Black + Leff), titration philosophy, population PK + Bayesian dosing, isobolograms |
+| Drug-drug interactions | intermediate | PK (absorption / distribution / metabolism / excretion stages) + PD interactions, CYP DDIs, MBI vs induction, classic DDIs, FDA tables |
+| Drug development pipeline | advanced | target ID → hit → lead → IND → P1/2/3 → NDA, attrition (~10% IND→approval), Tufts $2.6B, modalities expansion |
+| Biologics | advanced | mAbs + Fc engineering + ADCs + fusion proteins + bispecifics + biosimilars, manufacturing in CHO, immunogenicity |
+| Pharmacogenomics | advanced | CYP2D6 / CYP2C9 / CYP2C19 / TPMT / DPYD / HLA-B*57:01 / *15:02 / SLCO1B1, CPIC guidelines, pre-emptive vs reactive testing |
+| Computational drug discovery | graduate | SBDD + docking + virtual screening + FEP+ + ML/QSAR + generative chemistry + AlphaFold + cryptic pockets + ADMET |
+| Real-world evidence + RCTs | graduate | RCT designs, ITT, multiplicity, Bayesian methods, RWE sources, causal inference (propensity / IV / target trial emulation), FDA Sentinel, pragmatic vs explanatory |
+| Modern modalities | graduate | PROTACs / molecular glues, mRNA + LNP + saRNA, AAV gene therapy, CAR-T + allogeneic cell therapies, base + prime editors, ASOs + siRNAs |
+
+Each lesson follows the OrgChem-tutorial template: hook +
+3-7 sections + "Try it in the app" + "Next:" pointer.
+Cross-references to existing PH-1.0 + PH-2.0 + BC-1.0 +
+BC-2.0 + BC-3.0 + CB-1.0 catalogue + signalling entries
+throughout.  Lessons 200-400 lines each — pharm content
+is naturally long-form.
+
+**Test scaffolding.**  `tests/test_pharm_tutorial_
+expansion.py` — 6 tests covering: ≥ 12 lessons total, all
+4 tiers populated, every lesson path exists, every lesson
+has a title, every lesson loads via the loader + has
+substantive content (> 100 chars), every lesson references
+a pharm keyword (drug / receptor / agonist / kinetics /
+target / dose / clearance / metabolism / half-life /
+pharmacology).
+
+**-3 chain progress: 3 of 6.**  Cell Bio + Biochem +
+Pharm done; Microbio + Botany + Animal Biology queued.
+
+**User mid-round request: a 7th sibling — Genetics +
+Molecular Biology Studio.**  Mid-round, the user noted
+that the platform should include a Genetics + Molecular
+Biology sibling.  This is a new -1-round-equivalent
+build (~ 1 round to ship a starter-catalogue + main
+window + bridge panel + tests, comparable to AB-1.0's
+~ 48 new tests).  Plan: complete the current -3 chain
+first (3 more rounds — MB-3.0, BT-3.0, AB-3.0), then
+queue a **GM-1.0 (Genetics + Molecular Biology Studio
+v0.1)** as the first round of a new "-1-extension"
+phase.  GM-1.0 will share the established sibling-package
+pattern: starter catalogue (probably gene families +
+chromosomes + classical Mendelian disorders OR
+techniques: PCR / sequencing / CRISPR / cloning),
+typed cross-references to Cell Bio (signalling /
+chromatin / cell cycle), Biochem (enzymes), and Animal
+Biology (model organisms).  Tracked as a new task to
+fire after AB-3.0 (round 229) ships.
+
+**Next: MB-3.0 (Microbio tutorial expansion) wakeup
+scheduled.**
+
+---
+
+## 2026-04-26 — Round 225 (Phase BC-3.0: Biochem tutorial expansion)
+
+**Wakeup-driven build — round 2 of 6 in the -3 tutorial-
+expansion chain.**  CB-3.0 done last round; BC-3.0 ships
+14 new biochem lessons (curriculum grows 1 → 14).  Test
+count **2 742 → 2 748** (+6 new tutorial tests, zero
+regressions).
+
+| Lesson | Tier | Topic |
+|--------|------|-------|
+| What biochemistry is | beginner | chemistry of life, four molecular currencies, central dogma, thermodynamic constraint |
+| Amino acids + proteins | beginner | 20 standard AAs by class, peptide bond, primary→quaternary, Anfinsen + chaperones |
+| Enzymes — basics | beginner | catalysis = ΔG‡ lowering, active sites, catalytic strategies, EC classification (7 classes) |
+| Cofactors overview | beginner | nicotinamide / flavin / CoA / SAM / ATP / vitamins / metals / quinones, B-vitamin connection |
+| Enzyme kinetics — Michaelis-Menten | intermediate | derivation, V_max + K_m, k_cat / K_m kinetic perfection, multi-substrate, allosteric departures |
+| Enzyme inhibition | intermediate | competitive / non-competitive / uncompetitive / mixed / irreversible / slow-binding / mechanism-based + drug examples |
+| Allostery + cooperativity | intermediate | hemoglobin O_2 binding, Hill, MWC vs KNF, allosteric drugs (BZDs, cinacalcet, maraviroc) |
+| Glycolysis + the TCA cycle | intermediate | 10 glycolysis steps, PDH, 8 TCA steps, full glucose ATP ledger (~30-32), Warburg + IDH-mutant cancers |
+| Oxidative phosphorylation + chemiosmosis | advanced | 4 ETC complexes, F1F0-ATP synthase, Mitchell 1961 chemiosmotic theory, modern ATP yield, uncouplers + DNP + UCP1, mitochondrial diseases |
+| Signalling-related enzymes | advanced | kinome bilobal fold, PKA + RTKs, kinase inhibitor drug class (> 80 FDA), phosphatases, ATPases (Na/K, SERCA, V-ATPase, ABC) |
+| Drug metabolism enzymology | advanced | Phase I CYPs (3A4 / 2D6 / 2C9 / 2C19 / 1A2 / 2E1), Phase II UGT/SULT/GST/NAT/TPMT, Phase III efflux, DDIs + pharmacogenomics + bioactivation toxicity |
+| Computational enzymology | graduate | QM/MM, transition-state theory, electrostatic preorganisation (Warshel), Karplus/Levitt/Warshel 2013 Nobel, FEP+ binding, ML enters |
+| Enzyme engineering + directed evolution | graduate | Arnold 2018 Nobel, library construction + screening, P450 carbene/nitrene chemistry, Codexis sitagliptin, ML-guided MLDE, RFdiffusion |
+| Metabolomics + flux analysis | graduate | LC/GC/CE/NMR platforms, ¹³C-MFA + INST-MFA + FBA, oncometabolites (2-HG, succinate, fumarate), ivosidenib + enasidenib, IEM newborn screening |
+
+Each lesson follows the OrgChem-tutorial template: hook +
+3-7 sections + "Try it in the app" + "Next:" pointer.
+Cross-references to existing BC-1.0 enzymes + BC-2.0
+cofactors + Phase-42a metabolic pathways + sibling-studio
+entries throughout.  Lessons are 150-300 lines each — most
+are longer than CB-3.0 lessons because biochem is more
+content-rich at the catalogue + drug-target level.
+
+**Test scaffolding.**  `tests/test_biochem_tutorial_
+expansion.py` — 6 tests covering: ≥ 12 lessons total, all
+4 tiers populated, every lesson path exists, every lesson
+has a title, every lesson loads via the loader + has
+substantive content (> 100 chars), every lesson references
+a biochem keyword (enzyme / protein / metabolism /
+catalysis / substrate / cofactor / kinase / atp /
+amino acid / active site).
+
+**-3 chain progress: 2 of 6.**  CB-3.0 (round 224) +
+BC-3.0 (round 225) done.  PH-3.0 / MB-3.0 / BT-3.0 /
+AB-3.0 queued.  Cell Bio added 12 new lessons; Biochem
+added 13 (+ updated welcome).  After all 6 sibling
+expansions complete, total cross-platform lesson count
+will be ~ 80-100 lessons (vs ~ 6 starter lessons before
+the chain).
+
+**Next: PH-3.0 (Pharm tutorial expansion) wakeup
+scheduled.**
+
+---
+
+## 2026-04-26 — Round 224 (Phase CB-3.0: Cell Bio tutorial expansion — launches the -3 chain)
+
+**User-driven request: expand all the new siblings with
+more content, including populating all of the tutorials.**
+
+This round launches the **-3 tutorial-expansion chain**:
+six rounds (one per sibling) that bring each sibling's
+curriculum from 1-2 starter lessons up to 12+ lessons
+spanning all 4 tiers (beginner / intermediate / advanced /
+graduate).
+
+**CB-3.0 ships 12 new cellbio lessons** (curriculum grows
+1 → 13).  Test count **2 736 → 2 742** (+6 new tutorial
+tests, zero regressions).
+
+| Lesson | Tier | Topic |
+|--------|------|-------|
+| What is a cell? | beginner | prokaryote vs eukaryote, organelles, endosymbiotic origin |
+| Cell signalling — the basics | beginner | endocrine/paracrine/autocrine/synaptic, 5-step pipeline, receptor superfamilies |
+| Receptors and ligands | beginner | affinity / selectivity / efficacy, orthosteric vs allosteric, dose-response |
+| Second messengers | beginner | cAMP, IP3 + DAG, Ca²⁺ |
+| MAPK / ERK | intermediate | three-tier cascade, ultrasensitivity, RAS-RAF-MEK-ERK in cancer |
+| GPCR signalling deep-dive | intermediate | 7-TM, Gα families, β-arrestin biased agonism |
+| RTKs + JAK-STAT | intermediate | RTK families + TKIs, cytokine signalling + JAKi |
+| Apoptosis pathways | intermediate | intrinsic + extrinsic, BCL-2 family, caspases, BCL-2 inhibitors |
+| Wnt / β-catenin | advanced | destruction complex, Wnt in development + colon cancer |
+| DNA damage response | advanced | ATM/ATR + Chk1/Chk2, G1/S + intra-S + G2/M checkpoints, BRCA-PARP synthetic lethality |
+| Cancer signalling networks | advanced | hallmarks, RAS undruggability, p53, PI3K-Akt-mTOR, immune checkpoints |
+| Quantitative signalling | graduate | dynamics, motifs, single-cell methods, ODE + stochastic models, information theory |
+| Cytoskeleton + motility | graduate | actin + microtubules + IFs, motors, cell migration, taxane / vinca pharmacology |
+| Membrane trafficking | graduate | endomembrane system, COPI/II + clathrin, SNAREs, secretory pathway, pathogen exploitation |
+
+Each lesson follows the OrgChem-tutorial template: hook +
+3-7 sections + "Try it in the app" + "Next:" pointer.
+Cross-references to existing CB-1.0 / CB-2.0 / PH-1.0 /
+PH-2.0 / BC-1.0 catalogue entries throughout.
+
+**Test scaffolding.**  `tests/test_cellbio_tutorial_
+expansion.py` — 6 tests covering: ≥ 12 lessons total, all
+4 tiers populated, every lesson path exists, every lesson
+has a title, every lesson loads via the loader + has
+substantive content (> 100 chars), every lesson references
+a cell-biology keyword.
+
+**Pattern.**  This is the template for the rest of the -3
+chain (BC-3.0, PH-3.0, MB-3.0, BT-3.0, AB-3.0).  Each
+round writes ~ 12 lessons + updates the curriculum.py +
+adds a test file gated on the curriculum's contents.
+
+**Next: BC-3.0 (Biochem tutorial expansion) wakeup
+scheduled.**
+
+---
+
+## 2026-04-26 — Round 223 (Phase AB-2.0: Animal organ-systems catalogue — FINAL -2 round, closes the deep-phase chain)
+
+**Wakeup-driven build — round 6 of 6 in the -2 chain.**
+This is the FINAL deep-phase round.  CB-2.0 + BC-2.0 + PH-2.0
++ MB-2.0 + BT-2.0 done.  AB-2.0 ships a 25-entry organ-systems
+catalogue + writes the chain-wide retrospective + does NOT
+schedule another wakeup.  **Test count 2 700 → 2 736** (+36).
+
+| File / dir | Purpose |
+|------------|---------|
+| `animal/core/organ_systems.py` | `OrganSystem` frozen dataclass + `SYSTEM_CATEGORIES` (13-tuple) + lookup helpers + the standard `__post_init__` tuple validator. |
+| `animal/core/organ_systems_data.py` | 25 entries: 12 canonical mammalian systems (cardiovascular / respiratory / digestive / urinary / nervous / endocrine / immune / musculoskeletal / integumentary / reproductive-female + -male / lymphatic) + 13 comparative-anatomy entries (open vs closed circulation; gills, tracheae, air sacs; ruminant, avian, hindgut digestion; nerve nets, cephalopod brains; protonephridia, metanephridia, Malpighian tubules; planarian + axolotl + hydra regeneration; eye evolution from eyespot to camera; fish single-circuit heart; invertebrate innate immunity; insect ecdysone; muscle-type evolution; hermaphroditism + parthenogenesis; ectothermy vs endothermy).  Each entry: short summary, representative organs, key cell types, functional anatomy, evolutionary origin, characteristic disorders, and **4-way typed cross-references** to OrgChem molecules (Cortisol, Estradiol, Testosterone, Progesterone, Dopamine, L-DOPA, Glycine, L-Glutamic acid, Cholesterol, Cholic acid, Vitamin D3, ATP, Acetyl-CoA, Lactose, Urea) + CB-1.0 signalling pathways + BC-1.0 enzymes (ace, atp-synthase, na-k-atpase, carbonic-anhydrase-ii, cyp3a4, lysozyme, caspase-3, comt, pka, adenylate-cyclase, alcohol-dehydrogenase, chymotrypsin, trypsin) + AB-1.0 animal-taxon ids (most → homo-sapiens / mus-musculus / rattus-norvegicus; comparative entries → drosophila-melanogaster, danio-rerio, schmidtea-mediterranea, hydra-vulgaris, loligo-pealeii, ambystoma-mexicanum, etc.).  All cross-reference IDs verified at write time. |
+| `animal/agent/actions_organ_systems.py` | 5 agent actions in the new `animal-organ-systems` category. |
+| `animal/__init__.py` | Extended to also import `actions_organ_systems`. |
+| `animal/gui/panels/organ_systems_panel.py` | Category combo + free-text filter + list + HTML detail card with 4 cross-reference sections. |
+| `animal/gui/windows/animal_main_window.py` | Added the new *Organ systems* tab between *Animal taxa* and *Cell signalling bridge*.  New `TAB_ORGAN_SYSTEMS` class constant.  `tests/test_animal_main_window.py` updated from `tabs.count() == 3` → `>= 4`. |
+
+**OrgChem-side glue (3 files).**  Identical pattern to the
+previous five deep-phase rounds.
+
+**Tests (2 new files, 29 catalogue + 7 panel = 36 new tests
++ 1 updated existing test).**
+
+**Long-write recovery pattern.**  Used the well-grooved
+approach: dataclass + helpers + 4-entry seed (4 mammalian
+systems) closing the tuple cleanly; verified import; appended
+21 entries (8 mammalian + 13 comparative) via Bash heredoc +
+Python string-replace.  Smooth on first try.
+
+**Closing the -2 chain.**  See the retrospective immediately
+below.
+
+---
+
+## -2 deep-phase chain retrospective
+
+**The chain.**  Six consecutive autonomous wakeup-driven
+rounds (218-223) added one new catalogue per round to one
+existing sibling, in the same CB → BC → PH → MB → BT → AB →
+STOP cadence the -1 chain pioneered.  Each new catalogue is
+fully additive — the existing -1 catalogue stays untouched.
+
+| Round | Phase  | Sibling  | Catalogue                          | New tests | Test total |
+|-------|--------|----------|------------------------------------|-----------|------------|
+| 217   | (-1 chain end) | — | — | — | 2 532 |
+| 218   | CB-2.0 | Cell Bio | Cell cycle (30 entries)            | +32       | 2 564     |
+| 219   | BC-2.0 | Biochem  | Cofactors / coenzymes (27 entries) | +34       | 2 598     |
+| 220   | PH-2.0 | Pharm    | Receptor pharmacology (32 entries) | +35       | 2 633     |
+| 221   | MB-2.0 | Microbio | Virulence factors / toxins (30)    | +34       | 2 667     |
+| 222   | BT-2.0 | Botany   | Plant hormones (21 entries)        | +33       | 2 700     |
+| 223   | AB-2.0 | Animal   | Organ systems (25 entries)         | +36       | **2 736**     |
+
+**Catalogue contributions.**  Six new tabs across the six
+sibling main windows — one each.  Six new agent-action
+categories (`cellbio-cell-cycle`, `biochem-cofactors`,
+`pharm-receptors`, `microbio-virulence`, `botany-hormones`,
+`animal-organ-systems`).  ~ 165 catalogue entries total
+across the chain.
+
+**Cross-reference graph that emerged.**  Each new -2
+catalogue introduced typed-edge families to existing -1 +
+-2 catalogues:
+
+- **CB-2.0 cell cycle** → 2-hop: CB-1.0 signalling + PH-1.0
+  drug classes.
+- **BC-2.0 cofactors** → 3-hop: BC-1.0 enzymes + OrgChem
+  metabolic pathways + OrgChem `Molecule` rows.
+- **PH-2.0 receptors** → **4-hop** (FIRST 4-hop catalogue):
+  PH-1.0 drug classes + CB-1.0 signalling + BC-1.0 enzymes
+  + OrgChem `Molecule` rows.
+- **MB-2.0 virulence factors** → 3-hop: MB-1.0 microbes +
+  BC-1.0 enzymes + CB-1.0 signalling.
+- **BT-2.0 plant hormones** → 2-hop: OrgChem `Molecule` +
+  BT-1.0 plant taxa.
+- **AB-2.0 organ systems** → **4-hop**: OrgChem `Molecule`
+  + CB-1.0 signalling + BC-1.0 enzymes + AB-1.0 animal
+  taxa (matches PH-2.0's hop count).
+
+By round 223 every new catalogue entry can carry typed
+edges to 3-4 sibling catalogues — the cross-reference
+density per entry roughly doubled from -1 to -2.
+
+**Pattern that crystallised.**  Six rounds, identical
+8-step build per round:
+1. Dataclass with `__post_init__` tuple validator.
+2. Data-file with N entries (4-entry seed + Bash-heredoc
+   batch from MB-2.0 onward).
+3. Agent-actions module (5 actions per catalogue, same
+   shape).
+4. Sibling `__init__.py` import.
+5. Panel widget (combo + filter + list + HTML detail card).
+6. Main-window tab insert + new `TAB_*` constant.
+7. 3-file OrgChem-side glue (audit + agent-surface-audit +
+   category summary).
+8. 2 test files (catalogue + panel).
+
+By round 6 the friction was almost entirely on writing
+prose for the catalogue entries themselves, not on plumbing.
+A future agent could stamp out a -3 round in the same shape
+in well under one wakeup of work.
+
+**`__post_init__` validator pattern.**  Introduced in
+BC-2.0 (round 219) after CB-2.0 (round 218) hit the
+trailing-comma single-element-tuple bug on every entry.
+Validator pattern: list every tuple-typed field in
+`_TUPLE_FIELDS`, raise `TypeError` from `__post_init__` if
+any field is not a tuple at construction time.  Copy-pasted
+into PH-2.0, MB-2.0, BT-2.0, AB-2.0 with `_TUPLE_FIELDS`
+adapted per dataclass.  **Every -2 dataclass since round 219
+has been bug-free for the trailing-comma class.**  The
+existing -1 dataclasses remain unguarded — a future cleanup
+sweep could retro-fit the pattern.
+
+**Long-write recovery pattern.**  Hit during MB-2.0 round
+221 — long Edit/Write calls on string-literal-heavy data
+files truncated mid-content.  Recovered by writing the
+dataclass + 4-8-entry seed closing the tuple cleanly,
+verifying import, then appending the rest via Bash heredoc
++ Python string-replace before the closing `)`.  Used in
+MB-2.0, BT-2.0, AB-2.0; documented in BT-2.0's wakeup brief
++ used preemptively from BT-2.0 onward.
+
+**What ships next.**  The -2 chain is done.  No further
+autonomous chain queues itself.  Each sibling has its own
+deeper-phase queue:
+- `-3` interactive tools (calculators, simulators, builders).
+- `-4` ~ 150 tutorial lessons per sibling.
+- `-5` cross-studio link audits (formal Phase-49-style
+  audits of the -1 + -2 catalogue cross-reference graph).
+- `-6` integration polish (studios launcher, screenshot
+  tour, top-level navigation).
+
+The user picks the next direction.  Possible candidate
+chains: `-3 tools` chain (6 rounds, one tool per sibling),
+`-5 cross-studio audit` (single round, builds a Phase-50
+module that walks every cross-reference edge across all
+12 catalogues).  Or one-off improvements driven by
+day-to-day priorities.
+
+**The autonomous chain ends here.**
+
+---
+
+## 2026-04-26 — Round 222 (Phase BT-2.0: Botany plant-hormones catalogue)
+
+**Wakeup-driven build — round 5 of 6 in the -2 chain.**
+CB-2.0 + BC-2.0 + PH-2.0 + MB-2.0 done.  This round adds a
+21-entry plant-hormones catalogue to `botany/`, fully
+additive to the BT-1.0 plant-taxa catalogue.  **Test count
+2 667 → 2 700** (+33).
+
+| File / dir | Purpose |
+|------------|---------|
+| `botany/core/plant_hormones.py` | `PlantHormone` frozen dataclass + `HORMONE_CLASSES` (10-tuple) + lookup helpers + the standard `__post_init__` tuple validator. |
+| `botany/core/plant_hormones_data.py` | 21 entries spanning all 10 canonical phytohormone classes: 4 auxins (IAA, 2,4-D, NAA, IBA), 3 cytokinins (trans-zeatin, kinetin, BAP), 2 gibberellins (GA3, GA4), 1 abscisic-acid (ABA), 1 ethylene, 2 brassinosteroids (brassinolide, castasterone), 2 jasmonates (JA, MeJA), 1 salicylic-acid (SA), 2 strigolactones (strigol, orobanchol), 3 peptide-hormones (CLE, systemin, RALF).  Each entry: structural class, biosynthesis precursor, perception mechanism (TIR1, AHK, GID1, PYR/PYL/RCAR, ETR1, BRI1, COI1, NPR1, D14, FERONIA…), primary physiological effect, antagonisms, key model plants, and typed cross-references to OrgChem molecules (IAA, SA, Aspirin, Ethylene — the four hormones present in the seeded DB) + BT-1.0 plant-taxon ids (Arabidopsis is the canonical model for most signalling).  All cross-reference IDs verified at write time. |
+| `botany/agent/actions_plant_hormones.py` | 5 agent actions in the new `botany-hormones` category. |
+| `botany/__init__.py` | Extended to also import `actions_plant_hormones`. |
+| `botany/gui/panels/plant_hormones_panel.py` | Class combo + free-text filter + list + HTML detail card. |
+| `botany/gui/windows/botany_main_window.py` | Added the new *Plant hormones* tab between *Plant taxa* and *Plant secondary metabolites*.  New `TAB_PLANT_HORMONES` class constant.  `tests/test_botany_main_window.py` updated from `tabs.count() == 3` → `>= 4`. |
+
+**OrgChem-side glue (3 files).**  Identical pattern to the
+previous deep-phase rounds.
+
+**Tests (2 new files, 26 catalogue + 7 panel = 33 new tests
++ 1 updated existing test).**
+
+**Process note.**  Used the recovery pattern that worked in
+MB-2.0: write the dataclass + helpers + a small valid initial
+set of 4 entries (the auxins) closing the tuple cleanly,
+verify import, then append the remaining 17 entries via a
+single Bash heredoc + Python script that string-replaces
+before the closing `)`.  Smooth.  Full suite green on first
+run.
+
+**Next: AB-2.0 (Animal organ-systems catalogue) — the FINAL
+round of the -2 chain.  Wakeup scheduled.**
+
+---
+
+## 2026-04-26 — Round 221 (Phase MB-2.0: Microbio virulence-factor + toxin catalogue)
+
+**Wakeup-driven build — round 4 of 6 in the -2 chain.**
+CB-2.0 + BC-2.0 + PH-2.0 done.  This round adds a 30-entry
+virulence-factor + toxin catalogue to `microbio/`, fully
+additive to the MB-1.0 microbe catalogue.  **Test count
+2 633 → 2 667** (+34).
+
+| File / dir | Purpose |
+|------------|---------|
+| `microbio/core/virulence_factors.py` | `VirulenceFactor` frozen dataclass + `MECHANISM_CLASSES` (9-tuple) + lookup helpers + the standard `__post_init__` tuple validator. |
+| `microbio/core/virulence_factors_data.py` | 30 entries: 8 AB-toxins (diphtheria, cholera, pertussis, Shiga, anthrax LF + EF, tetanus, botulinum), 5 pore-forming cytolysins (α-toxin, streptolysin O, pneumolysin, PVL, listeriolysin O), 3 superantigens (TSST-1, SEA-SEE, SpeA), 3 adhesins (UPEC fimbriae, M protein, Yersinia YadA/Invasin), 3 capsules (GAS hyaluronate, pneumococcal polysaccharide, anthrax poly-γ-D-glutamate), 3 secretion systems (T3SS, T4SS-CagA, T6SS), 3 immune-evasion factors (IgA1 protease, Protein A, Neisseria Opa antigenic variation), 1 biofilm + quorum-sensing entry, 1 LPS / lipid-A endotoxin entry.  Each entry: structural notes, target tissue, mode of action, clinical syndrome, vaccine info, **3-way typed cross-references to MB-1.0 source-organism ids + BC-1.0 enzymes + CB-1.0 signalling pathways** (S. aureus → α-toxin / TSST-1 / SEs / PVL / Protein A; S. pyogenes → SLO / SpeA / M protein / hyaluronic capsule; H. pylori → CagA T4SS; LPS sources include 6 MB-1.0 Gram-negatives).  All cross-reference IDs verified at write time. |
+| `microbio/agent/actions_virulence.py` | 5 agent actions in the new `microbio-virulence` category. |
+| `microbio/__init__.py` | Extended to also import `actions_virulence`. |
+| `microbio/gui/panels/virulence_factors_panel.py` | Mechanism-class combo + free-text filter + list + HTML detail card. |
+| `microbio/gui/windows/microbio_main_window.py` | Added the new *Virulence factors* tab between *Microbes* and *Antibiotic spectrum*.  New `TAB_VIRULENCE` class constant.  `tests/test_microbio_main_window.py` updated from `tabs.count() == 3` → `>= 4`. |
+
+**OrgChem-side glue (3 files).**  Identical pattern to the
+previous deep-phase rounds.
+
+**Tests (2 new files, 27 catalogue + 7 panel = 34 new tests
++ 1 updated existing test).**
+
+**Process note.**  This round hit a tooling friction point —
+multiple Edit/Write calls truncated mid-content during the
+30-entry data file creation (long string literals).
+Recovered by closing the file at a clean 8-entry checkpoint,
+then appending the remaining 22 entries via a single Bash
+heredoc + Python script that in-place patched the tuple
+before its closing `)`.  Full suite green on first run after
+that.
+
+**Next: BT-2.0 (Botany plant-hormones catalogue) wakeup
+scheduled.**
+
+---
+
+## 2026-04-26 — Round 220 (Phase PH-2.0: Pharm receptor pharmacology catalogue — 4-hop cross-reference graph)
+
+**Wakeup-driven build — round 3 of 6 in the -2 chain.**
+CB-2.0 + BC-2.0 done; this round adds a 32-entry receptor
+pharmacology catalogue to `pharm/`, fully additive to the
+PH-1.0 drug-class catalogue.  **Test count 2 598 → 2 633**
+(+35).
+
+| File / dir | Purpose |
+|------------|---------|
+| `pharm/core/receptors.py` | `Receptor` frozen dataclass + `RECEPTOR_FAMILIES` (10-tuple) + lookup helpers + the **same `__post_init__` tuple validator pattern from BC-2.0** — refuses plain strings in tuple-typed fields with TypeError at construction time. |
+| `pharm/core/receptors_data.py` | 32 entries spanning all 10 families: 5 GPCR-aminergic (β1, β2, α1, M3, D2), 4 GPCR-peptide (μ-opioid, AT1, GLP-1, H1), 1 GPCR-other (CB1), 4 NHR-steroid (GR, ERα, AR, PR), 3 NHR-other (TR, VDR, PPARγ), 4 RTK (EGFR, HER2, VEGFR2, insulin), 3 voltage-gated channels (Nav1.7, hERG, Cav1.2), 3 ligand-gated (nAChR, GABA-A, NMDA), 3 monoamine transporters (SERT, NET, DAT), 2 other transporters (SGLT2, P-gp).  Each entry: structural summary, endogenous ligands, signalling output, tissue distribution, clinical relevance, and **4-way typed cross-references**: PH-1.0 drug-class ids + CB-1.0 signalling-pathway ids + BC-1.0 enzyme ids + OrgChem `Molecule` rows by exact name (Dopamine, L-DOPA, Morphine, Cortisol, Estradiol, Testosterone, Progesterone, Vitamin D3, L-Glutamic acid, Glycine — all verified at write time).  This is the first sibling catalogue to systematically link to all 4 destination catalogues at once. |
+| `pharm/agent/actions_receptors.py` | 5 agent actions in the new `pharm-receptors` category: `list_receptors(family="")`, `get_receptor(receptor_id)`, `find_receptors(needle)`, `receptors_for_family(family)`, `open_pharm_receptors_tab()`. |
+| `pharm/__init__.py` | Extended to also import `actions_receptors`. |
+| `pharm/gui/panels/receptors_panel.py` | Family combo + free-text filter + list + HTML detail card with 4 cross-reference sections.  `select_receptor(id)` programmatic API. |
+| `pharm/gui/windows/pharm_main_window.py` | Added the new *Receptors* tab between *Drug classes* and *Bridges*.  New `TAB_RECEPTORS` class constant.  Status-bar message updated.  `tests/test_pharm_main_window.py` updated from `tabs.count() == 3` → `>= 4`. |
+| `pharm/INTERFACE.md` | Extended the `core/`, `agent/` sections. |
+
+**OrgChem-side glue (3 files).**  Identical pattern to CB-2.0
++ BC-2.0: `orgchem/gui/audit.py` extends `GUI_ENTRY_POINTS`
+with the 5 new actions; `orgchem/core/agent_surface_audit.py`
+adds a new `SurfaceSpec("Receptors (Pharm Studio)",
+opener="open_pharm_receptors_tab", …)`; `orgchem/agent/
+actions_meta.py` adds the `pharm-receptors` summary.
+
+**Tests (2 new files, 28 catalogue + 7 panel = 35 new tests
++ 1 updated existing test).**  Catalogue tests gate the
+32-entry contents, ids unique, ≥ 6 receptor families
+represented, **4-hop cross-reference integrity** (every drug-
+class xref → real PH-1.0 id; every signalling-pathway xref →
+real CB-1.0 id; every enzyme xref → real BC-1.0 id; every
+molecule-name xref → real seeded Molecule row), lookup
+helpers, agent action behaviour, GUI-audit + agent-surface-
+audit + category-summary integration.  **Plus the dedicated
+`test_post_init_validator_rejects_string_in_tuple_field`
+test** that proves the validator pattern works for receptors
+too.
+
+**Pattern lessons.**
+
+The `__post_init__` validator pattern from BC-2.0 (round
+219) ported cleanly to PH-2.0 — copy the helper, adapt the
+`_TUPLE_FIELDS` tuple, done.  Three deep-phase rounds in,
+the deep-phase build pattern is now mechanical: catalogue
+helper module + data file + agent actions + panel + main-
+window-tab insert + 3-file OrgChem-side glue + 2 test files.
+
+**Next: MB-2.0 (Microbio virulence-factor + toxin catalogue)
+wakeup scheduled.**
+
+---
+
+## 2026-04-26 — Round 219 (Phase BC-2.0: Biochem cofactors / coenzymes catalogue — kills the trailing-comma bug class)
+
+**Wakeup-driven build — round 2 of 6 in the -2 chain.**
+Round 218 (CB-2.0) shipped the cell-cycle catalogue.  This
+round adds a 27-entry cofactors / coenzymes catalogue to
+`biochem/`, fully additive to the BC-1.0 enzyme catalogue.
+**Test count 2 564 → 2 598** (+34).
+
+| File / dir | Purpose |
+|------------|---------|
+| `biochem/core/cofactors.py` | `Cofactor` frozen dataclass + `COFACTOR_CLASSES` (14-tuple) + lookup helpers + the **`__post_init__` validator** that raises `TypeError` if any of the 8 tuple-typed fields comes in as a plain `str`.  Closes the trailing-comma bug class permanently — instead of silently coercing a single string to a single-element tuple we fail at construction time so the bug surfaces on import, not in CI. |
+| `biochem/core/cofactors_data.py` | 27 entries: 4 nicotinamide (NAD+/H, NADP+/H), 3 flavin (FAD/H₂, FMN), 2 acyl-carrier (CoA, acetyl-CoA), 1 methyl-donor (SAM), 4 phosphate-energy (ATP, ADP, cAMP, GTP), 1 biotin-vitamin, 1 TPP-vitamin, 1 PLP-vitamin, 1 lipoate, 1 cobalamin-vitamin, 1 folate, 3 metal-cluster (heme, Mg²⁺, Zn²⁺), 2 quinone (CoQ10, plastoquinone), 2 redox-buffer (glutathione, ascorbate).  Each entry: chemical summary, primary role, what it carries / transfers, key features, vitamin origin, deficiency disease, and **typed cross-references to BC-1.0 enzyme ids + OrgChem metabolic-pathway ids + OrgChem `Molecule` rows by exact name** (NADH, FAD, ATP, Acetyl-CoA, SAM, Glutathione, …).  All cross-reference IDs verified at write time. |
+| `biochem/agent/actions_cofactors.py` | 5 agent actions in the new `biochem-cofactors` category: `list_cofactors(cofactor_class="")`, `get_cofactor(cofactor_id)`, `find_cofactors(needle)`, `cofactors_for_class(cofactor_class)`, `open_biochem_cofactors_tab()`. |
+| `biochem/__init__.py` | Extended to also import `actions_cofactors`. |
+| `biochem/gui/panels/cofactors_panel.py` | Class combo + free-text filter + list + HTML detail card. `select_cofactor(id)` programmatic API. |
+| `biochem/gui/windows/biochem_main_window.py` | Added the new *Cofactors* tab between *Enzymes* and *Metabolic pathways*.  New `TAB_COFACTORS` class constant.  Status-bar message updated.  `tests/test_biochem_main_window.py` updated from `tabs.count() == 3` → `>= 4`. |
+| `biochem/INTERFACE.md` | Extended the `core/`, `agent/` sections. |
+
+**OrgChem-side glue (3 files).**  Identical pattern to CB-2.0:
+`orgchem/gui/audit.py` extends `GUI_ENTRY_POINTS` with the 5
+new actions; `orgchem/core/agent_surface_audit.py` adds a new
+`SurfaceSpec("Cofactors (Biochem Studio)", opener="open_
+biochem_cofactors_tab", …)`; `orgchem/agent/actions_meta.py`
+adds the `biochem-cofactors` summary.
+
+**Tests (2 new files, 27 catalogue + 7 panel = 34 new tests
++ 1 updated existing test).**  Catalogue tests gate the
+30-entry contents, ids unique, ≥ 6 cofactor classes
+represented, **3-hop cross-reference integrity** (every
+enzyme xref → real BC-1.0 enzyme id; every metabolic-pathway
+xref → real Phase-42 id; every molecule-name xref → real
+seeded Molecule row), lookup helpers, agent action
+behaviour, GUI-audit + agent-surface-audit + category-summary
+integration.  **Plus the dedicated `test_post_init_validator_
+rejects_string_in_tuple_field` test** that proves the
+trailing-comma bug class is dead.
+
+**Pattern lessons.**
+
+The `__post_init__` validator on the Cofactor dataclass is
+the clean fix for the trailing-comma bug that bit on round
+218.  Future deep-phase rounds should adopt the same pattern
+in their dataclasses (the bigger sweep is to retro-fit it on
+the existing CB-2.0 + every -1 sibling dataclass — queued
+informally, no chain wakeup yet).
+
+**Next: PH-2.0 (Pharm receptor pharmacology catalogue) wakeup
+scheduled.**
+
+---
+
+## 2026-04-26 — Round 218 (Phase CB-2.0: Cell Bio cell-cycle catalogue — launches the -2 deep-phase chain)
+
+**Wakeup-driven build — first round of the new -2 chain.**
+The -1 chain (rounds 212-217) shipped one new sibling per
+round and built the 6-studio platform.  The -2 chain pivots
+from breadth (six siblings) to depth (one new catalogue per
+round, on existing siblings, in the same CB → BC → PH → MB →
+BT → AB → STOP order).  Six rounds; -2 chain currently 1 / 6
+done.
+
+**What shipped.**
+
+A 30-entry **cell-cycle catalogue** in `cellbio/`,
+**additive** to the CB-1.0 signalling catalogue (no breaking
+changes).  New tab on `CellBioMainWindow` — *Cell cycle*
+between *Signalling* and *Tutorials*.  **Test count 2 532 →
+2 564** (+32).
+
+| File / dir | Purpose |
+|------------|---------|
+| `cellbio/core/cell_cycle.py` | `CellCycleEntry` frozen dataclass + `CATEGORIES` (7-tuple: phase / checkpoint / cyclin-cdk / cdk-inhibitor / pocket-protein / mitotic-regulator / dna-damage-response) + lookup helpers (`list_cell_cycle_entries(category)` / `get_cell_cycle_entry(id)` / `find_cell_cycle_entries(needle)` / `cell_cycle_entries_for_category(c)` / `cell_cycle_entry_to_dict(e)`). |
+| `cellbio/core/cell_cycle_data.py` | 30 entries: 5 phases (G1 / S / G2 / M / G0), 4 checkpoints (G1/S restriction, intra-S, G2/M, SAC), 4 cyclin-CDK pairs (D-CDK4/6, E-CDK2, A-CDK2/1, B-CDK1), 3 CDK inhibitors (p21, p27, p16 INK4a), 1 pocket-protein axis (Rb/E2F), 8 mitotic regulators (Wee1/Myt1, Cdc25, APC/C, Separase/Securin, Aurora kinases, Plk1, SAC components, condensin/cohesin), 5 DNA-damage-response entries (ATM, ATR, Chk1/Chk2, BRCA1/2, p53).  Each entry: name, category, phase or role, summary paragraph, function, key components, activators, inhibitors, disease associations, **typed cross-references to CB-1.0 signalling pathway ids + Pharm drug-class ids** (kinase-inhibitors / taxanes / platinum-chemotherapy).  Cross-reference integrity gated by tests. |
+| `cellbio/agent/actions_cell_cycle.py` | 5 agent actions in the new `cellbio-cell-cycle` category: `list_cell_cycle_entries(category="")`, `get_cell_cycle_entry(entry_id)`, `find_cell_cycle_entries(needle)`, `cell_cycle_entries_for_category(category)`, `open_cellbio_cell_cycle_tab()`. |
+| `cellbio/__init__.py` | Extended to also import `actions_cell_cycle` so registration fires on package import. |
+| `cellbio/gui/panels/cell_cycle_panel.py` | Category combo + free-text filter + list + HTML detail card with the standard cross-reference sections.  `select_entry(entry_id)` programmatic API. |
+| `cellbio/gui/windows/cellbio_main_window.py` | Added the new *Cell cycle* tab between *Signalling* and *Tutorials*.  New `TAB_CELL_CYCLE` class constant.  Status-bar message updated. |
+| `cellbio/INTERFACE.md` | Extended the `core/`, `agent/`, `gui/` sections with the new files. |
+
+**OrgChem-side glue (3 files).**
+
+| File | Change |
+|------|--------|
+| `orgchem/gui/audit.py` | Adds 5 new entries to `GUI_ENTRY_POINTS` for the new agent actions. |
+| `orgchem/core/agent_surface_audit.py` | Adds a new `SurfaceSpec("Cell cycle (Cell Bio Studio)", opener="open_cellbio_cell_cycle_tab", …)`. |
+| `orgchem/agent/actions_meta.py` | Adds the `cellbio-cell-cycle` summary to `_CATEGORY_SUMMARIES`. |
+
+**Tests (2 new files, 30+5=24 catalogue + 7 panel = 32 new tests in addition to one updated existing test).**
+
+- `tests/test_cellbio_cell_cycle_catalogue.py` — 24 tests:
+  catalogue contents, ids unique, every required field
+  populated (caught the trailing-comma bug on every entry's
+  `disease_associations` field — fixed in-line via a
+  one-shot regex), ≥ 5 categories represented, **cross-
+  reference integrity** (every signalling-pathway xref →
+  real CB-1.0 pathway id; every pharm drug-class xref →
+  real PH-1.0 id), lookup helpers, agent action behaviour,
+  GUI-audit + agent-surface-audit + category-summary
+  integration.
+- `tests/test_cellbio_cell_cycle_panel.py` — 7 tests:
+  panel constructs, category + text filters work, the
+  new Cell-cycle tab appears on `CellBioMainWindow`, the
+  agent-action opener wakes the right tab.
+- `tests/test_cellbio_main_window.py` updated: assertion
+  `tabs.count() == 2` → `>= 3` since the Cell-cycle tab is
+  now present.
+
+**Pattern lessons.**
+
+The same single-element-tuple bug bit on the first run —
+exactly the pitfall the wakeup brief warned about.  Caught
+by `test_every_entry_has_required_fields` (which type-
+checks every tuple field).  Fixed in one regex pass; future
+deep-phase rounds should add a `__post_init__` validator or
+explicit string-→-tuple coercion to rule it out
+preventively.
+
+**Next: BC-2.0 (Biochem cofactors catalogue) wakeup
+scheduled.**
+
+---
+
+## 2026-04-26 — Round 217 (Phase AB-1.0: Animal Biology Studio v0.1 — SIXTH + FINAL sibling, completes the 6-studio platform)
+
+**Wakeup-driven build — final node of the autonomous chain.**
+Scheduled by round 216's wakeup after Botany Studio shipped.
+**This is the chain terminator** — AB-1.0 ships, the
+retrospective lesson goes in, no further wakeup is scheduled.
+
+**What shipped.**
+
+Sibling package #6 (`animal/`) — the FINAL sibling — now
+lives alongside `orgchem/`, `cellbio/`, `biochem/`, `pharm/`,
+`microbio/`, and `botany/`.  **Test count 2 484 → 2 532**
+(+48).  The 6-studio platform is complete.
+
+| File / dir | Purpose |
+|------------|---------|
+| `animal/__init__.py` | Triggers animal agent-action registration. |
+| `animal/INTERFACE.md` | Navigation map. |
+| `animal/core/taxa.py` | `AnimalTaxon` frozen dataclass + `PHYLA` (9-tuple) + `BODY_PLANS` (3-tuple) + `GERM_LAYERS` (3-tuple) + `COELOM_TYPES` (4-tuple) + lookup helpers. |
+| `animal/core/taxa_data.py` | 30-entry catalogue spanning all 9 major animal phyla: 1 sponge (*Amphimedon queenslandica*), 2 cnidarians (*Hydra*, *Nematostella*), 1 flatworm (*Schmidtea*), 2 nematodes (*C. elegans*, *Trichinella*), 2 molluscs (squid + Aplysia), 1 annelid (*Hirudo*), 5 arthropods (*Drosophila*, honeybee, silkworm, *Daphnia*, *Limulus*), 1 echinoderm (sea urchin), 15 chordates (tunicate + 3 fish + 2 amphibians + 1 reptile + 2 birds + 6 mammals through to *Homo sapiens*).  Each entry: phylum, class, body plan, germ layers, coelom type, reproductive strategy, ecological role, model_organism flag, genome size, and **typed cross-references to OrgChem `Molecule` rows by name + `cellbio.core.cell_signaling` ids + `biochem.core.enzymes` ids**.  All cross-reference IDs verified against destination catalogues — zero broken edges.  *Homo sapiens* alone carries ~ 22 molecule + ~ 26 pathway + ~ 26 enzyme cross-references — the convergence point of the entire platform's catalogues. |
+| `animal/agent/actions_taxa.py` | 5 agent actions in the new `animal-taxa` category: `list_animal_taxa(phylum="", body_plan="")`, `get_animal_taxon(taxon_id)`, `find_animal_taxa(needle)`, `animal_taxa_for_phylum(phylum)`, `open_animal_studio(tab="")`. |
+| `animal/gui/windows/animal_main_window.py` | `AnimalMainWindow(QMainWindow)` with three top-level tabs (Animal taxa / Cell signalling bridge / Tutorials).  Geometry persists via `QSettings["window/animal"]`. |
+| `animal/gui/panels/animal_taxa_panel.py` | Phylum combo + body-plan combo + free-text filter + list + HTML detail card with cross-references. |
+| **`animal/gui/panels/cellbio_signaling_bridge_panel.py`** | **Second sibling whose bridge reads `cellbio.core.cell_signaling` directly** (the first was Pharm).  Filtered to the 21 animal-developmental + apoptosis + immune pathways.  *Open in Cell Biology Studio…* hand-off button. |
+| `animal/gui/panels/animal_tutorial_panel.py` | Tree of animal lessons + markdown viewer. |
+| `animal/tutorial/curriculum.py` | TWO starter lessons: Welcome + the Platform retrospective. |
+| `animal/tutorial/content/beginner/01_welcome_animal.md` | Welcome lesson explaining the 3 tabs + the now-complete 6-studio platform. |
+| **`animal/tutorial/content/beginner/02_platform_retrospective.md`** | **The headline document of the entire build chain.**  Documents what shipped across CB / BC / PH / MB / BT / AB (one paragraph per sibling), the architectural pattern (sibling packages, no OrgChem refactor; shared process / registry / DB / glossary; lazy data import; @action decorator; identical 6-hook glue per sibling), the test-count growth (2 288 → 2 532), the cross-reference graph that emerged (each sibling's typed edges to others), and the deeper-phase queue for each sibling (-2 catalogues / -3 tools / -4 ~150 lessons / -5 link audit / -6 polish). |
+
+**OrgChem-side glue (6 hooks, identical pattern to CB/BC/PH/MB/BT).**
+
+| File | Change |
+|------|--------|
+| `orgchem/agent/headless.py` | Imports `animal` after `botany`. |
+| `tests/conftest.py` | Same — imports `animal` at session start. |
+| `orgchem/gui/main_window.py` | Adds `_animal_window` slot, *Window → Animal Biology Studio…* menu entry (Ctrl+Shift+X), and `open_animal_studio_window()` method. |
+| `orgchem/gui/audit.py` | Extends `GUI_ENTRY_POINTS` with the 5 animal actions. |
+| `orgchem/core/agent_surface_audit.py` | Extends `EXPECTED_SURFACES` with the Animal-taxa / `open_animal_studio` surface (4 / 4 wired). |
+| `orgchem/agent/actions_meta.py` | Extends `_CATEGORY_SUMMARIES` with the `animal-taxa` description. |
+
+**Tests (2 new files, 48 new tests).**
+
+- `tests/test_animal_taxa_catalogue.py` — 33 tests:
+  catalogue contents (≥ 30 entries, all 3 body plans + all
+  3 germ-layer values + all 4 coelom types represented, ≥ 8
+  of 9 phyla, ≥ 10 model organisms, every required field
+  populated, ids unique), **3-hop cross-reference integrity**
+  (molecule names → real `Molecule` rows, signalling-pathway
+  ids → real cellbio ids, enzyme ids → real biochem ids), a
+  test that **verifies the platform retrospective lesson
+  mentions all 5 sibling studios + OrgChem + every phase
+  code (CB/BC/PH/MB/BT/AB-1.0)**, lookup helpers, agent
+  action behaviour, GUI-audit + agent-surface-audit +
+  tutorial-scaffold integration, plus a test that *Homo
+  sapiens* is the largest cross-reference hub.
+- `tests/test_animal_main_window.py` — 15 tests: main window
+  constructs, panel filters work, signalling bridge reads
+  cellbio directly, `open_animal_studio_window()` is a
+  singleton, agent-action opener works.
+
+---
+
+## 6-studio platform retrospective (the chain summary)
+
+The platform expansion ran from round 212 to round 217 over
+six consecutive autonomous wakeup-driven rounds.  Each
+sibling shipped in a single round at zero cost to the others
+and zero cost to the OrgChem foundation.
+
+| Round | Sibling | Headline | Δ tests | Total tests |
+|-------|---------|----------|---------|-------------|
+| 211 | (pre-platform) | OrgChem mature; 215 lessons | — | 2 288 |
+| 212 | **CB-1.0 — Cell Bio** | First sibling; 26 signalling pathways; established the pattern | +33 | 2 321 |
+| 213 | **BC-1.0 — Biochem** | First cross-studio bridge (read `orgchem.core.metabolic_pathways`) | +36 | 2 357 |
+| 214 | **PH-1.0 — Pharm** | Multi-hop Python-catalogue bridges (Biochem + Cell Bio) | +40 | 2 397 |
+| 215 | **MB-1.0 — Microbio** | 3-hop cross-reference graph; Antibiotic-spectrum bridge to Pharm | +43 | 2 440 |
+| 216 | **BT-1.0 — Botany** | First live SQLite-direct bridge (`orgchem.db.Molecule` rows) | +44 | 2 484 |
+| **217** | **AB-1.0 — Animal** | **FINAL sibling — completes the platform**.  Second cellbio bridge | **+48** | **2 532** |
+
+The architectural pattern proved repeatable to the point of
+near-mechanical execution.  Each sibling shipped using:
+1. New top-level Python package alongside `orgchem/`.  No
+   OrgChem refactor, ever.
+2. Lazy data-import split (helpers under 500 lines, data
+   file allowed to exceed).
+3. `@action` decorator into the shared OrgChem registry.
+4. Top-level `QMainWindow` with `QSettings`-persisted
+   geometry, opened from OrgChem's *Window* menu.
+5. Three inner tabs: catalogue + bridge into another sibling
+   + tutorial.
+6. Identical 6-file OrgChem-side glue (headless import,
+   conftest import, main-window slot + menu + opener,
+   GUI audit, agent-surface audit, category summary).
+7. Two test files per sibling (catalogue + GUI) gating
+   ~ 30-50 new tests.
+
+**The platform is now complete in its v0.1 form.**  Six
+sibling studios alongside OrgChem.  ~ 180 catalogue entries
+(30 × 6) carrying ~ 1 000+ typed cross-references that
+resolve at test time.  Zero regressions across the chain.
+
+The next priority across the **whole platform** pivots
+from *"build sibling N"* to *"deepen each sibling's
+catalogue / tools / tutorials / audits"*.  Every sibling
+has its own -2 / -3 / -4 / -5 / -6 deeper-phase queue
+waiting for incremental work.  Per current cadence, the
+deep-phase work runs ~ 9-12 months for each sibling.  No
+autonomous chain queues that work — the user picks
+individual deep-phase tasks as priorities shift.
+
+The autonomous chain ends here.
+
+---
+
+## 2026-04-26 — Round 216 (Phase BT-1.0: Botany Studio v0.1 — fifth sibling, first SQLite-direct bridge)
+
+**Wakeup-driven build.**  Scheduled by round 215's autonomous
+wakeup chain after Microbio Studio shipped.
+
+**What shipped.**
+
+Sibling package #5 (`botany/`) now lives alongside `orgchem/`,
+`cellbio/`, `biochem/`, `pharm/`, and `microbio/`.  Test count
+**2 440 → 2 484** (+44).
+
+| File / dir | Purpose |
+|------------|---------|
+| `botany/__init__.py` | Triggers botany agent-action registration. |
+| `botany/INTERFACE.md` | Navigation map. |
+| `botany/core/taxa.py` | `PlantTaxon` frozen dataclass + `DIVISIONS` (6-tuple) + `PHOTOSYNTHETIC_STRATEGIES` (4-tuple) + `LIFE_CYCLES` (4-tuple) + lookup helpers. |
+| `botany/core/taxa_data.py` | 30-entry catalogue spanning all 6 major plant divisions: 1 bryophyte (*Physcomitrium patens* — model moss), 1 lycophyte (*Selaginella moellendorffii*), 2 ferns (*Azolla filiculoides* — N₂-fixing, *Pteridium aquilinum*), 4 gymnosperms (*Ginkgo biloba* — living fossil, *Taxus brevifolia* — paclitaxel source, *Pinus taeda*, *Picea abies* — first conifer reference genome), 8 monocots (*Oryza sativa* — rice, *Zea mays* — maize **C4**, *Saccharum officinarum* — sugarcane **C4**, *Triticum aestivum* — wheat, *Musa acuminata* — banana, *Allium sativum* — garlic, *Vanilla planifolia* — vanilla **CAM**, *Aloe vera* — **CAM**), 14 eudicots (*Arabidopsis thaliana* — model dicot, *Solanum lycopersicum* — tomato, *Nicotiana tabacum* — tobacco, *Papaver somniferum* — opium poppy, *Salix alba* — willow, *Coffea arabica* — coffee, *Cinchona officinalis* — quinine bark, *Mentha piperita* — peppermint, *Theobroma cacao* — cacao, *Atropa belladonna* — deadly nightshade, *Camellia sinensis* — tea, *Capsicum annuum* — chili, *Hevea brasiliensis* — rubber tree, *Rafflesia arnoldii* — holoparasite with **not-applicable** photosynthesis).  Each entry: full taxonomic name, division, class, life cycle, photosynthetic strategy, reproductive strategy, ecological role, economic importance, model_organism flag, genome size, and **typed cross-references to OrgChem `Molecule` rows by name + OrgChem metabolic-pathway ids + Pharm drug-class ids**.  All cross-reference IDs verified against destination catalogues — zero broken edges across the 30 entries' 70+ links. |
+| `botany/agent/actions_taxa.py` | 5 agent actions in the new `botany-taxa` category: `list_plant_taxa(division="", photosynthetic_strategy="")`, `get_plant_taxon(taxon_id)`, `find_plant_taxa(needle)`, `plant_taxa_for_division(division)`, `open_botany_studio(tab="")`. |
+| `botany/gui/windows/botany_main_window.py` | `BotanyMainWindow(QMainWindow)` with three top-level tabs (Plant taxa / Plant secondary metabolites / Tutorials).  Geometry persists via `QSettings["window/botany"]`. |
+| `botany/gui/panels/plant_taxa_panel.py` | Division combo + photosynthetic-strategy combo + free-text filter + list + HTML detail card with model-organism flag + Baltimore-class-style cross-reference sections. |
+| **`botany/gui/panels/plant_metabolites_panel.py`** | **First-of-its-kind bridge — reads `orgchem.db.Molecule` rows live from SQLite** (not from another sibling Python catalogue).  Plant-relevant tag combo (natural-product / terpene / alkaloid / steroid / all-plant-derived) + free-text filter + *Open in Molecule Workspace…* button that fires `bus().molecule_selected.emit(mol_id)` so the OrgChem main window jumps to the molecule tab pre-loaded. |
+| `botany/gui/panels/botany_tutorial_panel.py` | Tree of botany lessons + markdown viewer. |
+| `botany/tutorial/curriculum.py + content/beginner/01_welcome_botany.md` | Welcome lesson explaining the 3 tabs + the 6-studio platform + every cross-studio link surface. |
+
+**OrgChem-side glue (6 hooks).**
+
+| File | Change |
+|------|--------|
+| `orgchem/agent/headless.py` | Imports `botany` after `microbio`. |
+| `tests/conftest.py` | Same — imports `botany` at session start. |
+| `orgchem/gui/main_window.py` | Adds `_botany_window` slot, *Window → Botany Studio…* menu entry (Ctrl+Shift+V), and `open_botany_studio_window()` method. |
+| `orgchem/gui/audit.py` | Extends `GUI_ENTRY_POINTS` with the 5 botany actions. |
+| `orgchem/core/agent_surface_audit.py` | Extends `EXPECTED_SURFACES` with the Plant-taxa / `open_botany_studio` surface (4 / 4 wired). |
+| `orgchem/agent/actions_meta.py` | Extends `_CATEGORY_SUMMARIES` with the `botany-taxa` description. |
+
+**Tests (2 new files, 44 new tests).**
+
+- `tests/test_botany_taxa_catalogue.py` — 30 tests:
+  catalogue contents (≥ 30 entries, all 4 photosynthetic
+  strategies including "not-applicable" for Rafflesia, ≥ 5
+  of 6 divisions, ≥ 5 model organisms, every required field
+  populated, ids unique), **3-hop cross-reference integrity**
+  (every molecule-name xref → real `Molecule` row, every
+  metabolic-pathway xref → real Phase-42 pathway, every
+  pharm-drug-class xref → real PH-1.0 drug class), lookup
+  helpers, agent action behaviour, GUI-audit + agent-surface-
+  audit + tutorial-scaffold integration.
+- `tests/test_botany_main_window.py` — 14 tests: main window
+  constructs, panel filters work, plant-metabolites bridge
+  reads OrgChem DB live + alkaloid filter surfaces Morphine /
+  Atropine / Quinine, `open_botany_studio_window()` is a
+  singleton, agent-action opener works.
+
+**The headline architectural step (sibling #5).**
+
+Phases CB-1.0 → MB-1.0 demonstrated cross-studio data sharing
+between Python catalogues — one sibling package importing
+another sibling package's `core/*.py` data file.  Phase BT-1.0
+**reads the OrgChem SQLite store directly** for the first
+time: the *Plant secondary metabolites* tab queries
+`orgchem.db.queries.list_molecules()` + filters by
+`source_tags_json`.  Confirms the cross-studio pattern works
+not just for static Python catalogues but for live database
+rows that change as the user adds molecules — the bridge
+re-queries on every panel rebuild.
+
+**Result.**  Six-studio platform live (OrgChem + Cell Bio +
+Biochem + Pharm + Microbio + Botany).  One more sibling
+(Animal Biology, AB-1.0) queued for the final wakeup-driven
+round which will close out the platform retrospective.
+
+---
+
+## 2026-04-26 — Round 215 (Phase MB-1.0: Microbiology Studio v0.1 — fourth sibling, demonstrates 3-hop cross-studio cross-reference graph)
+
+**Wakeup-driven build.**  Scheduled by round 214's autonomous
+wakeup chain after Pharm Studio shipped.
+
+**What shipped.**
+
+Sibling package #4 (`microbio/`) now lives alongside
+`orgchem/`, `cellbio/`, `biochem/`, and `pharm/`.  Test count
+**2 397 → 2 440** (+43).
+
+| File / dir | Purpose |
+|------------|---------|
+| `microbio/__init__.py` | Triggers microbio agent-action registration. |
+| `microbio/INTERFACE.md` | Navigation map. |
+| `microbio/core/microbes.py` | `Microbe` frozen dataclass + `KINGDOMS` (5-tuple) + `GRAM_TYPES` (5-tuple) + `BALTIMORE_CLASSES` (7-tuple) + lookup helpers (`list_microbes` / `get_microbe` / `find_microbes` / `microbes_for_kingdom` / `microbe_to_dict`). |
+| `microbio/core/microbes_data.py` | 30-entry catalogue spanning the 5 microbial kingdoms: 17 bacteria (6 gram+ — *S. aureus / S. pyogenes / S. pneumoniae / E. faecalis / C. difficile / L. monocytogenes*; 6 gram- — *E. coli / K. pneumoniae / P. aeruginosa / N. meningitidis / H. pylori / S. typhi*; 3 atypical — *M. pneumoniae / C. trachomatis / T. pallidum*; 2 acid-fast — *M. tuberculosis / M. leprae*), 2 archaea (*Methanobrevibacter smithii / Sulfolobus acidocaldarius*), 3 fungi (*C. albicans / A. fumigatus / C. neoformans*), 6 viruses spanning Baltimore I → VII (SARS-CoV-2 / HIV-1 / Influenza A / HBV / HSV-1 / Norovirus), 2 protists (*P. falciparum / T. gondii*).  Each entry: full taxonomic name, kingdom, gram_type, baltimore_class, morphology, key_metabolism_or_replication, pathogenesis_summary, antibiotic_susceptibility, genome_size_or_kb, ICTV/Bergey reference, and **typed cross-references to `orgchem.core.cell_components` ids + `pharm.core.drug_classes` ids + `biochem.core.enzymes` ids**.  All cross-reference IDs verified against destination catalogues — zero broken edges. |
+| `microbio/agent/actions_microbes.py` | 5 agent actions in the new `microbio-microbes` category: `list_microbes(kingdom="", gram_type="")`, `get_microbe(microbe_id)`, `find_microbes(needle)`, `microbes_for_kingdom(kingdom)`, `open_microbio_studio(tab="")`. |
+| `microbio/gui/windows/microbio_main_window.py` | `MicrobioMainWindow(QMainWindow)` with three top-level tabs (Microbes / Antibiotic spectrum / Tutorials).  Geometry persists via `QSettings["window/microbio"]`. |
+| `microbio/gui/panels/microbes_panel.py` | Kingdom combo + gram-type combo + free-text filter + list + HTML detail card with Baltimore class for viruses + cross-references. |
+| **`microbio/gui/panels/antibiotic_spectrum_panel.py`** | **Multi-hop architectural validation #3** — reads `pharm.core.drug_classes` directly, filters to the 6 antimicrobial classes (β-lactams / macrolides / fluoroquinolones / aminoglycosides / HIV PIs / NRTIs).  *Open in Pharmacology Studio…* hand-off. |
+| `microbio/gui/panels/microbio_tutorial_panel.py` | Tree of microbio lessons + markdown viewer. |
+| `microbio/tutorial/curriculum.py + content/beginner/01_welcome_microbio.md` | Welcome lesson explaining all three tabs + the 3-hop cross-reference graph. |
+
+**OrgChem-side glue (6 hooks).**
+
+| File | Change |
+|------|--------|
+| `orgchem/agent/headless.py` | Imports `microbio` after `pharm` so the registry sees the new actions. |
+| `tests/conftest.py` | Same — imports `microbio` at session start. |
+| `orgchem/gui/main_window.py` | Adds `_microbio_window` slot, *Window → Microbiology Studio…* menu entry (Ctrl+Shift+N), and `open_microbio_studio_window()` method. |
+| `orgchem/gui/audit.py` | Extends `GUI_ENTRY_POINTS` with the 5 microbio actions. |
+| `orgchem/core/agent_surface_audit.py` | Extends `EXPECTED_SURFACES` with the Microbes / `open_microbio_studio` surface (4 / 4 wired). |
+| `orgchem/agent/actions_meta.py` | Extends `_CATEGORY_SUMMARIES` with the `microbio-microbes` description. |
+
+**Tests (2 new files, 43 new tests).**
+
+- `tests/test_microbio_microbes_catalogue.py` — 28 tests:
+  catalogue contents (≥ 30 entries, all 5 kingdoms covered,
+  ≥ 4 of 5 gram types, ≥ 4 of 7 Baltimore classes for
+  viruses, every required field populated, ids unique,
+  Baltimore class only set for viruses), **3-hop cross-
+  reference integrity** (`cross_reference_cell_component_ids`
+  → orgchem, `cross_reference_pharm_drug_class_ids` → pharm,
+  `cross_reference_enzyme_ids` → biochem — every edge must
+  resolve), lookup helpers, agent action behaviour, GUI-audit
+  + agent-surface-audit + tutorial-scaffold integration.
+- `tests/test_microbio_main_window.py` — 15 tests: main window
+  constructs, panel filters work, Antibiotic-spectrum bridge
+  reads pharm directly + counts the 6 antimicrobial classes,
+  `open_microbio_studio_window()` is a singleton, agent-action
+  opener works.
+
+**3-hop cross-reference graph (the architectural headline).**
+
+Phase PH-1.0 demonstrated 2-hop sharing (Pharm reads Biochem
++ Cell Bio).  Phase MB-1.0 confirms the pattern scales to a
+**3-hop graph**: each microbe entry's three cross-reference
+families touch `orgchem.core.cell_components` (Phase 43) +
+`pharm.core.drug_classes` (Phase PH-1.0) + `biochem.core.
+enzymes` (Phase BC-1.0) — all from a single per-entry record.
+The audit tests pin this so a future rename in any of the
+three destination catalogues surfaces the broken edge
+immediately.
+
+**Architecture validation: complete.**  Four siblings shipped
+in four consecutive rounds, each at zero cost to the others.
+The pattern is now repeatable enough that the next two
+siblings (BT-1.0 + AB-1.0) follow autonomously without
+review.
+
+**Result.**  Five-studio platform live (OrgChem + Cell Bio +
+Biochem + Pharm + Microbio).  Two more siblings (Botany,
+Animal Biology) queued for the next two wakeup-driven rounds.
+
+---
+
+## 2026-04-26 — Round 214 (Phase PH-1.0: Pharmacology Studio v0.1 — third sibling, validates multi-hop cross-studio data sharing)
+
+**Wakeup-driven build.**  Scheduled by round 213's autonomous
+wakeup chain after Biochem Studio shipped.
+
+**What shipped.**
+
+Sibling package #3 (`pharm/`) now lives alongside `orgchem/`,
+`cellbio/`, and `biochem/`.  Test count 2 357 → 2 397 (+40).
+
+| File / dir | Purpose |
+|------------|---------|
+| `pharm/__init__.py` | Triggers pharm agent-action registration. |
+| `pharm/INTERFACE.md` | Navigation map. |
+| `pharm/core/drug_classes.py` | `DrugClass` frozen dataclass + `TARGET_CLASSES` (9-tuple) + `THERAPEUTIC_AREAS` (11-tuple) + lookup helpers. |
+| `pharm/core/drug_classes_data.py` | 30-entry catalogue spanning 11 therapeutic areas: cardiovascular (β-blockers / ACE-Is / ARBs / CCBs / loop + thiazide diuretics / statins / anticoagulants / antiplatelets), pulmonology (β2-agonists), pain (NSAIDs / opioids), neurology-psychiatry (SSRIs / benzodiazepines / atypical antipsychotics / antiepileptics), endocrinology (insulin / GLP-1 agonists / SGLT2 inhibitors), GI (PPIs), infectious (β-lactams / macrolides / fluoroquinolones / aminoglycosides / HIV-PIs / NRTIs), oncology (platinum / taxanes / kinase inhibitors / checkpoint inhibitors / anti-CD20).  Each entry carries mechanism, target, agents, clinical use, side effects, contraindications, monitoring, and **typed cross-references to OrgChem molecules + Biochem enzyme ids + Cell Bio signalling-pathway ids**. |
+| `pharm/agent/actions_drug_classes.py` | 5 agent actions in `pharm-drugs` category. |
+| `pharm/gui/windows/pharm_main_window.py` | `PharmMainWindow(QMainWindow)` with three top-level tabs (Drug classes / Bridges / Tutorials). |
+| `pharm/gui/panels/drug_classes_panel.py` | Target-class combo + therapeutic-area combo + free-text filter. |
+| **`pharm/gui/panels/biochem_bridge_panel.py`** | **Multi-hop architectural validation #1** — reads `biochem.core.enzymes` directly, filters to drug-targetable enzymes.  *Open in Biochem Studio* hand-off. |
+| **`pharm/gui/panels/cellbio_bridge_panel.py`** | **Multi-hop architectural validation #2** — reads `cellbio.core.cell_signaling` directly, filters to drug-targeted pathways.  *Open in Cell Biology Studio* hand-off. |
+| `pharm/gui/panels/pharm_tutorial_panel.py` | Tree of pharm lessons + markdown viewer. |
+| `pharm/tutorial/...` | Welcome lesson explaining all three tabs + the multi-hop bridge architecture. |
+
+**OrgChem-side glue (6 files modified).**
+
+- `orgchem/agent/headless.py` — added `import pharm` after `import biochem`.
+- `orgchem/gui/main_window.py` — `_pharm_window` attr, *Window → Pharmacology Studio…* (Ctrl+Shift+H) menu entry, and `open_pharm_studio_window()` slot.
+- `orgchem/gui/audit.py` — appended pharm entries to `GUI_ENTRY_POINTS`.
+- `orgchem/core/agent_surface_audit.py` — extended `EXPECTED_SURFACES` with the pharm drug-classes catalogue surface.
+- `orgchem/agent/actions_meta.py` — added `pharm-drugs` category summary.
+- `tests/conftest.py` — added `import pharm` at session start.
+
+**Pharm-side tests (40 new).**
+
+- `tests/test_pharm_drug_classes_catalogue.py` (24 tests) — catalogue contents (count floor 30, required fields incl. tuple validation, target classes valid, therapeutic areas valid, unique IDs, target + therapeutic-area diversity), **multi-hop cross-studio cross-reference integrity** (every `cross_reference_enzyme_ids` entry resolves to a real `biochem.core.enzymes` id; every `cross_reference_signaling_pathway_ids` entry resolves to a real `cellbio.core.cell_signaling` id; ≥ 15 of 30 drug classes have at least one cross-reference into the platform), lookup helpers, agent-action registration + behaviour, GUI-audit integration, tutorial scaffold.
+- `tests/test_pharm_main_window.py` (16 tests) — main window + all three top-level tabs construct cleanly; drug-classes panel populates + supports `select_drug_class()` + agent / target-class filters; **both bridge panels read their respective sibling data correctly** + support deep-linking; `open_pharm_studio_window()` slot returns + caches the window; agent action `open_pharm_studio` works via Qt main-thread dispatch with optional tab focus.
+
+**Test count:** **2 357 → 2 397** passing (+40).  Full suite green.
+
+**Architectural validation by sibling #3.**
+
+1. **Multi-hop data sharing works.**  Pharm imports + reads BOTH `biochem.core.enzymes` AND `cellbio.core.cell_signaling`; both bridges work in the same window.  Confirms the cross-studio data-sharing pattern is N-way.
+2. **Cross-studio cross-reference audit scales.**  Pharm's catalogue cross-references TWO sibling studios (Biochem + Cell Bio); both edge sets are validated at test time.
+3. **No orgchem refactor needed.**  Pharm followed exactly the same pattern as Biochem; no new abstractions emerged.  The sibling-package + 6-file OrgChem-glue pattern works.
+
+**Caught + fixed during build.**  Three `contraindications=("...",)` entries had missing trailing commas (Python interpreted them as plain strings); the `test_every_drug_class_has_required_fields` tuple-type assertion caught all of them in one round.
+
+**Next phases.**  MB-1.0 Microbiology Studio (scheduled by wakeup chain), BT-1.0 Botany Studio, AB-1.0 Animal Biology Studio.  After AB-1.0, Phase L-1.0 will extract a `lifesci_shared/` kernel from observed reality across the 5 sibling studios.
+
+---
+
+## 2026-04-26 — Round 213 (Phase BC-1.0: Biochem Studio v0.1 — second sibling, validates cross-studio data-sharing pattern)
+
+**User request.** *"Please start implementing the second sibling"*
+— after Cell Bio Studio v0.1 shipped in round 212, the user
+asked to proceed with the next planned studio (Biochem).
+
+**What shipped.**
+
+Sibling package #2 (`biochem/`) now lives alongside `orgchem/`
+and `cellbio/`.  OrgChem stays at 2 321 baseline untouched.
+
+| File / dir | Purpose |
+|------------|---------|
+| `biochem/__init__.py` | Triggers biochem agent-action registration. |
+| `biochem/INTERFACE.md` | Navigation map. |
+| `biochem/core/enzymes.py` | `Enzyme` frozen dataclass + `EC_CLASSES` (1-7) + `EC_CLASS_NAMES` map + lookup helpers. |
+| `biochem/core/enzymes_data.py` | 30-entry catalogue spanning all 7 IUBMB EC classes (5 oxidoreductases / 5 transferases / 6 hydrolases / 4 lyases / 3 isomerases / 4 ligases / 3 translocases).  Each entry carries EC number, mechanism class, substrates / products / cofactors, regulators, disease associations, drug targets, structural family, and **typed cross-references to OrgChem molecules + OrgChem metabolic-pathway ids + Cell Bio signalling-pathway ids**. |
+| `biochem/agent/actions_enzymes.py` | 5 agent actions in the `biochem-enzymes` category: `list_enzymes`, `get_enzyme`, `find_enzymes`, `enzymes_for_ec_class`, `open_biochem_studio`. |
+| `biochem/gui/windows/biochem_main_window.py` | `BiochemMainWindow(QMainWindow)` — singleton top-level window with three inner tabs (Enzymes / Metabolic pathways / Tutorials) + `QSettings` persistence under `window/biochem`. |
+| `biochem/gui/panels/enzymes_panel.py` | EC-class combo + free-text filter + list + HTML detail card. |
+| **`biochem/gui/panels/metabolic_bridge_panel.py`** | **Architectural validation** — surfaces `orgchem.core.metabolic_pathways` (Phase 42, 11 pathways) read-only inside Biochem.  No copy, no refactor.  *Open in OrgChem Tools menu…* button hands off to the existing OrgChem dialog. |
+| `biochem/gui/panels/biochem_tutorial_panel.py` | Tree of biochem lessons + markdown viewer. |
+| `biochem/tutorial/curriculum.py` + `loader.py` + `content/beginner/01_welcome_biochem.md` | Welcome lesson explaining all three tabs + how the cross-studio links work. |
+
+**OrgChem-side glue (6 files modified).**
+
+- `orgchem/agent/headless.py` — `import biochem` after `import cellbio`.
+- `orgchem/gui/main_window.py` — `_biochem_window` attr, *Window → Biochem Studio…* (Ctrl+Shift+Y) menu entry, and `open_biochem_studio_window()` slot.
+- `orgchem/gui/audit.py` — appended biochem entries to `GUI_ENTRY_POINTS`.
+- `orgchem/core/agent_surface_audit.py` — extended `EXPECTED_SURFACES` with the biochem enzymes catalogue surface.
+- `orgchem/agent/actions_meta.py` — added `biochem-enzymes` category summary.
+- `tests/conftest.py` — `import biochem` at session start.
+
+**Biochem-side tests (36 new).**
+
+- `tests/test_biochem_enzymes_catalogue.py` (24 tests) — catalogue contents (count floor, required fields, EC-number / EC-class consistency, all 7 classes represented, unique IDs), **cross-studio cross-reference integrity** (every `cross_reference_pathway_ids` entry must resolve to a real `orgchem.core.metabolic_pathways` id; every `cross_reference_signaling_pathway_ids` entry must resolve to a real `cellbio.core.cell_signaling` id), lookup helpers, agent-action registration + behaviour, GUI-audit integration, tutorial scaffold.
+- `tests/test_biochem_main_window.py` (12 tests) — main window + all three panels construct cleanly; enzymes panel populates + supports `select_enzyme()` + free-text filter + EC-class filter; **metabolic-bridge panel reads orgchem data correctly + supports `select_pathway()`**; `open_biochem_studio_window()` slot returns + caches the window; agent action `open_biochem_studio` works via Qt main-thread dispatch with optional tab focus.
+
+**Test count:** **2 321 → 2 357** passing (+36).  Full suite green.
+
+**Architectural decisions validated by sibling #2.**
+
+1. **Sibling-package pattern works.**  `biochem/` was added with zero refactor of `orgchem/` or `cellbio/`.
+2. **Cross-studio data sharing works.**  `biochem.gui.panels.metabolic_bridge_panel.MetabolicBridgePanel` imports + reads `orgchem.core.metabolic_pathways` directly.  No fork, no copy.  This is the pattern future siblings will reuse.
+3. **Cross-studio cross-reference audit works.**  Two new tests catch dangling references between the three studios — if OrgChem renames a `metabolic_pathways` id or Cell Bio renames a `cell_signaling` id, biochem's tests fail immediately.
+4. **No shared kernel needed yet.**  After sibling #4 we'll have enough samples to know what to extract into a `lifesci_shared/` package.
+
+**Next phases.**  PH-1.0 Pharmacology Studio (next), MB-1.0 Microbiology Studio, BT-1.0 Botany Studio, AB-1.0 Animal Biology Studio.  Wakeup chain scheduled to build each in turn.
+
+---
+
+## 2026-04-26 — Round 212 (Phase CB-1.0: Cell Biology Studio v0.1 prototype — first sibling in the planned 6-studio life-sciences platform)
+
+**User request.**  After sketching the Cell Biology Studio scope
+doc + the 6-studio architecture (OrgChem + Cell Bio + Biochem +
+Pharmacology + Microbiology + Botany + Animal Biology), user
+chose **Option A** (shared monorepo, top-level windows) + asked
+to *"plan and proceed"*.
+
+**What shipped.**
+
+The first slice of the multi-studio platform.  A new sibling
+package `cellbio/` lives alongside `orgchem/`; it imports from
+OrgChem (bus, agent registry, GUI dispatch) but doesn't refactor
+it.  OrgChem stays at 2 288 baseline tests untouched.
+
+| File / dir | Purpose |
+|------------|---------|
+| `cellbio/__init__.py` | Importing the package triggers cellbio agent-action registration into the shared registry. |
+| `cellbio/INTERFACE.md` | Navigation map for the new package. |
+| `cellbio/core/cell_signaling.py` | 26-pathway signalling catalogue with `SignalingPathway` frozen dataclass + lookup helpers. Each pathway carries receptor class, key components (in pathway order), disease associations, drug targets, cross-references to OrgChem molecule names + sister cellbio pathways. |
+| `cellbio/agent/actions_signaling.py` | 4 agent actions in the new `cellbio-signaling` category — `list_signaling_pathways`, `get_signaling_pathway`, `find_signaling_pathways`, `open_cellbio_studio` (lazy main-window opener). |
+| `cellbio/gui/windows/cellbio_main_window.py` | `CellBioMainWindow(QMainWindow)` — singleton top-level window, two inner tabs (Signalling, Tutorials), `QSettings` persistence under `window/cellbio`. |
+| `cellbio/gui/panels/signaling_panel.py` | Category combo + receptor-class combo + free-text filter + list + HTML detail card with cross-references. |
+| `cellbio/gui/panels/cellbio_tutorial_panel.py` | Tree of cellbio lessons + markdown viewer bound to `cellbio.tutorial.curriculum.CURRICULUM`. |
+| `cellbio/tutorial/curriculum.py` | Cell Bio's own curriculum (1 starter lesson; the full ~ 170-lesson Cell Bio curriculum lands in Phase CB-4). |
+| `cellbio/tutorial/content/beginner/01_welcome_cellbio.md` | Welcome lesson — what cell biology covers, what ships in CB-1.0, how it cross-references OrgChem, where the platform is heading. |
+
+**OrgChem-side glue (7 files modified).**
+
+- `orgchem/agent/headless.py` — `import cellbio` after the orgchem registry import so the headless app sees cellbio actions.
+- `orgchem/gui/main_window.py` — added `_cellbio_window: Optional[QMainWindow] = None` attr, *Window → Cell Biology Studio…* (Ctrl+Shift+B) menu entry, and `open_cellbio_studio_window()` slot following the Phase-30 Macromolecules pattern.
+- `orgchem/gui/audit.py` — appended cellbio entries to `GUI_ENTRY_POINTS` under a labelled section header.
+- `orgchem/core/agent_surface_audit.py` — extended `EXPECTED_SURFACES` with the cellbio signalling catalogue surface.
+- `orgchem/agent/actions_meta.py` — added `cellbio-signaling` summary so `list_capabilities()` describes the new category cleanly.
+- `tests/conftest.py` — `import cellbio` at session start so the registry is fully populated before any test inspects it.
+- `tests/test_docs_coverage.py` — extended file-existence audit to look under `tests/` + `cellbio/` so legitimate `*.py` references resolve.
+
+**Cellbio-side tests (33 new).**
+
+- `tests/test_cellbio_signaling_catalogue.py` (25 tests) — catalogue contents (count floor, required fields, valid categories + receptor classes, unique IDs, internal cross-reference resolution), lookup helpers, agent-action registration + behaviour, GUI-audit integration, tutorial scaffold.
+- `tests/test_cellbio_main_window.py` (8 tests) — main window + both panels construct cleanly; signalling panel populates + supports `select_pathway()` + free-text filter; `open_cellbio_studio_window()` slot returns + caches the window; agent action `open_cellbio_studio` works via Qt main-thread dispatch.
+
+**Test count:** **2 288 → 2 321** passing (+33).  Full suite green.
+
+**Architectural decisions documented.**
+
+1. **Sibling packages, no kernel extraction yet.**  Cell Bio imports from `orgchem.*` directly (bus, agent registry, GUI dispatch).  When the second sibling lands, we'll see what's actually shared + extract a `lifesci_shared/`.  YAGNI applied.
+2. **Top-level QMainWindow opened from OrgChem's Window menu**, mirroring the Phase-30 Macromolecules window.  No new launcher.  When 3+ studios exist, swap to a Studios menu.
+3. **Shared agent registry, shared DB, shared global glossary.**  Cell Bio uses Python catalogues (no new DB tables) for v0.1.
+4. **Cross-references are typed, audited.**  The Phase-49c cross-reference audit framework is the natural extension point when v0.2 wires Cell Bio ↔ OrgChem ↔ future Biochem links.
+
+**Next phases (planned).**
+- CB-2: 14 more catalogues (cell-cycle, cytoskeleton, motors, transporters, receptors, cell-types, junctions, adhesion, apoptosis machinery deeper, autophagy, cell-death modalities, stem cells, condensates, mechanobio).
+- CB-3: 11 interactive tools (cell-cycle simulator, action-potential simulator, membrane-transport calculator, signal-pathway visualiser, mitosis/meiosis animator, calcium signalling simulator, FACS mock-data, cell-counting calc).
+- CB-4: ~ 170 cellbio tutorial lessons across 4 tiers.
+- CB-5: cross-studio link audit + bidirectional navigation hooks.
+- CB-6: integration polish + screenshot tour + doc updates.
+
+---
+
 ## 2026-04-26 — Round 211 (User request: ANOTHER 20 lessons per tier; curriculum 135 → 215)
 
 **User request.**  *"Fantastic! Please add another 20 lessons

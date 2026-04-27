@@ -1,8 +1,37 @@
-# Roadmap — OrgChem Studio
+# Roadmap — OrgChem Studio (+ multi-studio life-sciences platform)
 
 > Living document. Revise whenever priorities shift. Completed items move
 > to `PROJECT_STATUS.md` "What works today" and are struck through here.
-> Last updated: **2026-04-26 (after round 211)**
+> Last updated: **2026-04-26 (after round 223 — Phase AB-2.0 ships; 6 of 6 -1 siblings live + 6 of 6 -2 catalogues shipped — the -2 deep-phase chain is COMPLETE).  Future work pivots to -3 interactive tools / -4 ~ 150 tutorial lessons per sibling / -5 cross-studio link audits / -6 integration polish.**
+
+> **Multi-studio life-sciences platform — COMPLETE (round
+> 212 → 217).**  OrgChem Studio is the foundation; **all 6
+> sibling studios shipped in 6 consecutive rounds:** CB-1.0
+> (212, Cell Biology — 26-pathway signalling), BC-1.0 (213,
+> Biochem — 30-enzyme EC catalogue + bridge to OrgChem
+> metabolic pathways), PH-1.0 (214, Pharmacology — 30-drug-
+> class catalogue + multi-hop Python-catalogue bridges to
+> Biochem + Cell Bio), MB-1.0 (215, Microbiology — 30-microbe
+> catalogue across 5 kingdoms + Antibiotic-spectrum bridge +
+> 3-hop cross-reference graph), BT-1.0 (216, Botany —
+> 30-plant-taxa catalogue across 6 divisions + first
+> SQLite-direct bridge), **AB-1.0 (217, Animal Biology —
+> 30-animal-taxa catalogue across all 9 phyla + second
+> cellbio bridge — completes the platform)**.  Test count
+> grew 2 288 → **2 532** (+244).  Each sibling lives in its
+> own top-level package (`cellbio/` / `biochem/` / `pharm/`
+> / `microbio/` / `botany/` / `animal/`) sharing one process,
+> one Qt event loop, one SQLite DB, one global glossary, one
+> agent registry.  See `animal/tutorial/content/beginner/02_
+> platform_retrospective.md` for the full retrospective.  The
+> next priority pivots from *"build sibling N"* (chain done)
+> to *"deepen each sibling's catalogue / tools / tutorials /
+> audits"*: each sibling has its own -2 (more catalogues),
+> -3 (interactive tools), -4 (~ 150 lessons), -5 (link
+> audit), -6 (polish) deep-phase queue.  Per current cadence
+> the deep-phase work runs ~ 9-12 months per sibling — the
+> user picks individual deep-phase tasks as priorities shift,
+> no autonomous chain queues that work.
 
 > **Curriculum expansion 2026-04-26 (rounds 208 → 211).** User-driven
 > curriculum growth massively exceeded the Phase-31 30-lesson target.

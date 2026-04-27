@@ -106,6 +106,17 @@ def test_interface_references_exist_on_disk():
         # main.py sits at project root.
         if (PROJECT_ROOT / name).exists():
             continue
+        # tests/ is referenced from INTERFACE.md when describing
+        # the audit gates that pin coverage floors.
+        tests_dir = PROJECT_ROOT / "tests"
+        if (tests_dir / name).exists():
+            continue
+        # cellbio/ (Phase CB-1.0 — sibling life-sciences studio).
+        cellbio_dir = PROJECT_ROOT / "cellbio"
+        if cellbio_dir.exists():
+            cb_match = list(cellbio_dir.rglob(name))
+            if cb_match:
+                continue
         missing.append(token)
     assert not missing, (
         "INTERFACE.md references these .py files that no longer exist:\n"

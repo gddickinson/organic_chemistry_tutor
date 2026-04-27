@@ -113,6 +113,85 @@ EXPECTED_SURFACES: Tuple[SurfaceSpec, ...] = (
                 list_action="list_kingdom_topics",
                 get_action="get_kingdom_topic",
                 find_action="find_kingdom_topics"),
+    # Phase CB-1.0 — Cell Bio Studio sibling.  The opener is the
+    # Cell Bio main window itself (no per-catalogue dialog); the
+    # signalling catalogue lives on the Signalling tab.
+    SurfaceSpec("Cell signalling pathways (Cell Bio Studio)",
+                "open_cellbio_studio",
+                list_action="list_signaling_pathways",
+                get_action="get_signaling_pathway",
+                find_action="find_signaling_pathways"),
+    # Phase CB-2.0 — Cell-cycle catalogue, dedicated tab opener.
+    SurfaceSpec("Cell cycle (Cell Bio Studio)",
+                "open_cellbio_cell_cycle_tab",
+                list_action="list_cell_cycle_entries",
+                get_action="get_cell_cycle_entry",
+                find_action="find_cell_cycle_entries"),
+    # Phase BC-1.0 — Biochem Studio sibling.  The opener is the
+    # Biochem main window itself; the enzyme catalogue lives on
+    # the Enzymes tab.
+    SurfaceSpec("Enzymes (Biochem Studio)",
+                "open_biochem_studio",
+                list_action="list_enzymes",
+                get_action="get_enzyme",
+                find_action="find_enzymes"),
+    # Phase BC-2.0 — Cofactors catalogue, dedicated tab opener.
+    SurfaceSpec("Cofactors (Biochem Studio)",
+                "open_biochem_cofactors_tab",
+                list_action="list_cofactors",
+                get_action="get_cofactor",
+                find_action="find_cofactors"),
+    # Phase PH-1.0 — Pharmacology Studio sibling.
+    SurfaceSpec("Drug classes (Pharm Studio)",
+                "open_pharm_studio",
+                list_action="list_drug_classes",
+                get_action="get_drug_class",
+                find_action="find_drug_classes"),
+    # Phase PH-2.0 — Receptor pharmacology catalogue, dedicated
+    # tab opener.
+    SurfaceSpec("Receptors (Pharm Studio)",
+                "open_pharm_receptors_tab",
+                list_action="list_receptors",
+                get_action="get_receptor",
+                find_action="find_receptors"),
+    # Phase MB-1.0 — Microbiology Studio sibling.
+    SurfaceSpec("Microbes (Microbio Studio)",
+                "open_microbio_studio",
+                list_action="list_microbes",
+                get_action="get_microbe",
+                find_action="find_microbes"),
+    # Phase MB-2.0 — Virulence-factor catalogue, dedicated tab.
+    SurfaceSpec("Virulence factors (Microbio Studio)",
+                "open_microbio_virulence_tab",
+                list_action="list_virulence_factors",
+                get_action="get_virulence_factor",
+                find_action="find_virulence_factors"),
+    # Phase BT-1.0 — Botany Studio sibling.
+    SurfaceSpec("Plant taxa (Botany Studio)",
+                "open_botany_studio",
+                list_action="list_plant_taxa",
+                get_action="get_plant_taxon",
+                find_action="find_plant_taxa"),
+    # Phase BT-2.0 — Plant-hormones catalogue, dedicated tab.
+    SurfaceSpec("Plant hormones (Botany Studio)",
+                "open_botany_plant_hormones_tab",
+                list_action="list_plant_hormones",
+                get_action="get_plant_hormone",
+                find_action="find_plant_hormones"),
+    # Phase AB-1.0 — Animal Biology Studio sibling (sixth +
+    # FINAL — completes the 6-studio platform).
+    SurfaceSpec("Animal taxa (Animal Biology Studio)",
+                "open_animal_studio",
+                list_action="list_animal_taxa",
+                get_action="get_animal_taxon",
+                find_action="find_animal_taxa"),
+    # Phase AB-2.0 — Organ-systems catalogue, dedicated tab.
+    # FINAL surface added by the -2 deep-phase chain.
+    SurfaceSpec("Organ systems (Animal Biology Studio)",
+                "open_animal_organ_systems_tab",
+                list_action="list_organ_systems",
+                get_action="get_organ_system",
+                find_action="find_organ_systems"),
 )
 
 

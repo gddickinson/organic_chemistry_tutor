@@ -19,6 +19,21 @@ from __future__ import annotations
 import logging
 import os
 
+# Phase CB-1.0 — pre-import sibling life-sciences studios at the
+# start of every test session so their agent-action registrations
+# fire before any test inspects the registry.  Mirrors the runtime
+# behaviour where `main.py` / `HeadlessApp.__init__` triggers the
+# same import.  Keeps tests like
+# `tests/test_feature_discovery.test_no_stale_category_summaries`
+# honest (they walk the registry + complain about category
+# summaries with no corresponding action).
+import cellbio  # noqa: F401, E402
+import biochem  # noqa: F401, E402  # Phase BC-1.0 — second sibling
+import pharm    # noqa: F401, E402  # Phase PH-1.0 — third sibling
+import microbio  # noqa: F401, E402  # Phase MB-1.0 — fourth sibling
+import botany   # noqa: F401, E402  # Phase BT-1.0 — fifth sibling
+import animal   # noqa: F401, E402  # Phase AB-1.0 — sixth + final sibling
+
 log = logging.getLogger(__name__)
 
 

@@ -51,6 +51,20 @@ class HeadlessApp:
         from orgchem.db.seed import seed_if_empty
         from orgchem.gui.main_window import MainWindow
         from orgchem.agent import actions  # noqa: F401 — force registry import
+        # Sibling life-sciences studios — importing each studio's
+        # top-level package triggers registration of its agent
+        # actions into the shared OrgChem registry.  Phase CB-1.0
+        # adds Cell Bio Studio; Phase BC-1.0 adds Biochem Studio;
+        # Phase PH-1.0 adds Pharmacology Studio; Phase MB-1.0
+        # adds Microbiology Studio; Phase BT-1.0 adds Botany
+        # Studio; Phase AB-1.0 adds Animal Biology Studio
+        # (sibling #6 — completes the platform).
+        import cellbio  # noqa: F401
+        import biochem  # noqa: F401
+        import pharm    # noqa: F401
+        import microbio  # noqa: F401
+        import botany   # noqa: F401
+        import animal   # noqa: F401
 
         self.cfg = AppConfig.load()
         setup_logging(self.cfg)

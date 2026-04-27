@@ -3,12 +3,34 @@
 Read this file FIRST before opening any source file. It is the navigation map
 for the project. Update it whenever the module layout changes.
 
+> **All 6 sibling studios shipped — Phase CB-1.0 → AB-1.0
+> (rounds 212-217, 2026-04-26)**.  The 6-studio life-sciences
+> platform is complete.  Six sibling packages live alongside
+> `orgchem/`:
+> **Cell Biology Studio** (`cellbio/`, CB-1.0, Ctrl+Shift+B),
+> **Biochem Studio** (`biochem/`, BC-1.0, Ctrl+Shift+Y),
+> **Pharmacology Studio** (`pharm/`, PH-1.0, Ctrl+Shift+H),
+> **Microbiology Studio** (`microbio/`, MB-1.0, Ctrl+Shift+N),
+> **Botany Studio** (`botany/`, BT-1.0, Ctrl+Shift+V), and
+> **Animal Biology Studio** (`animal/`, AB-1.0, Ctrl+Shift+X).
+> Each ships its own `INTERFACE.md`. Every sibling shares
+> OrgChem's bus, agent registry, SQLite DB, and global
+> glossary; each opens from the OrgChem *Window* menu.  See
+> `animal/tutorial/content/beginner/02_platform_retrospective.md`
+> for the full retrospective.
+
 ## Top-level
 
 | File / Dir          | Purpose |
 |---------------------|---------|
 | `main.py`           | Application entry point. Loads config → inits DB → seeds → opens main window. Also hosts the `--agent-stdio` and `--headless` launch flags. |
 | `orgchem/`          | Main application package (see below). |
+| `cellbio/`          | Sibling life-sciences package (Phase CB-1.0 signalling + CB-2.0 cell-cycle catalogues). See `cellbio/INTERFACE.md`. |
+| `biochem/`          | Sibling life-sciences package (Phase BC-1.0 enzymes + BC-2.0 cofactors catalogues). See `biochem/INTERFACE.md`. |
+| `pharm/`            | Sibling life-sciences package (Phase PH-1.0 drug classes + PH-2.0 receptor pharmacology catalogues). See `pharm/INTERFACE.md`. |
+| `microbio/`         | Sibling life-sciences package (Phase MB-1.0 microbes + MB-2.0 virulence-factors catalogues). See `microbio/INTERFACE.md`. |
+| `botany/`           | Sibling life-sciences package (Phase BT-1.0 plant-taxa + BT-2.0 plant-hormones catalogues). See `botany/INTERFACE.md`. |
+| `animal/`           | Sibling life-sciences package (Phase AB-1.0 animal-taxa + AB-2.0 organ-systems catalogues — sixth + final sibling). See `animal/INTERFACE.md`. |
 | `data/`             | Bundled static data (optional seeds, tutorial assets). |
 | `tests/`            | pytest suite. |
 | `refs/`             | Reference papers (e.g. Verma et al. 2024 whose formula calculator we reimplement). |

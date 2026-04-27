@@ -1,7 +1,19 @@
-# OrgChem Studio
+# OrgChem Studio (+ the complete 6-studio life-sciences platform)
 
 An interactive PySide6 desktop application for **learning and teaching
-organic chemistry**. Built on RDKit + 3Dmol.js + SQLAlchemy/SQLite, with
+organic chemistry** — and, as of round 217, the **complete 6-studio
+life-sciences platform**. OrgChem Studio is the founding node;
+**Cell Biology Studio** (CB-1.0), **Biochemistry Studio** (BC-1.0),
+**Pharmacology Studio** (PH-1.0), **Microbiology Studio** (MB-1.0),
+**Botany Studio** (BT-1.0), and **Animal Biology Studio** (AB-1.0)
+live alongside it as sibling top-level windows opened from the
+*Window* menu. All six siblings share one process, one Qt event
+loop, one SQLite DB, one global glossary, and one agent registry.
+The 6-sibling chain shipped one studio per round over rounds
+212-217 — see Animal Biology Studio's *Platform retrospective*
+tutorial lesson for the complete history.
+
+Built on RDKit + 3Dmol.js + SQLAlchemy/SQLite, with
 **415 seeded molecules** in the main database (plus **89 curated
 macromolecule entries** across carbohydrates / lipids / nucleic acids),
 **37 named reactions** (incl. Heck + Negishi — full Nobel-2010
@@ -28,7 +40,18 @@ with export to PNG / SVG / MOL and one-click send-to-workspace.
 Every feature is reachable from the GUI — the audit gate pins
 **100 % coverage** (every registered agent action has a corresponding
 menu / panel / dialog entry). The full regression suite is
-**2 288 tests** green as of round 211 (2026-04-26).
+**2 754 tests** green as of round 226 (2026-04-26).  Six -1
+sibling catalogues + six -2 deep-phase catalogues all live;
+the **-3 tutorial-expansion chain** is in flight — Cell Bio
+(round 224) grew 1 → 13 lessons; Biochem (round 225) grew
+1 → 14 lessons; **Pharm** (round 226, **Phase PH-3.0**)
+grew 1 → 13 lessons covering PK + PD + dose-response +
+DDIs, drug development pipeline + biologics +
+pharmacogenomics (advanced), computational drug discovery
++ RWE/RCT methodology + modern modalities like PROTACs +
+mRNA + AAV + CAR-T (graduate). User has requested a 7th
+sibling — **Genetics + Molecular Biology Studio** —
+queued after the -3 chain completes.
 
 ![Main window — molecule workspace](screenshots/tour/01_caffeine.png)
 
@@ -405,7 +428,31 @@ Verma, Singh & Passey, *Rasayan J. Chem.* 17(4): 1460–1472 (2024),
 exposed as both a library call (`orgchem/core/formula.py`) and a
 Tools menu dialog.
 
-## Status (round 211 — 2026-04-26)
+## Sister studios (Phase CB-1.0+)
+
+OrgChem Studio is the first node of a planned 6-studio life-
+sciences platform. Each sibling lives in its own top-level Qt
+window opened from OrgChem's *Window* menu, but shares the
+process, agent registry, SQLite DB, and global glossary.
+
+| Studio | Status | Opener |
+|--------|--------|--------|
+| **OrgChem Studio** | Mature (rounds 1-212; 215 tutorial lessons) | Default main window |
+| **Cell Biology Studio** | Phase CB-1.0 (round 212) — 25-pathway signalling catalogue + starter tutorial | *Window → Cell Biology Studio…* (Ctrl+Shift+B) |
+| **Biochemistry Studio** | Phase BC-1.0 (round 213) — 30-enzyme EC-class catalogue + read-only bridge to OrgChem metabolic pathways + starter tutorial | *Window → Biochem Studio…* (Ctrl+Shift+Y) |
+| **Pharmacology Studio** | Phase PH-1.0 (round 214) — 30-drug-class catalogue across 11 therapeutic areas + multi-hop bridge panels (Biochem enzymes + Cell Bio signalling) + starter tutorial | *Window → Pharmacology Studio…* (Ctrl+Shift+H) |
+| **Microbiology Studio** | Phase MB-1.0 (round 215) — 30-microbe catalogue across the 5 microbial kingdoms (17 bacteria, 2 archaea, 3 fungi, 6 viruses, 2 protists) + Antibiotic-spectrum bridge panel into Pharm Studio + starter tutorial.  Microbe entries carry typed cross-references into orgchem cell components + pharm drug classes + biochem enzymes | *Window → Microbiology Studio…* (Ctrl+Shift+N) |
+| **Botany Studio** | Phase BT-1.0 (round 216) — 30-plant-taxa catalogue spanning all 6 major plant divisions (1 bryophyte, 1 lycophyte, 2 ferns, 4 gymnosperms, 8 monocots, 14 eudicots) + all 4 photosynthetic strategies (C3 / C4 / CAM / not-applicable for the holoparasite Rafflesia) + Plant-secondary-metabolites bridge that reads `orgchem.db.Molecule` rows live (first sibling whose bridge reads SQLite directly rather than another Python catalogue) + starter tutorial.  Plant entries carry typed cross-references into orgchem molecules (Morphine, Caffeine, Salicylic acid, Lycopene, …) + metabolic pathways + pharm drug classes (poppy → opioids; willow → NSAIDs; yew → taxanes) | *Window → Botany Studio…* (Ctrl+Shift+V) |
+| **Animal Biology Studio** | **Phase AB-1.0 (round 217)** — sixth + FINAL sibling, **completes the 6-studio platform**.  30-animal-taxa catalogue spanning all 9 major animal phyla (porifera → cnidaria → platyhelminthes → nematoda → mollusca → annelida → arthropoda → echinodermata → chordata) including the canonical model organisms (*C. elegans*, *Drosophila*, zebrafish, mouse, *Homo sapiens*) + Cell-signalling-bridge panel that reads `cellbio.core.cell_signaling` (second sibling whose bridge does so — confirms the cellbio API is stable enough for multiple consumers) + Welcome lesson + **Platform retrospective** tutorial documenting the full 6-sibling build chain.  Animal entries carry typed cross-references into orgchem molecules (animal hormones / neurotransmitters / metabolites) + cellbio signalling pathways (developmental / apoptosis / immune) + biochem enzymes (animal-source) | *Window → Animal Biology Studio…* (Ctrl+Shift+X) |
+
+The first sibling's catalogue cross-references OrgChem molecules
+in both directions: clicking a Cell Bio signalling pathway shows
+its drug targets as `Molecule` rows already in OrgChem's database
+(e.g. MAPK / ERK → Vemurafenib + Trametinib; AMPK → Metformin;
+mTORC1 → Sirolimus + Everolimus). This is the v0.1 demonstration
+of how the studios stitch together.
+
+## Status (round 212 — 2026-04-26)
 
 **Catalogue.**  415 molecules · 37 reactions · 20 mechanisms ·
 25 pathways · **20** energy profiles (CLOSED) · 80 glossary
@@ -438,12 +485,22 @@ production + fuel cells, carbon capture). Tutorial-coverage
 audit pins glossary coverage at 100 %, catalogue-molecule
 coverage ≥ 85 %, named-reaction coverage ≥ 45 %.
 
-**Code health.**  **2 288 tests** green (0 skipped). **100 % GUI
+**Code health.**  **2 321 tests** green (0 skipped). **100 % GUI
 coverage** (every registered agent action reachable from a menu,
 panel, or dialog — pinned by `tests/test_gui_audit.py`).
 Pollution-safe test fixtures (`Tutor-test` prefix purge auto-runs
 at session end) + fragment-consistency audit on every pathway keep
 the seeded DB clean.
+
+**Cell Bio Studio (Phase CB-1.0).**  Sibling life-sciences studio
+opened from *Window → Cell Biology Studio…* (Ctrl+Shift+B). Ships
+a 25-pathway signalling catalogue (MAPK, PI3K-Akt, JAK-STAT, Wnt,
+Notch, Hedgehog, NF-κB, TGF-β, GPCR-second-messengers, AMPK, p53,
+apoptosis variants, TCR, …), 4 agent actions
+(`open_cellbio_studio`, `list_signaling_pathways`,
+`get_signaling_pathway`, `find_signaling_pathways`), and 1 starter
+tutorial lesson. 33 cellbio-specific tests gate the catalogue
+contents + cross-reference integrity + GUI smoke tests.
 
 **Completed phases.**  1, 2a/b/c1/c2, 3a/b, 4 (IR/NMR/MS + HRMS +
 fragmentation), 8a-d (synthesis pathways), 10a (MD), 11a-d (glossary

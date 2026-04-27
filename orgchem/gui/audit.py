@@ -688,6 +688,195 @@ GUI_ENTRY_POINTS: Dict[str, str] = {
     "export_molecule_3d": "3D viewer → Save PNG…",
     "screenshot_window": "File → Screenshot window… (Ctrl+Shift+P)",
     "screenshot_panel": "File → Screenshot window… (per-panel menu)",
+
+    # ====================================================================
+    # === Cell Biology Studio (Phase CB-1.0, round 212) ==================
+    # ====================================================================
+    # Sibling life-sciences studio.  Opens via Window menu; the
+    # signalling catalogue is reachable through the Cell Bio main
+    # window's *Signalling* tab.
+    "open_cellbio_studio":
+        "Window → Cell Biology Studio… (Ctrl+Shift+B)",
+    "list_signaling_pathways":
+        "Cell Biology Studio → Signalling tab",
+    "get_signaling_pathway":
+        "Cell Biology Studio → Signalling tab (selection)",
+    "find_signaling_pathways":
+        "Cell Biology Studio → Signalling tab → filter box",
+
+    # ----- Phase CB-2.0 (round 218) — Cell-cycle catalogue.
+    "open_cellbio_cell_cycle_tab":
+        "Window → Cell Biology Studio → Cell cycle tab",
+    "list_cell_cycle_entries":
+        "Cell Biology Studio → Cell cycle tab",
+    "get_cell_cycle_entry":
+        "Cell Biology Studio → Cell cycle tab (selection)",
+    "find_cell_cycle_entries":
+        "Cell Biology Studio → Cell cycle tab → filter box",
+    "cell_cycle_entries_for_category":
+        "Cell Biology Studio → Cell cycle tab → category combo",
+
+    # ====================================================================
+    # === Biochemistry Studio (Phase BC-1.0, round 213) ==================
+    # ====================================================================
+    # Second sibling life-sciences studio.  Opens via Window menu;
+    # the enzyme catalogue lives on the Biochem main window's
+    # *Enzymes* tab.  *Metabolic pathways* tab bridges to
+    # orgchem.core.metabolic_pathways read-only.
+    "open_biochem_studio":
+        "Window → Biochem Studio… (Ctrl+Shift+Y)",
+    "list_enzymes":
+        "Biochem Studio → Enzymes tab",
+    "get_enzyme":
+        "Biochem Studio → Enzymes tab (selection)",
+    "find_enzymes":
+        "Biochem Studio → Enzymes tab → filter box",
+    "enzymes_for_ec_class":
+        "Biochem Studio → Enzymes tab → EC-class combo",
+
+    # ----- Phase BC-2.0 (round 219) — Cofactors catalogue.
+    "open_biochem_cofactors_tab":
+        "Window → Biochem Studio → Cofactors tab",
+    "list_cofactors":
+        "Biochem Studio → Cofactors tab",
+    "get_cofactor":
+        "Biochem Studio → Cofactors tab (selection)",
+    "find_cofactors":
+        "Biochem Studio → Cofactors tab → filter box",
+    "cofactors_for_class":
+        "Biochem Studio → Cofactors tab → class combo",
+
+    # ====================================================================
+    # === Pharmacology Studio (Phase PH-1.0, round 214) ==================
+    # ====================================================================
+    # Third sibling life-sciences studio.  Opens via Window menu;
+    # the drug-class catalogue lives on the Pharm main window's
+    # *Drug classes* tab.  *Bridges* tab contains read-only views
+    # of biochem.core.enzymes + cellbio.core.cell_signaling.
+    "open_pharm_studio":
+        "Window → Pharmacology Studio… (Ctrl+Shift+H)",
+    "list_drug_classes":
+        "Pharmacology Studio → Drug classes tab",
+    "get_drug_class":
+        "Pharmacology Studio → Drug classes tab (selection)",
+    "find_drug_classes":
+        "Pharmacology Studio → Drug classes tab → filter box",
+    "drug_classes_for_target":
+        "Pharmacology Studio → Drug classes tab → target combo",
+
+    # ----- Phase PH-2.0 (round 220) — Receptor catalogue.
+    "open_pharm_receptors_tab":
+        "Window → Pharmacology Studio → Receptors tab",
+    "list_receptors":
+        "Pharmacology Studio → Receptors tab",
+    "get_receptor":
+        "Pharmacology Studio → Receptors tab (selection)",
+    "find_receptors":
+        "Pharmacology Studio → Receptors tab → filter box",
+    "receptors_for_family":
+        "Pharmacology Studio → Receptors tab → family combo",
+
+    # ====================================================================
+    # === Microbiology Studio (Phase MB-1.0, round 215) ==================
+    # ====================================================================
+    # Fourth sibling life-sciences studio.  Opens via Window menu;
+    # the microbe catalogue lives on the Microbio main window's
+    # *Microbes* tab.  *Antibiotic spectrum* tab bridges to
+    # pharm.core.drug_classes filtered to the 6 antimicrobial
+    # classes.  Microbe entries carry typed cross-references into
+    # orgchem cell components + biochem enzymes.
+    "open_microbio_studio":
+        "Window → Microbiology Studio… (Ctrl+Shift+N)",
+    "list_microbes":
+        "Microbiology Studio → Microbes tab",
+    "get_microbe":
+        "Microbiology Studio → Microbes tab (selection)",
+    "find_microbes":
+        "Microbiology Studio → Microbes tab → filter box",
+    "microbes_for_kingdom":
+        "Microbiology Studio → Microbes tab → kingdom combo",
+
+    # ----- Phase MB-2.0 (round 221) — Virulence-factor catalogue.
+    "open_microbio_virulence_tab":
+        "Window → Microbiology Studio → Virulence factors tab",
+    "list_virulence_factors":
+        "Microbiology Studio → Virulence factors tab",
+    "get_virulence_factor":
+        "Microbiology Studio → Virulence factors tab (selection)",
+    "find_virulence_factors":
+        "Microbiology Studio → Virulence factors tab → filter box",
+    "virulence_factors_for_class":
+        "Microbiology Studio → Virulence factors tab → class combo",
+
+    # ====================================================================
+    # === Botany Studio (Phase BT-1.0, round 216) ========================
+    # ====================================================================
+    # Fifth sibling life-sciences studio.  Opens via Window menu;
+    # the plant-taxa catalogue lives on the Botany main window's
+    # *Plant taxa* tab.  *Plant secondary metabolites* tab is a
+    # live DB-read bridge into orgchem.db.Molecule filtered by
+    # source_tags_json to plant-derived natural products
+    # (natural-product / terpene / alkaloid / steroid).  Each
+    # plant entry carries typed cross-references into orgchem
+    # molecules + metabolic pathways + pharm drug classes.
+    "open_botany_studio":
+        "Window → Botany Studio… (Ctrl+Shift+V)",
+    "list_plant_taxa":
+        "Botany Studio → Plant taxa tab",
+    "get_plant_taxon":
+        "Botany Studio → Plant taxa tab (selection)",
+    "find_plant_taxa":
+        "Botany Studio → Plant taxa tab → filter box",
+    "plant_taxa_for_division":
+        "Botany Studio → Plant taxa tab → division combo",
+
+    # ----- Phase BT-2.0 (round 222) — Plant-hormones catalogue.
+    "open_botany_plant_hormones_tab":
+        "Window → Botany Studio → Plant hormones tab",
+    "list_plant_hormones":
+        "Botany Studio → Plant hormones tab",
+    "get_plant_hormone":
+        "Botany Studio → Plant hormones tab (selection)",
+    "find_plant_hormones":
+        "Botany Studio → Plant hormones tab → filter box",
+    "plant_hormones_for_class":
+        "Botany Studio → Plant hormones tab → class combo",
+
+    # ====================================================================
+    # === Animal Biology Studio (Phase AB-1.0, round 217) ================
+    # ====================================================================
+    # Sixth + FINAL sibling life-sciences studio — completes
+    # the 6-studio platform.  Opens via Window menu; the
+    # animal-taxa catalogue lives on the Animal main window's
+    # *Animal taxa* tab.  *Cell signalling bridge* is the
+    # second sibling-side bridge into cellbio.core.cell_signaling
+    # (first was Pharm) — filtered to animal-developmental +
+    # apoptosis + immune pathways.  Each animal entry carries
+    # typed cross-references into orgchem molecules + cellbio
+    # signalling pathways + biochem enzymes.
+    "open_animal_studio":
+        "Window → Animal Biology Studio… (Ctrl+Shift+X)",
+    "list_animal_taxa":
+        "Animal Biology Studio → Animal taxa tab",
+    "get_animal_taxon":
+        "Animal Biology Studio → Animal taxa tab (selection)",
+    "find_animal_taxa":
+        "Animal Biology Studio → Animal taxa tab → filter box",
+    "animal_taxa_for_phylum":
+        "Animal Biology Studio → Animal taxa tab → phylum combo",
+
+    # ----- Phase AB-2.0 (round 223) — Organ-systems catalogue
+    # — FINAL deep-phase round, closes the -2 chain.
+    "open_animal_organ_systems_tab":
+        "Window → Animal Biology Studio → Organ systems tab",
+    "list_organ_systems":
+        "Animal Biology Studio → Organ systems tab",
+    "get_organ_system":
+        "Animal Biology Studio → Organ systems tab (selection)",
+    "find_organ_systems":
+        "Animal Biology Studio → Organ systems tab → filter box",
+    "organ_systems_for_category":
+        "Animal Biology Studio → Organ systems tab → category combo",
 }
 
 

@@ -1,0 +1,1 @@
+"""Pharm Studio — Qt UI."""
