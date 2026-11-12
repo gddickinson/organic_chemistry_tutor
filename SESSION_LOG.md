@@ -16,6 +16,8 @@ George delegated the open choices:
   (7) and the aspartame pathway (`db/seed_corrections_rxn.py`), matched by name + exact old SMILES. Corrected molecules
   now also get their functional-group tags recomputed (previously only the 2D layout was redrawn).
 - Tests: `tests/test_seed_migration.py` (old-format DB through the real startup seeding; user look-alike rows untouched).
+- **Fix** (separate commit): beginner lesson 07 had carvone's enantiomers swapped; (R)-(−)-carvone is spearmint,
+  (S)-(+)-carvone caraway.
 
 ## 2026-11-12 — Fix seeded structures that disagreed with their names (PubChem scan)
 
