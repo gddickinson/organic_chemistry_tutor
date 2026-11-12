@@ -73,7 +73,10 @@ class Molecule:
     def generate_3d(self, seed: int = 0xF00D) -> None:
         mol = Chem.AddHs(self.rdkit_mol())
         if AllChem.EmbedMolecule(mol, randomSeed=seed) != 0:
-            raise ConformerGenerationError(f"EmbedMolecule failed for {self.smiles}")
+            # Large flexible molecules (long-chain lipids) often fail from the default eigenvalue-based start;
+            # RDKit's documented remedy is to start from random coordinates.
+            if AllChem.EmbedMolecule(mol, randomSeed=seed, useRandomCoords=True) != 0:
+                raise ConformerGenerationError(f"EmbedMolecule failed for {self.smiles}")
         try:
             AllChem.MMFFOptimizeMolecule(mol)
         except Exception:
