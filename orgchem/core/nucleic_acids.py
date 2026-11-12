@@ -131,8 +131,7 @@ NUCLEIC_ACIDS: List[NucleicAcidEntry] = [
     ),
     NucleicAcidEntry(
         name="cAMP (3',5'-cyclic AMP)", family="nucleotide",
-        smiles="Nc1ncnc2c1ncn2[C@H]1O[C@@H]2COP(=O)(O)O[C@@H]2"
-               "[C@@H]1O",
+        smiles="Nc1ncnc2c1ncn2[C@@H]1O[C@@H]2COP(=O)(O)O[C@H]2[C@H]1O",
         strand="RNA", role="second-messenger",
         notes="Second messenger downstream of GPCR-activated "
               "adenylate cyclase. Activates PKA.",
@@ -222,8 +221,7 @@ NUCLEIC_ACIDS: List[NucleicAcidEntry] = [
     ),
     NucleicAcidEntry(
         name="Pseudouridine (Ψ)", family="nucleoside",
-        smiles="OC[C@H]1O[C@H]([C@@H](O)[C@@H]1O)"
-               "c1cc(=O)[nH]c(=O)[nH]1",
+        smiles="O=c1[nH]cc([C@@H]2O[C@H](CO)[C@@H](O)[C@H]2O)c(=O)[nH]1",
         strand="RNA", role="modified-nucleoside",
         notes="C5-linked uracil — the most abundant RNA modification. "
               "Stabilises tRNA / rRNA helices; pseudouridylation is "
@@ -252,9 +250,7 @@ NUCLEIC_ACIDS: List[NucleicAcidEntry] = [
     ),
     NucleicAcidEntry(
         name="FAD", family="nucleotide",
-        smiles="Cc1cc2nc3c(=O)[nH]c(=O)n(C[C@H](O)[C@@H](O)[C@@H](O)"
-               "COP(=O)(O)OP(=O)(O)OC[C@H]4O[C@@H](n5cnc6c(N)ncnc65)"
-               "[C@H](O)[C@@H]4O)c3nc2cc1C",
+        smiles="Cc1cc2nc3c(=O)[nH]c(=O)nc-3n(C[C@H](O)[C@H](O)[C@H](O)COP(=O)(O)OP(=O)(O)OC[C@H]3O[C@@H](n4cnc5c(N)ncnc54)[C@H](O)[C@@H]3O)c2cc1C",
         strand="RNA", role="redox-coenzyme",
         notes="Flavin adenine dinucleotide. Two-electron / one-"
               "electron capable; isoalloxazine ring handles radical "
@@ -262,9 +258,7 @@ NUCLEIC_ACIDS: List[NucleicAcidEntry] = [
     ),
     NucleicAcidEntry(
         name="Coenzyme A (CoA-SH)", family="nucleotide",
-        smiles="CC(C)(COP(=O)(O)OP(=O)(O)OC[C@H]1O[C@@H]"
-               "(n2cnc3c(N)ncnc32)[C@H](OP(=O)(O)O)[C@@H]1O)"
-               "[C@@H](O)C(=O)NCCC(=O)NCCS",
+        smiles="CC(C)(COP(=O)(O)OP(=O)(O)OC[C@H]1O[C@@H](n2cnc3c(N)ncnc32)[C@H](O)[C@@H]1OP(=O)(O)O)[C@@H](O)C(=O)NCCC(=O)NCCS",
         strand="RNA", role="acyl-carrier",
         notes="Carries acyl groups (via thioester at the terminal "
               "–SH). Central to fatty-acid metabolism, TCA cycle, "

@@ -394,7 +394,7 @@ as a static GitHub Pages site (published from `main` by `.github/workflows/pages
 
 - **Lessons** — all 215 tutorial lessons, rendered with the Tutorial panel's own Markdown
   pipeline; `{term:X}` glossary links open the glossary.
-- **Molecules** — the 613 seeded molecules: search and filter by group or functional group,
+- **Molecules** — the 614 seeded molecules: search and filter by group or functional group,
   2D structure (SVG, drawn in the browser from RDKit coordinates), interactive 3D model
   (small WebGL viewer, RDKit ETKDG + MMFF conformer from `Molecule.generate_3d`),
   descriptors (`core/descriptors.py`) and tags (`core/molecule_tags.py`).

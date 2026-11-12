@@ -193,8 +193,8 @@ _STARTER: List[Tuple[str, str, str, str]] = [
      "aldol step. After Schiff-base hydrolysis the product is "
      "fructose-1,6-bisphosphate — central reaction of "
      "glycolysis / gluconeogenesis (reversible in vivo).",
-     "OCC(=O)COP(=O)(O)O.O=C[C@@H](O)COP(=O)(O)O"
-     ">>OCC(=O)[C@@H](O)[C@H](O)[C@@H](O)COP(=O)(O)O"),
+     "OCC(=O)COP(=O)(O)O.O=C[C@H](O)COP(=O)(O)O"
+     ">>O=C(COP(=O)(O)O)[C@@H](O)[C@H](O)[C@H](O)COP(=O)(O)O"),
     ("HIV protease: peptide bond hydrolysis",
      "Enzyme (aspartic protease)",
      "HIV-1 protease cleaves Gag / Gag-Pol polyproteins — its inhibition is "
@@ -415,7 +415,7 @@ _STARTER: List[Tuple[str, str, str, str]] = [
      "above.  Routinely > 90 % ee with simple substrates.  "
      "Game-changing for total synthesis — opened the era of "
      "predictable enantioselective C-O bond formation.",
-     "C/C=C/CO.CC(C)(C)OO>>C[C@@H]1O[C@H]1CO.CC(C)(C)O"),
+     "C/C=C/CO.CC(C)(C)OO>>C[C@H]1O[C@@H]1CO.CC(C)(C)O"),
 
     # ---- Phase 31b round 153 — CBS reduction ------------------------
     ("CBS reduction (acetophenone → (R)-1-phenylethanol)",
@@ -443,7 +443,7 @@ _STARTER: List[Tuple[str, str, str, str]] = [
      "same overall transformation (C=O → C-OH), but with "
      "a chiral catalyst that controls the new stereocentre's "
      "absolute configuration.",
-     "CC(=O)c1ccccc1.B>>O[C@@H](C)c1ccccc1"),
+     "CC(=O)c1ccccc1.B>>O[C@H](C)c1ccccc1"),
 
     # ---- Phase 31b round 154 — Sharpless asymmetric dihydroxylation
     ("Sharpless asymmetric dihydroxylation (trans-stilbene "
@@ -472,7 +472,7 @@ _STARTER: List[Tuple[str, str, str, str]] = [
      "general — trans-, cis-, mono-, di-, tri-substituted "
      "alkenes all reactive — and routinely > 90 % ee.",
      "c1ccc(/C=C/c2ccccc2)cc1.O=[Os](=O)(=O)=O.O"
-     ">>O[C@@H](c1ccccc1)[C@H](O)c1ccccc1.O=[Os]=O"),
+     ">>O[C@H](c1ccccc1)[C@H](O)c1ccccc1.O=[Os]=O"),
 
     # ---- Phase 31b round 154 — Jacobsen-Katsuki epoxidation --------
     ("Jacobsen-Katsuki epoxidation (cis-β-methylstyrene → "
@@ -501,7 +501,7 @@ _STARTER: List[Tuple[str, str, str, str]] = [
      "asymmetric-oxygen-installation toolkit.  Routinely "
      "80-95 % ee.",
      "C/C=C\\c1ccccc1.[Na+].[O-]Cl"
-     ">>C[C@H]1O[C@@H]1c1ccccc1.[Na+].[Cl-]"),
+     ">>C[C@H]1O[C@H]1c1ccccc1.[Na+].[Cl-]"),
 
     # ---- Phase 31b round 155 — Mukaiyama aldol ---------------------
     ("Mukaiyama aldol (TMS enol ether of acetone + "
@@ -531,7 +531,7 @@ _STARTER: List[Tuple[str, str, str, str]] = [
      "bond-formation teaching surface alongside the C-O / "
      "C=O entries (Sharpless AE / AD + Jacobsen + CBS).",
      "C=C(O[Si](C)(C)C)C.O=Cc1ccccc1"
-     ">>O[C@H](c1ccccc1)CC(=O)C.O[Si](C)(C)C"),
+     ">>O[C@@H](c1ccccc1)CC(=O)C.O[Si](C)(C)C"),
 
     # ---- Phase 31b round 155 — Evans aldol -------------------------
     ("Evans aldol (N-propionyl-(S)-4-benzyloxazolidinone + "
@@ -562,7 +562,7 @@ _STARTER: List[Tuple[str, str, str, str]] = [
      "Together they cover the two main paradigms of "
      "asymmetric aldol: chiral auxiliary vs chiral catalyst.",
      "CCC(=O)N1[C@@H](Cc2ccccc2)COC1=O.CCC=O"
-     ">>CC[C@H](O)[C@@H](C)C(=O)N1[C@@H](Cc2ccccc2)COC1=O"),
+     ">>CC[C@@H](O)[C@H](C)C(=O)N1[C@@H](Cc2ccccc2)COC1=O"),
 
     # ---- Phase 31b round 156 — Stille coupling ---------------------
     ("Stille coupling (bromobenzene + tributyl(vinyl)stannane "

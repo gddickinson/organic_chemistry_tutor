@@ -28,11 +28,11 @@ _STARTER: List[Tuple[str, str, str]] = [
     # ---- Verma et al. 2024 reference set ----
     ("Nicotine",      "CN1CCCC1c1cccnc1",                                                   "reference-set"),
     ("Caffeine",      "Cn1cnc2n(C)c(=O)n(C)c(=O)c12",                                       "reference-set"),
-    ("Efavirenz",     "C#Cc1ccc2c(c1)C(c1cc(Cl)ccc1)(C(F)(F)F)OC(=O)N2",                    "reference-set"),
+    ("Efavirenz",     "O=C1Nc2ccc(Cl)cc2[C@@](C#CC2CC2)(C(F)(F)F)O1",                    "reference-set"),
     ("Sulfasalazine", "OC(=O)c1cc(/N=N/c2ccc(S(=O)(=O)Nc3ccccn3)cc2)ccc1O",                 "reference-set"),
-    ("Lycopene",      "CC(=CCCC(C)=CC=CC(C)=CC=CC=C(C)C=CC=C(C)C=CC=C(C)CCC=C(C)C)C",       "reference-set"),
+    ("Lycopene",      "CC(C)=CCC/C(C)=C/C=C/C(C)=C/C=C/C(C)=C/C=C/C=C(C)/C=C/C=C(C)/C=C/C=C(\\C)CCC=C(C)C",       "reference-set"),
     ("D-Glucose",     "OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O",                             "reference-set"),
-    ("beta-Lactose",  "OC[C@H]1O[C@@H](O[C@H]2[C@H](O)[C@@H](O)[C@@H](O)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@@H]1O", "reference-set"),
+    ("beta-Lactose",  "OC[C@H]1O[C@@H](O[C@H]2[C@H](O)[C@@H](O)[C@H](O)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@H]1O", "reference-set"),
     ("Coronene",      "c1cc2ccc3ccc4ccc5ccc6ccc1c1c2c3c4c5c61",                             "reference-set"),
     ("Corannulene",   "C1=CC2=CC=C3C=CC4=CC=C5C=CC1=C1C5=C4C3=C21",                         "reference-set"),
     ("Porphyrin",     "c1cc2cc3ccc(cc4ccc(cc5ccc(cc1n2)[nH]5)n4)[nH]3",                     "reference-set"),
@@ -45,7 +45,7 @@ _STARTER: List[Tuple[str, str, str]] = [
     # ---- +20 content expansion, Phase 6 (2026-04-22) ----
     # Amino acids
     ("Glycine",        "NCC(=O)O",                                                        "amino-acid"),
-    ("L-Alanine",      "C[C@@H](N)C(=O)O",                                                "amino-acid"),
+    ("L-Alanine",      "C[C@H](N)C(=O)O",                                                "amino-acid"),
     ("L-Phenylalanine","N[C@@H](Cc1ccccc1)C(=O)O",                                        "amino-acid"),
     ("L-Tryptophan",   "N[C@@H](Cc1c[nH]c2ccccc12)C(=O)O",                                "amino-acid"),
     ("L-Cysteine",     "N[C@@H](CS)C(=O)O",                                               "amino-acid"),

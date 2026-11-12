@@ -70,7 +70,7 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
     # Vanillin-from-eugenol intermediate: isoeugenol
     ("Isoeugenol",               "COc1cc(/C=C/C)ccc1O",                "intermediate"),
     # Caffeine from theobromine
-    ("Theobromine",              "Cn1c(=O)c2[nH]cnc2n(C)c1=O",         "intermediate"),
+    ("Theobromine",              "Cn1cnc2c1c(=O)[nH]c(=O)n2C",         "intermediate"),
 
     # ---- Fmoc / SPPS intermediates -----------------------------------
     ("Fmoc-Gly-OH",              "O=C(OCC1c2ccccc2-c2ccccc21)NCC(=O)O", "intermediate"),
@@ -89,9 +89,9 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
     ("DHAP (dihydroxyacetone phosphate)",
         "OCC(=O)COP(=O)(O)O",                                          "intermediate"),
     ("G3P (glyceraldehyde-3-phosphate)",
-        "O=C[C@@H](O)COP(=O)(O)O",                                     "intermediate"),
+        "O=C[C@H](O)COP(=O)(O)O",                                     "intermediate"),
     ("Fructose-1,6-bisphosphate",
-        "OP(=O)(O)OC[C@@H](O)[C@H](O)[C@@H](O)C(=O)COP(=O)(O)O",       "intermediate"),
+        "O=C(COP(=O)(O)O)[C@@H](O)[C@H](O)[C@H](O)COP(=O)(O)O",       "intermediate"),
     ("Pyruvate",                 "CC(=O)C(=O)[O-]",                    "intermediate"),
     ("Phosphate",                "OP(=O)(O)O",                         "intermediate"),
     ("N-acetylglycine (chymotrypsin substrate analogue)",
@@ -156,7 +156,7 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
         "CC(=O)c1ccccc1",                                              "intermediate"),
     ("Acetyl ester (generic)",   "CC(C)=O",                            "intermediate"),
     # Aldol / condensation related
-    ("2-Methyl-2-pentenal",      "CC(=O)C=C(C)C",                      "intermediate"),
+    ("2-Methyl-2-pentenal",      "CCC=C(C)C=O",                      "intermediate"),
     ("Ethyl 3-oxobutanoate",     "CCOC(=O)CC(C)=O",                    "intermediate"),
     # Common small organics that appear in schemes
     ("Carbon dioxide",           "O=C=O",                              "intermediate"),
@@ -201,7 +201,7 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
     ("Oxygen atom",              "[O]",                                "intermediate"),
     ("Hydroxyl radical",         "[OH]",                               "intermediate"),
     ("Fructose-1,6-bisphosphate (ketone form)",
-        "O=C(CO)[C@@H](O)[C@H](O)[C@@H](O)COP(=O)(O)O",                "intermediate"),
+        "O=C(COP(=O)(O)O)[C@@H](O)[C@H](O)[C@H](O)COP(=O)(O)O",                "intermediate"),
 
     # ---- SPPS growing-chain intermediates ----------------------------
     # After Fmoc deprotection of Met-resin (the starting compound of
@@ -402,7 +402,7 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
         "O=C(OCc1ccccc1)N[C@@H](CC(=O)O)C(=O)N[C@@H](Cc1ccccc1)C(=O)OC",
         "intermediate"),
     ("Aspartame",
-        "COC(=O)[C@@H](Cc1ccccc1)NC(=O)[C@@H](N)CC(=O)O",              "drug"),
+        "COC(=O)[C@H](Cc1ccccc1)NC(=O)[C@@H](N)CC(=O)O",              "drug"),
 
     # ---- Phase 31b round 121 — Heck reaction fragments -------------
     ("Methyl acrylate",
@@ -430,11 +430,11 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
     ("tert-Butyl hydroperoxide (TBHP)",
         "CC(C)(C)OO",                                                  "reagent"),
     ("(2R,3R)-2,3-Epoxybutan-1-ol",
-        "C[C@@H]1O[C@H]1CO",                                           "intermediate"),
+        "C[C@H]1O[C@@H]1CO",                                           "intermediate"),
     ("Borane (BH3)",
         "B",                                                           "reagent"),
     ("(R)-1-Phenylethanol",
-        "C[C@H](O)c1ccccc1",                                           "intermediate"),
+        "C[C@@H](O)c1ccccc1",                                           "intermediate"),
 
     # ---- Phase 31b round 154 — Sharpless AD + Jacobsen fragments ---
     # (trans-Stilbene already seeded at the top; SMILES corrected
@@ -444,25 +444,25 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
     ("Osmium dioxide (OsO2)",
         "O=[Os]=O",                                                    "intermediate"),
     ("(1R,2R)-1,2-Diphenylethane-1,2-diol",
-        "O[C@@H](c1ccccc1)[C@H](O)c1ccccc1",                           "intermediate"),
+        "O[C@H](c1ccccc1)[C@H](O)c1ccccc1",                           "intermediate"),
     ("cis-β-Methylstyrene (Z-1-phenyl-1-propene)",
         "C/C=C\\c1ccccc1",                                             "intermediate"),
     ("Hypochlorite (OCl-)",
         "[O-]Cl",                                                      "reagent"),
     ("(2R,3S)-2-Methyl-3-phenyloxirane",
-        "C[C@H]1O[C@@H]1c1ccccc1",                                     "intermediate"),
+        "C[C@H]1O[C@H]1c1ccccc1",                                     "intermediate"),
 
     # ---- Phase 31b round 155 — Mukaiyama + Evans aldol fragments ---
     ("Trimethylsilyl enol ether of acetone",
         "C=C(C)O[Si](C)(C)C",                                          "intermediate"),
     ("(R)-4-Hydroxy-4-phenylbutan-2-one (Mukaiyama aldol product)",
-        "CC(=O)C[C@H](O)c1ccccc1",                                     "intermediate"),
+        "CC(=O)C[C@@H](O)c1ccccc1",                                     "intermediate"),
     ("Trimethylsilanol (TMS-OH)",
         "C[Si](C)(C)O",                                                "intermediate"),
     ("N-Propionyl-(S)-4-benzyl-2-oxazolidinone (Evans auxiliary acylated)",
         "CCC(=O)N1C(=O)OC[C@@H]1Cc1ccccc1",                            "reagent"),
     ("Evans syn-aldol (N-acyl-(2S,3R)-3-hydroxy-2-methylpentanoyl)",
-        "CC[C@H](O)[C@@H](C)C(=O)N1C(=O)OC[C@@H]1Cc1ccccc1",           "intermediate"),
+        "CC[C@@H](O)[C@H](C)C(=O)N1C(=O)OC[C@@H]1Cc1ccccc1",           "intermediate"),
 
     # ---- Phase 31b round 156 — Stille + Corey-Chaykovsky fragments
     ("Tributyl(vinyl)stannane",
@@ -533,13 +533,12 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
     ("Glutathione (GSH)",
         "N[C@@H](CCC(=O)N[C@@H](CS)C(=O)NCC(=O)O)C(=O)O",              "biomolecule"),
     ("Plastoquinone-9",
-        "CC1=C(C)C(=O)C(CC=C(C)CCC=C(C)CCC=C(C)CCC=C(C)CCC=C(C)CCC"
-        "=C(C)CCC=C(C)CCC=C(C)CC=C(C)C)=C(C)C1=O",                     "biomolecule"),
+        "CC(C)=CCC/C(C)=C/CC/C(C)=C/CC/C(C)=C/CC/C(C)=C/CC/C(C)=C/CC/C(C)=C/CC/C(C)=C/CC/C(C)=C/CC1=CC(=O)C(C)=C(C)C1=O",                     "biomolecule"),
     ("Fructose-1,6-bisphosphate",
-        "O=P(O)(O)OC[C@@H]1O[C@](O)(COP(=O)(O)O)[C@@H](O)[C@H]1O",
+        "O=P(O)(O)OC[C@H]1O[C@](O)(COP(=O)(O)O)[C@@H](O)[C@@H]1O",
                                                                        "biomolecule"),
     ("Glucose-6-phosphate",
-        "OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1OP(=O)(O)O",             "biomolecule"),
+        "O=P(O)(O)OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O",             "biomolecule"),
     ("Indole-3-acetic acid (IAA, auxin)",
         "OC(=O)Cc1c[nH]c2ccccc12",                                     "biomolecule"),
 
@@ -551,7 +550,7 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
     ("Dihydroxyacetone phosphate (DHAP)",
         "O=C(CO)COP(=O)(O)O",                                          "biomolecule"),
     ("Glyceraldehyde-3-phosphate (G3P)",
-        "O=C[C@@H](O)COP(=O)(O)O",                                     "biomolecule"),
+        "O=C[C@H](O)COP(=O)(O)O",                                     "biomolecule"),
     ("Citrate",
         "OC(=O)CC(O)(C(=O)O)CC(=O)O",                                  "biomolecule"),
     ("α-Ketoglutarate",
@@ -561,7 +560,7 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
     ("Fumarate",
         "OC(=O)/C=C/C(=O)O",                                           "biomolecule"),
     ("L-Malate",
-        "O[C@H](CC(=O)O)C(=O)O",                                       "biomolecule"),
+        "O=C(O)C[C@H](O)C(=O)O",                                       "biomolecule"),
     ("Oxaloacetate",
         "OC(=O)CC(=O)C(=O)O",                                          "biomolecule"),
 
@@ -573,7 +572,7 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
         "Nc1ncnc2c1ncn2[C@@H]1O[C@H](COP(=O)(O)O)[C@@H](O)[C@H]1O",
                                                                        "biomolecule"),
     ("Fructose-2,6-bisphosphate (F2,6BP)",
-        "OC[C@@H]1O[C@](OP(=O)(O)O)(COP(=O)(O)O)[C@@H](O)[C@H]1O",
+        "O=P(O)(O)OC[C@H]1O[C@@](CO)(OP(=O)(O)O)[C@@H](O)[C@@H]1O",
                                                                        "biomolecule"),
     ("Malonyl-CoA",
         "OC(=O)CC(=O)SCCNC(=O)CCNC(=O)[C@H](O)C(C)(C)COP(=O)(O)OP(=O)"

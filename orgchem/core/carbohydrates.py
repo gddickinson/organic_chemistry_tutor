@@ -45,7 +45,7 @@ CARBOHYDRATES: List[Carbohydrate] = [
         name="D-Glucose (open chain)",
         family="monosaccharide", form="open-chain",
         carbonyl_type="aldose",
-        smiles="OC[C@@H](O)[C@@H](O)[C@H](O)[C@H](O)C=O",
+        smiles="O=C[C@H](O)[C@@H](O)[C@H](O)[C@H](O)CO",
         notes="The acyclic Fischer-projection form. Shifts into "
               "α/β pyranose forms in aqueous solution.",
     ),
@@ -115,8 +115,7 @@ CARBOHYDRATES: List[Carbohydrate] = [
         family="disaccharide", form="pyranose+furanose",
         carbonyl_type="",
         glycosidic="α-1,2",
-        smiles="OC[C@H]1O[C@@H](O[C@]2(CO)O[C@H](CO)[C@@H](O)"
-               "[C@@H]2O)[C@H](O)[C@@H](O)[C@@H]1O",
+        smiles="OC[C@H]1O[C@@](CO)(O[C@H]2O[C@H](CO)[C@@H](O)[C@H](O)[C@H]2O)[C@@H](O)[C@@H]1O",
         notes="Glucose(α1)–Fructose(β2) disaccharide. Non-reducing "
               "because both anomeric carbons are tied up.",
     ),
@@ -125,8 +124,7 @@ CARBOHYDRATES: List[Carbohydrate] = [
         family="disaccharide", form="pyranose+pyranose",
         carbonyl_type="aldose",
         glycosidic="β-1,4",
-        smiles="OC[C@H]1O[C@@H](O[C@H]2[C@H](O)[C@@H](O)"
-               "[C@H](O)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@@H]1O",
+        smiles="OC[C@H]1O[C@@H](O[C@H]2[C@H](O)[C@@H](O)C(O)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@H]1O",
         notes="Galactose(β1→4)Glucose. Milk sugar. Hydrolysed by "
               "lactase; absence causes lactose intolerance.",
     ),
@@ -202,7 +200,7 @@ CARBOHYDRATES: List[Carbohydrate] = [
         name="L-Fucose (6-deoxy-L-galactose)",
         family="monosaccharide",
         form="pyranose", carbonyl_type="aldose", anomer="α",
-        smiles="C[C@@H]1O[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O",
+        smiles="C[C@@H]1O[C@@H](O)[C@@H](O)[C@H](O)[C@@H]1O",
         notes="Terminal sugar on many N-glycans and blood-group "
               "antigens (H antigen). Fucosylation is a major "
               "cancer-biomarker axis.",
@@ -211,7 +209,7 @@ CARBOHYDRATES: List[Carbohydrate] = [
         name="L-Rhamnose (6-deoxy-L-mannose)",
         family="monosaccharide",
         form="pyranose", carbonyl_type="aldose", anomer="α",
-        smiles="C[C@@H]1O[C@H](O)[C@@H](O)[C@H](O)[C@H]1O",
+        smiles="C[C@@H]1O[C@H](O)[C@H](O)[C@H](O)[C@H]1O",
         notes="Common plant sugar; part of pectin side-chains, "
               "flavonoid and saponin glycosides. Also caps the "
               "O-antigen of many Gram-negative bacteria.",
@@ -236,7 +234,7 @@ CARBOHYDRATES: List[Carbohydrate] = [
     Carbohydrate(
         name="Xylitol", family="monosaccharide",
         form="open-chain", carbonyl_type="",
-        smiles="OC[C@@H](O)C(O)[C@H](O)CO",
+        smiles="OC[C@@H](O)C(O)[C@@H](O)CO",
         notes="5-carbon sugar alcohol. Anticariogenic sweetener "
               "(oral bacteria can't metabolise it). Same sweetness "
               "as sucrose with ⅔ the calories.",
@@ -245,7 +243,7 @@ CARBOHYDRATES: List[Carbohydrate] = [
     Carbohydrate(
         name="D-Tagatose", family="monosaccharide",
         form="pyranose", carbonyl_type="ketose", anomer="α",
-        smiles="OC[C@H]1O[C@](O)(CO)[C@H](O)[C@@H]1O",
+        smiles="OC[C@H]1O[C@](O)(CO)[C@@H](O)[C@H]1O",
         notes="C4 epimer of fructose — a rare hexulose. "
               "Low-glycaemic sweetener; isomerised from lactose-"
               "derived galactose industrially.",
@@ -256,8 +254,7 @@ CARBOHYDRATES: List[Carbohydrate] = [
         family="disaccharide", form="pyranose–pyranose",
         carbonyl_type="non-reducing",
         glycosidic="α,α-1,1",
-        smiles="OC[C@H]1O[C@H](O[C@@H]2O[C@H](CO)[C@@H](O)"
-               "[C@H](O)[C@H]2O)[C@H](O)[C@@H](O)[C@@H]1O",
+        smiles="OC[C@H]1O[C@H](O[C@H]2O[C@H](CO)[C@@H](O)[C@H](O)[C@H]2O)[C@H](O)[C@@H](O)[C@@H]1O",
         notes="Non-reducing sugar in insects, fungi, yeasts. "
               "Protects proteins / membranes against desiccation "
               "(anhydrobiosis). Both anomeric carbons are locked.",

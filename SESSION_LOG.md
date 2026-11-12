@@ -1,5 +1,33 @@
 # Session Log — OrgChem Studio
 
+## 2026-11-12 — Fix seeded structures that disagreed with their names (PubChem scan)
+
+Scanned all 613 seeded molecules against PubChem (name lookup, fetched once into a scratch cache;
+tests never call PubChem): compared InChIKey, formula and per-centre CIP labels.
+- **Fix** (78 rows + 9 reaction/pathway SMILES): structures/stereo now match the PubChem record
+  (CID per row in `db/seed_corrections.py`), or, for 3 intermediates with no PubChem record, the
+  R/S descriptors in their own names. Highlights: 13 "L-" amino acids were seeded as the D
+  enantiomer; wrong skeletons for Efavirenz, Lycopene (C35), Ergosterol (C24), Cortisol
+  (C21H32O7), Theobromine (was theophylline), Chrysene, FAD (ribityl on the wrong N), CoA
+  (2'-phosphate), Pseudouridine (C6-linked), TXA2, Plastoquinone-9, Glucose-6-phosphate
+  (phosphate on C4), F2,6BP (was F1,2BP), 2-Methyl-2-pentenal (was mesityl oxide) and 11 SAR drugs
+  (Bisoprolol, Enalaprilat, Ramipril, Benazepril, Avanafil, Udenafil, Nalidixic acid, Saxagliptin,
+  Alogliptin, Edoxaban, Chlorpheniramine); wrong stereo in sugars (beta-Lactose was actually
+  cellobiose, Sucrose, Trehalose, Xylitol, Tagatose, Fucose, Rhamnose, F1,6BP, G3P was L), steroids,
+  statins, penicillins, Quinine, Oseltamivir, Enalapril, Aspartame (D-Phe; also the Aspartame
+  pathway product), cAMP, Vitamin D3, Ceramide/Sphingomyelin, and the products of the CBS, Sharpless
+  AE/AD, Jacobsen, Mukaiyama and Evans reactions vs. their stated descriptors. Cetirizine (Zyrtec)
+  is now the racemate. The aldolase reaction now uses D-G3P and gives F1,6BP (the product had lost
+  the DHAP phosphate). "Lactose" (catalogue) keeps the reducing-end anomer unspecified (CID 440995);
+  "Cellobiose" now appears (its row had been hidden by the mislabelled beta-Lactose): 614 molecules.
+- Existing DBs: `apply_seed_corrections` rewrites these rows on next launch (matched by name and old
+  InChIKey). Reactions/pathways in an existing DB are not reseeded (seeded only when empty).
+- Tests: `tests/test_seed_stereo.py` pins the PubChem InChIKeys (`tests/fixtures/seed_pubchem_keys.json`).
+- Left for George (not guessed): "Amylose/Cellulose fragment (3 glucose)" SMILES are broken
+  (C11H20O10, second ring a 4-carbon furanose); "Caffeine (protonated intermediate)" is drawn as
+  theobromine; "Acetyl ester (generic)" is acetone; Limonene is seeded as (S)-(-); α/β-Pinene have
+  only one bridgehead specified.
+
 ## 2026-11-12 — Fix impossible stereochemistry in seed SMILES
 
 - **Fix**: the seed SMILES of Camphor, Codeine and Oxycodone carried stereo descriptors no 3D

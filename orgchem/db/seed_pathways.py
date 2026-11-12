@@ -988,7 +988,7 @@ _STARTER: List[Tuple[str, str, str, str, str, str, List[Dict[str, Any]]]] = [
     (
         "Aspartame — Z-protected peptide-coupling route (2-step)",
         "Aspartame",
-        "COC(=O)[C@@H](Cc1ccccc1)NC(=O)[C@@H](N)CC(=O)O",
+        "COC(=O)[C@H](Cc1ccccc1)NC(=O)[C@@H](N)CC(=O)O",
         "The artificial sweetener discovered serendipitously by "
         "Schlatter in 1965 while assembling a peptide drug — he "
         "licked his finger to turn a page and noticed the "
@@ -1040,7 +1040,7 @@ _STARTER: List[Tuple[str, str, str, str, str, str, List[Dict[str, Any]]]] = [
             {"reaction_smiles":
              "O=C(OCc1ccccc1)N[C@@H](CC(=O)O)C(=O)N[C@@H]"
              "(Cc1ccccc1)C(=O)OC.[H][H].[H][H]"
-             ">>COC(=O)[C@@H](Cc1ccccc1)NC(=O)[C@@H](N)CC(=O)O"
+             ">>COC(=O)[C@H](Cc1ccccc1)NC(=O)[C@@H](N)CC(=O)O"
              ".Cc1ccccc1.O=C=O",
              "reagents": "H₂ (1 atm), 10 % Pd-C (cat.)",
              "conditions": "MeOH, rt, 1 h",

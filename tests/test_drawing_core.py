@@ -66,7 +66,7 @@ def test_atom_defaults_element_to_carbon():
     ("CCO", 3),                # ethanol
     ("c1ccccc1", 6),           # benzene
     ("NCC(=O)O", 5),           # glycine
-    ("C[C@@H](N)C(=O)O", 6),   # L-alanine with stereo
+    ("C[C@H](N)C(=O)O", 6),    # L-alanine with stereo
     ("[NH4+]", 1),             # charged ammonium
     ("CC(=O)OC1=CC=CC=C1C(=O)O", 13),  # aspirin
 ])

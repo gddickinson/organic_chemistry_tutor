@@ -1,0 +1,415 @@
+{
+ "_about": "InChIKeys of the PubChem records (fetched 2026-11-12) for seeded molecules corrected in that session; salts/charges reduced to the seed's neutral parent. Checked offline by tests/test_seed_stereo.py.",
+ "molecules": [
+  {
+   "name": "Camphor",
+   "cid": 159055,
+   "inchikey": "DSSYKIVIOFKYAU-XCBNKYQSSA-N"
+  },
+  {
+   "name": "Codeine",
+   "cid": 5284371,
+   "inchikey": "OROGSEYTTFOCAN-DNJOTXNNSA-N"
+  },
+  {
+   "name": "Oxycodone (OxyContin)",
+   "cid": 5284603,
+   "inchikey": "BRUQQQPBMZOVGD-XFKAJCMBSA-N"
+  },
+  {
+   "name": "Efavirenz",
+   "cid": 64139,
+   "inchikey": "XPOQHMRABVBWPR-ZDUSSCGKSA-N"
+  },
+  {
+   "name": "Lycopene",
+   "cid": 446925,
+   "inchikey": "OAIJSZIZWZSQBC-GYZMGTAESA-N"
+  },
+  {
+   "name": "beta-Lactose",
+   "cid": 6134,
+   "inchikey": "GUBGYTABKSRVRQ-DCSYEGIMSA-N"
+  },
+  {
+   "name": "L-Alanine",
+   "cid": 5950,
+   "inchikey": "QNAYBMKLOCPYGJ-REOHCLBHSA-N"
+  },
+  {
+   "name": "L-Valine",
+   "cid": 6287,
+   "inchikey": "KZSNJWFQEVHDMF-BYPYZUCNSA-N"
+  },
+  {
+   "name": "L-Leucine",
+   "cid": 6106,
+   "inchikey": "ROHFNLRQFUQHCH-YFKPBYRVSA-N"
+  },
+  {
+   "name": "L-Isoleucine",
+   "cid": 6306,
+   "inchikey": "AGPKZVBTJJNPAG-WHFBIAKZSA-N"
+  },
+  {
+   "name": "L-Methionine",
+   "cid": 6137,
+   "inchikey": "FFEARJCKVFRZRR-BYPYZUCNSA-N"
+  },
+  {
+   "name": "L-Serine",
+   "cid": 5951,
+   "inchikey": "MTCFGRXMJLQNBG-REOHCLBHSA-N"
+  },
+  {
+   "name": "L-Threonine",
+   "cid": 6288,
+   "inchikey": "AYFVYJQAPQTCCC-GBXIJSLDSA-N"
+  },
+  {
+   "name": "L-Asparagine",
+   "cid": 6267,
+   "inchikey": "DCXYFEDJOCDNAF-REOHCLBHSA-N"
+  },
+  {
+   "name": "L-Glutamine",
+   "cid": 5961,
+   "inchikey": "ZDXPYRJPNDTMRX-VKHMYHEASA-N"
+  },
+  {
+   "name": "L-Aspartic acid",
+   "cid": 5960,
+   "inchikey": "CKLJMWTZIZZHCS-REOHCLBHSA-N"
+  },
+  {
+   "name": "L-Glutamic acid",
+   "cid": 33032,
+   "inchikey": "WHUUTDBJXJRKMK-VKHMYHEASA-N"
+  },
+  {
+   "name": "L-Lysine",
+   "cid": 5962,
+   "inchikey": "KDXKERNSBIXSRK-YFKPBYRVSA-N"
+  },
+  {
+   "name": "L-Arginine",
+   "cid": 6322,
+   "inchikey": "ODKSFYDXXFIFQN-BYPYZUCNSA-N"
+  },
+  {
+   "name": "Amoxicillin",
+   "cid": 33613,
+   "inchikey": "LSQZJLSUYDQPKJ-NJBDSQKTSA-N"
+  },
+  {
+   "name": "Oseltamivir",
+   "cid": 65028,
+   "inchikey": "VSZGPKBBMSAYNT-RRFJBIMHSA-N"
+  },
+  {
+   "name": "Simvastatin",
+   "cid": 54454,
+   "inchikey": "RYMZZMVNJRMUDD-HGQWONQESA-N"
+  },
+  {
+   "name": "Lovastatin",
+   "cid": 53232,
+   "inchikey": "PCZOHLXUXFIOCF-BXMDZJJMSA-N"
+  },
+  {
+   "name": "Enalapril",
+   "cid": 5388962,
+   "inchikey": "GBXSMTUPTTWBMN-XIRDDKMYSA-N"
+  },
+  {
+   "name": "Quinine",
+   "cid": 3034034,
+   "inchikey": "LOUPRKONTZGTKE-WZBLMQSHSA-N"
+  },
+  {
+   "name": "Sucrose",
+   "cid": 5988,
+   "inchikey": "CZMRCDWAGMRECN-UGDNZRGBSA-N"
+  },
+  {
+   "name": "Testosterone",
+   "cid": 6013,
+   "inchikey": "MUMGGOZAMZWBJJ-DYKIIFRCSA-N"
+  },
+  {
+   "name": "Estradiol",
+   "cid": 5757,
+   "inchikey": "VOXZDWNPVJITMN-ZBRFXRBCSA-N"
+  },
+  {
+   "name": "Chrysene",
+   "cid": 9171,
+   "inchikey": "WDECIBYCCFPHNR-UHFFFAOYSA-N"
+  },
+  {
+   "name": "Theobromine",
+   "cid": 5429,
+   "inchikey": "YAPQBXQYLJRXSA-UHFFFAOYSA-N"
+  },
+  {
+   "name": "G3P (glyceraldehyde-3-phosphate)",
+   "cid": 439168,
+   "inchikey": "LXJXRIRHZLFYRP-VKHMYHEASA-N"
+  },
+  {
+   "name": "Fructose-1,6-bisphosphate",
+   "cid": 84951,
+   "inchikey": "XPYBSIWDXQFNMH-UYFOZJQFSA-N"
+  },
+  {
+   "name": "2-Methyl-2-pentenal",
+   "cid": 12177,
+   "inchikey": "IDEYZABHVQLHAF-UHFFFAOYSA-N"
+  },
+  {
+   "name": "Fructose-1,6-bisphosphate (ketone form)",
+   "cid": 84951,
+   "inchikey": "XPYBSIWDXQFNMH-UYFOZJQFSA-N"
+  },
+  {
+   "name": "Aspartame",
+   "cid": 134601,
+   "inchikey": "IAOZJIPTCAWIRG-QWRGUYRKSA-N"
+  },
+  {
+   "name": "(R)-1-Phenylethanol",
+   "cid": 637516,
+   "inchikey": "WAPNOHKVXSQRPX-SSDOTTSWSA-N"
+  },
+  {
+   "name": "(1R,2R)-1,2-Diphenylethane-1,2-diol",
+   "cid": 853019,
+   "inchikey": "IHPDTPWNFBQHEB-ZIAGYGMSSA-N"
+  },
+  {
+   "name": "(2R,3S)-2-Methyl-3-phenyloxirane",
+   "cid": 6452030,
+   "inchikey": "YVCOJTATJWDGEU-VXNVDRBHSA-N"
+  },
+  {
+   "name": "Plastoquinone-9",
+   "cid": 5375177,
+   "inchikey": "FKUYMLZIRPABFK-IQSNHBBHSA-N"
+  },
+  {
+   "name": "Fructose-1,6-bisphosphate",
+   "cid": 10267,
+   "inchikey": "RNBGYGVWRKECFJ-ARQDHWQXSA-N"
+  },
+  {
+   "name": "Glucose-6-phosphate",
+   "cid": 5958,
+   "inchikey": "NBSCHQHZLSJFNQ-GASJEMHNSA-N"
+  },
+  {
+   "name": "Glyceraldehyde-3-phosphate (G3P)",
+   "cid": 439168,
+   "inchikey": "LXJXRIRHZLFYRP-VKHMYHEASA-N"
+  },
+  {
+   "name": "L-Malate",
+   "cid": 222656,
+   "inchikey": "BJEPYKJPYRNKOW-REOHCLBHSA-N"
+  },
+  {
+   "name": "D-Glucose (open chain)",
+   "cid": 107526,
+   "inchikey": "GZCGUPFRVQAUEE-SLPGGIOYSA-N"
+  },
+  {
+   "name": "Lactose",
+   "cid": 440995,
+   "inchikey": "GUBGYTABKSRVRQ-QKKXKWKRSA-N",
+   "note": "reducing-end anomer left unspecified (beta-Lactose is a separate seeded row)"
+  },
+  {
+   "name": "L-Fucose (6-deoxy-L-galactose)",
+   "cid": 439554,
+   "inchikey": "SHZGCJCMOBCMKK-SXUWKVJYSA-N"
+  },
+  {
+   "name": "L-Rhamnose (6-deoxy-L-mannose)",
+   "cid": 439710,
+   "inchikey_skeleton": "SHZGCJCMOBCMKK",
+   "note": "seed keeps its own anomer; PubChem record is the other anomer"
+  },
+  {
+   "name": "Xylitol",
+   "cid": 6912,
+   "inchikey": "HEBKCHPVOIAQTA-NGQZWQHPSA-N"
+  },
+  {
+   "name": "D-Tagatose",
+   "cid": 12306013,
+   "inchikey": "RFSUNEUAIZKAJO-DPYQTVNSSA-N"
+  },
+  {
+   "name": "Trehalose (α,α-1,1 glucose dimer)",
+   "cid": 7427,
+   "inchikey": "HDTRYLNUVZCQOY-LIZSDCNHSA-N"
+  },
+  {
+   "name": "Ergosterol",
+   "cid": 444679,
+   "inchikey": "DNVPQKQSNYMLRS-APGDWVJJSA-N"
+  },
+  {
+   "name": "Vitamin D3 (cholecalciferol)",
+   "cid": 5280795,
+   "inchikey": "QYSXJUFSXHHAJI-YRZJJWOYSA-N"
+  },
+  {
+   "name": "Thromboxane A2 (TXA2)",
+   "cid": 5280497,
+   "inchikey": "DSNBHJFQCNUKMA-SCKDECHMSA-N"
+  },
+  {
+   "name": "Cholic acid",
+   "cid": 221493,
+   "inchikey": "BHQCQFFYRZLCQQ-OELDTZBJSA-N"
+  },
+  {
+   "name": "Taurocholic acid",
+   "cid": 6675,
+   "inchikey": "WBWWGRHZICKQGZ-HZAMXZRMSA-N"
+  },
+  {
+   "name": "Progesterone",
+   "cid": 5994,
+   "inchikey": "RJKFOVLPORLFTN-LEKSSAKUSA-N"
+  },
+  {
+   "name": "Cortisol",
+   "cid": 5754,
+   "inchikey": "JYGXADMDTFJGBT-VWUMJDOOSA-N"
+  },
+  {
+   "name": "cAMP (3',5'-cyclic AMP)",
+   "cid": 6076,
+   "inchikey": "IVOMOUWHDPKRLL-KQYNXXCUSA-N"
+  },
+  {
+   "name": "Pseudouridine (Ψ)",
+   "cid": 15047,
+   "inchikey": "PTJWIQPHWPFNBW-GBNDHIKLSA-N"
+  },
+  {
+   "name": "FAD",
+   "cid": 643975,
+   "inchikey": "VWWQXMAJTJZDQX-UYBVJOGSSA-N"
+  },
+  {
+   "name": "Coenzyme A (CoA-SH)",
+   "cid": 87642,
+   "inchikey": "RGJOEKWQDUBAIZ-IBOSZNHHSA-N"
+  },
+  {
+   "name": "Bisoprolol",
+   "cid": 2405,
+   "inchikey": "VHYCDWMUTMEGQY-UHFFFAOYSA-N"
+  },
+  {
+   "name": "Enalaprilat",
+   "cid": 5462501,
+   "inchikey": "LZFZMUMEGBBDTC-QEJZJMRPSA-N"
+  },
+  {
+   "name": "Ramipril",
+   "cid": 5362129,
+   "inchikey": "HDACQVRGBOVJII-JBDAPHQKSA-N"
+  },
+  {
+   "name": "Benazepril",
+   "cid": 5362124,
+   "inchikey": "XPCFTKFZXHTYIP-PMACEKPBSA-N"
+  },
+  {
+   "name": "Methicillin",
+   "cid": 6087,
+   "inchikey": "RJQXTJLFIWVMTO-TYNCELHUSA-N"
+  },
+  {
+   "name": "Cloxacillin",
+   "cid": 6098,
+   "inchikey": "LQOLIRLGBULYKD-JKIFEVAISA-N"
+  },
+  {
+   "name": "Avanafil",
+   "cid": 9869929,
+   "inchikey": "WEAJZXNPAWBCOA-INIZCTEOSA-N"
+  },
+  {
+   "name": "Udenafil",
+   "cid": 135413547,
+   "inchikey": "IYFNEFQTYQPVOC-UHFFFAOYSA-N"
+  },
+  {
+   "name": "Nalidixic acid",
+   "cid": 4421,
+   "inchikey": "MHWLWQUZZRMNGJ-UHFFFAOYSA-N"
+  },
+  {
+   "name": "Saxagliptin (Onglyza)",
+   "cid": 11243969,
+   "inchikey": "QGJUIPDUBHWZPV-SGTAVMJGSA-N"
+  },
+  {
+   "name": "Alogliptin (Nesina)",
+   "cid": 11450633,
+   "inchikey": "ZSBOMTDTBDDKMP-OAHLLOKOSA-N"
+  },
+  {
+   "name": "Edoxaban (Lixiana / Savaysa)",
+   "cid": 10280735,
+   "inchikey": "HGVDHZBSSITLCT-JLJPHGGASA-N"
+  },
+  {
+   "name": "Chlorpheniramine (Chlor-Trimeton)",
+   "cid": 2725,
+   "inchikey": "SOYKEARSMXGVTM-UHFFFAOYSA-N"
+  },
+  {
+   "name": "Cetirizine (Zyrtec)",
+   "cid": 2678,
+   "inchikey": "ZKLPARSLTMPFCP-UHFFFAOYSA-N"
+  },
+  {
+   "name": "Fructose-2,6-bisphosphate (F2,6BP)",
+   "cid": 105021,
+   "inchikey": "YXWOAJXNVLXPMU-ZXXMMSQZSA-N"
+  },
+  {
+   "name": "Ceramide (C18)",
+   "cid": 5283565,
+   "inchikey": "VODZWWMEJITOND-NXCSZAMKSA-N"
+  },
+  {
+   "name": "Sphingomyelin (C18)",
+   "cid": 6453725,
+   "inchikey": "LKQLRGMMMAHREN-YJFXYUILSA-N"
+  },
+  {
+   "name": "(2R,3R)-2,3-Epoxybutan-1-ol",
+   "inchikey": "QQHZNUPEBVRUFO-QWWZWVQMSA-N",
+   "cid": null,
+   "note": "no PubChem record by name; stereo set to the descriptors in the name"
+  },
+  {
+   "name": "(R)-4-Hydroxy-4-phenylbutan-2-one (Mukaiyama aldol product)",
+   "inchikey": "MUVVFSVVVHYLMQ-SNVBAGLBSA-N",
+   "cid": null,
+   "note": "no PubChem record by name; stereo set to the descriptors in the name"
+  },
+  {
+   "name": "Evans syn-aldol (N-acyl-(2S,3R)-3-hydroxy-2-methylpentanoyl)",
+   "inchikey": "JULRHESXGMBTKX-FPMFFAJLSA-N",
+   "cid": null,
+   "note": "no PubChem record by name; stereo set to the descriptors in the name"
+  }
+ ]
+}

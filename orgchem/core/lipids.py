@@ -124,12 +124,10 @@ LIPIDS: List[Lipid] = [
                 "glycerophospholipids."),
     # ---- Sphingolipids --------------------------------------------
     Lipid(name="Ceramide (C18)", family="sphingolipid",
-          smiles="CCCCCCCCCCCCCCCCCC(=O)N[C@@H](CO)[C@@H](O)"
-                 "/C=C/CCCCCCCCCCCCC",
+          smiles="CCCCCCCCCCCCC/C=C/[C@@H](O)[C@H](CO)NC(=O)CCCCCCCCCCCCCCCCC",
           notes="Base sphingolipid — sphingosine + fatty-acid amide."),
     Lipid(name="Sphingomyelin (C18)", family="sphingolipid",
-          smiles="CCCCCCCCCCCCCCCCCC(=O)N[C@@H](COP(=O)([O-])"
-                 "OCC[N+](C)(C)C)[C@@H](O)/C=C/CCCCCCCCCCCCC",
+          smiles="CCCCCCCCCCCCC/C=C/[C@@H](O)[C@H](COP(=O)([O-])OCC[N+](C)(C)C)NC(=O)CCCCCCCCCCCCCCCCC",
           notes="Myelin-sheath lipid. Phosphocholine head-group on a "
                 "ceramide backbone."),
     # ---- Sterols / steroids ---------------------------------------
@@ -139,20 +137,17 @@ LIPIDS: List[Lipid] = [
           notes="Major membrane sterol in animal cells; precursor "
                 "to steroid hormones + bile acids."),
     Lipid(name="Ergosterol", family="sterol",
-          smiles="CC(C)C(C)[C@H]1CC[C@H]2C3=CC=C4CC(O)CC[C@]4(C)"
-                 "C3CC[C@]12C",
+          smiles="CC(C)[C@@H](C)/C=C/[C@@H](C)[C@H]1CC[C@H]2C3=CC=C4C[C@@H](O)CC[C@]4(C)[C@H]3CC[C@]12C",
           notes="Fungal sterol; target of azole antifungals."),
     Lipid(name="Vitamin D3 (cholecalciferol)", family="vitamin",
-          smiles="CC(C)CCC[C@@H](C)[C@H]1CC[C@@H]2/C(=C\\C=C3\\C[C@@H]"
-                 "(O)CCC3=C)/CCC[C@]12C",
+          smiles="C=C1CC[C@H](O)C/C1=C/C=C1\\CCC[C@]2(C)[C@@H]([C@H](C)CCCC(C)C)CC[C@@H]12",
           notes="Secosteroid; photochemical isomerisation product of "
                 "7-dehydrocholesterol in skin."),
     Lipid(name="Testosterone", family="sterol",
-          smiles="C[C@]12CC[C@H]3[C@@H](CCC4=CC(=O)CC[C@@]34C)"
-                 "[C@@H]1CC[C@@H]2O",
+          smiles="C[C@]12CC[C@H]3[C@@H](CCC4=CC(=O)CC[C@@]43C)[C@@H]1CC[C@@H]2O",
           notes="Androgen — primary male sex hormone. Steroid scaffold."),
     Lipid(name="Estradiol", family="sterol",
-          smiles="C[C@]12CCC3c4ccc(O)cc4CC[C@H]3[C@@H]1CC[C@@H]2O",
+          smiles="C[C@]12CC[C@@H]3c4ccc(O)cc4CC[C@H]3[C@@H]1CC[C@@H]2O",
           notes="Estrogen. Aromatic A-ring is its structural signature."),
 
     # ---- Phase 31i content expansion (2026-04-23) ----------------
@@ -177,36 +172,29 @@ LIPIDS: List[Lipid] = [
                 "+ α / ω side chains. COX-2 target; mediates fever, "
                 "pain, inflammation, parturition."),
     Lipid(name="Thromboxane A2 (TXA2)", family="fatty-acid",
-          smiles="CCCCC[C@H](O)/C=C/[C@H]1O[C@@H]2C[C@H]1"
-                 "[C@@H](C/C=C\\CCCC(=O)O)O2",
+          smiles="CCCCC[C@H](O)/C=C/[C@H]1O[C@H]2C[C@H](O2)[C@@H]1C/C=C\\CCCC(=O)O",
           chain_length=20, unsaturations=2,
           notes="Oxetane-bearing eicosanoid — platelet aggregator "
                 "and vasoconstrictor. Target of low-dose aspirin (COX-1 "
                 "acetylation in platelets)."),
     # Bile acids
     Lipid(name="Cholic acid", family="sterol",
-          smiles="C[C@H](CCC(=O)O)[C@H]1CC[C@@H]2[C@@]1(C)"
-                 "[C@@H](O)C[C@H]1[C@H]2[C@@H](O)C[C@@H]2C[C@H](O)"
-                 "CC[C@]12C",
+          smiles="C[C@H](CCC(=O)O)[C@H]1CC[C@H]2[C@@H]3[C@H](O)C[C@@H]4C[C@H](O)CC[C@]4(C)[C@H]3C[C@H](O)[C@]12C",
           notes="Primary bile acid — synthesised in liver from "
                 "cholesterol. Emulsifies dietary fat. 3α, 7α, 12α-"
                 "trihydroxy-5β-cholan-24-oic acid."),
     Lipid(name="Taurocholic acid", family="sterol",
-          smiles="C[C@H](CCC(=O)NCCS(=O)(=O)O)[C@H]1CC[C@@H]2"
-                 "[C@@]1(C)[C@@H](O)C[C@H]1[C@H]2[C@@H](O)C"
-                 "[C@@H]2C[C@H](O)CC[C@]12C",
+          smiles="C[C@H](CCC(=O)NCCS(=O)(=O)O)[C@H]1CC[C@H]2[C@@H]3[C@H](O)C[C@@H]4C[C@H](O)CC[C@]4(C)[C@H]3C[C@H](O)[C@]12C",
           notes="Taurine-conjugated bile salt. Deprotonated at "
                 "intestinal pH — potent detergent for micelle "
                 "formation with dietary fats."),
     # Steroid hormones
     Lipid(name="Progesterone", family="sterol",
-          smiles="C[C@]12CC[C@H]3[C@@H](CCC4=CC(=O)CC[C@@]34C)"
-                 "[C@@H]1CC[C@@H]2C(=O)C",
+          smiles="CC(=O)[C@H]1CC[C@H]2[C@@H]3CCC4=CC(=O)CC[C@]4(C)[C@H]3CC[C@]12C",
           notes="C21 steroid hormone. Uterine lining maintenance; "
                 "pregnancy. Precursor to cortisol + aldosterone."),
     Lipid(name="Cortisol", family="sterol",
-          smiles="OC[C@@]12[C@@](O)([C@@H](O)C[C@@H]1[C@@H]1CC"
-                 "[C@H]3CC(=O)CC[C@]3(C)[C@H]1C[C@@H]2O)C(=O)CO",
+          smiles="C[C@]12CCC(=O)C=C1CC[C@@H]1[C@@H]2[C@@H](O)C[C@@]2(C)[C@H]1CC[C@]2(O)C(=O)CO",
           notes="Glucocorticoid — stress hormone. Anti-inflammatory "
                 "and gluconeogenic. Clinical analogue: prednisolone "
                 "(Δ¹-dehydrocortisol)."),

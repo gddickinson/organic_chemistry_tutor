@@ -136,7 +136,7 @@ SAR_LIBRARY: List[SARSeries] = [
         variants=[
             SARVariant(
                 name="Lovastatin",
-                smiles="CC[C@@H](C)C(=O)O[C@@H]1C[C@@H](C)C=C2C=C[C@@H](C)[C@H](CC[C@@H]3C[C@H](O)CC(=O)O3)[C@@H]12",
+                smiles="CC[C@H](C)C(=O)O[C@H]1C[C@@H](C)C=C2C=C[C@H](C)[C@H](CC[C@@H]3C[C@@H](O)CC(=O)O3)[C@H]21",
                 r_group_label="methylbutyryl side chain",
                 activity={"ic50_nM": 11.0, "daily_dose_mg": 40.0,
                           "ldl_pct_reduction": 30.0},
@@ -145,7 +145,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Simvastatin",
-                smiles="CCC(C)(C)C(=O)O[C@@H]1C[C@@H](C)C=C2C=C[C@@H](C)[C@H](CC[C@@H]3C[C@H](O)CC(=O)O3)[C@@H]12",
+                smiles="CCC(C)(C)C(=O)O[C@H]1C[C@@H](C)C=C2C=C[C@H](C)[C@H](CC[C@@H]3C[C@@H](O)CC(=O)O3)[C@H]21",
                 r_group_label="dimethylbutyryl side chain",
                 activity={"ic50_nM": 12.0, "daily_dose_mg": 20.0,
                           "ldl_pct_reduction": 38.0},
@@ -208,7 +208,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Bisoprolol",
-                smiles="CC(C)NCC(O)COc1ccc(COCCC(C)C)cc1",
+                smiles="CC(C)NCC(O)COc1ccc(COCCOC(C)C)cc1",
                 r_group_label="p-(isopropoxymethyl) aryl",
                 activity={"beta1_pki": 7.9, "beta2_pki": 5.7,
                           "beta1_selectivity": 170.0},
@@ -250,8 +250,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Enalaprilat",
-                smiles="CCC(NC(Cc1ccccc1)C(=O)N1CCC[C@H]1C(=O)O)"
-                       "C(=O)O",
+                smiles="C[C@H](N[C@@H](CCc1ccccc1)C(=O)O)C(=O)N1CCC[C@H]1C(=O)O",
                 r_group_label="dicarboxylate zinc-binder; "
                               "Phe-Pro peptidomimetic",
                 activity={"ic50_nM": 1.2, "oral_bioavail_pct": 10.0,
@@ -274,8 +273,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Ramipril",
-                smiles="CCC(C(=O)OCC)N[C@@H](C)C(=O)N1[C@H](C(=O)O)"
-                       "C[C@H]2CCC[C@H]12",
+                smiles="CCOC(=O)[C@H](CCc1ccccc1)N[C@@H](C)C(=O)N1[C@H](C(=O)O)C[C@@H]2CCC[C@@H]21",
                 r_group_label="bicyclic 2-aza-bicyclic ring in "
                               "place of proline",
                 activity={"ic50_nM": 7.0, "oral_bioavail_pct": 55.0,
@@ -286,8 +284,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Benazepril",
-                smiles="CCOC(=O)C(CCc1ccccc1)N[C@H](C)"
-                       "C(=O)N1c2ccccc2CC[C@@H]1C(=O)O",
+                smiles="CCOC(=O)[C@H](CCc1ccccc1)N[C@H]1CCc2ccccc2N(CC(=O)O)C1=O",
                 r_group_label="benzazepine 7-membered-ring core",
                 activity={"ic50_nM": 5.0, "oral_bioavail_pct": 37.0,
                           "t_half_h": 11.0},
@@ -428,8 +425,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Methicillin",
-                smiles="COc1cccc(OC)c1C(=O)N[C@H]1C(=O)N2"
-                       "[C@@H](C(=O)O)C(C)(C)S[C@H]12",
+                smiles="COc1cccc(OC)c1C(=O)N[C@@H]1C(=O)N2[C@@H]1SC(C)(C)[C@@H]2C(=O)O",
                 r_group_label="2,6-dimethoxybenzoyl side chain "
                               "(sterically shielded)",
                 activity={"mic_s_aureus_ug_ml": 3.0,
@@ -444,8 +440,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Cloxacillin",
-                smiles="Cc1onc(-c2ccccc2Cl)c1C(=O)N[C@H]1C(=O)N2"
-                       "[C@@H](C(=O)O)C(C)(C)S[C@H]12",
+                smiles="Cc1onc(-c2ccccc2Cl)c1C(=O)N[C@@H]1C(=O)N2[C@@H]1SC(C)(C)[C@@H]2C(=O)O",
                 r_group_label="3-o-chlorophenyl-5-methyl-isoxazole-"
                               "4-carboxamide (shielded + acid-stable)",
                 activity={"mic_s_aureus_ug_ml": 0.25,
@@ -516,8 +511,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Avanafil",
-                smiles="COc1cc(CNc2ncnc(N3CCC[C@@H]3CO)c2"
-                       "NC(=O)c2ncc(Cl)cn2)ccc1",
+                smiles="COc1ccc(CNc2nc(N3CCC[C@H]3CO)ncc2C(=O)NCc2ncccn2)cc1Cl",
                 r_group_label="pyrimidine-based third chemotype; "
                               "chloro-pyrimidine amide + prolinol",
                 activity={"pde5_ic50_nM": 5.2, "t_half_h": 1.5,
@@ -530,8 +524,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Udenafil",
-                smiles="CCCc1nc(C)c2c(=O)[nH]c(-c3cc("
-                       "S(=O)(=O)CCCN(CC)C4CCCCC4)ccc3OCC)nn12",
+                smiles="CCCOc1ccc(S(=O)(=O)NCCC2CCCN2C)cc1-c1nc2c(CCC)nn(C)c2c(=O)[nH]1",
                 r_group_label="vardenafil core + sulfonyl-propyl-"
                               "(N-cyclohexyl, N-ethyl)amine "
                               "(replaces piperazine)",
@@ -654,7 +647,7 @@ SAR_LIBRARY: List[SARSeries] = [
         variants=[
             SARVariant(
                 name="Nalidixic acid",
-                smiles="CCN1C=C(C(=O)O)C(=O)c2cc(C)cnc12",
+                smiles="CCn1cc(C(=O)O)c(=O)c2ccc(C)nc21",
                 r_group_label="1st-gen 1,8-naphthyridone (no C-6 F, "
                               "no piperazine); N-1 ethyl, C-7 methyl",
                 activity={"mic_e_coli_ugml": 8.0,
@@ -807,8 +800,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Saxagliptin (Onglyza)",
-                smiles="O=C(N1C[C@@H]2C[C@@H]2[C@H]1C#N)"
-                       "[C@@H](N)C12CC3CC(C1)CC(O)(C3)C2",
+                smiles="N#C[C@@H]1C[C@@H]2C[C@@H]2N1C(=O)[C@@H](N)C12CC3CC(CC(O)(C3)C1)C2",
                 r_group_label="**Cyanopyrrolidine warhead** + "
                               "(S)-3-hydroxyadamantyl + "
                               "α-amino-acyl spacer — "
@@ -867,8 +859,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Alogliptin (Nesina)",
-                smiles="N[C@@H]1CCCN(c2cc(=O)n(Cc3cccc(C#N)c3)"
-                       "c(=O)n2C)C1",
+                smiles="Cn1c(=O)cc(N2CCC[C@@H](N)C2)n(Cc2ccccc2C#N)c1=O",
                 r_group_label="Pyrimidine-2,4-dione + 3-"
                               "cyanobenzyl + (R)-3-amino-"
                               "piperidinyl — uracil-based "
@@ -1004,8 +995,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Edoxaban (Lixiana / Savaysa)",
-                smiles="CN(C(=O)c1csc(C)n1)C(=O)N[C@@H]1CC"
-                       "[C@H](NC(=O)c2cc(Cl)cnc2N)CC1",
+                smiles="CN1CCc2nc(C(=O)N[C@@H]3C[C@@H](C(=O)N(C)C)CC[C@@H]3NC(=O)C(=O)Nc3ccc(Cl)cn3)sc2C1",
                 r_group_label="Thiazole-N-methyl-carboxamide "
                               "+ 5-chloro-2-aminonicotinamide "
                               "+ trans-cyclohexyl-1,4-diamine "
@@ -1593,7 +1583,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Chlorpheniramine (Chlor-Trimeton)",
-                smiles="CN(C)CCC(c1ccccc1)c1ccc(Cl)cc1",
+                smiles="CN(C)CCC(c1ccc(Cl)cc1)c1ccccn1",
                 r_group_label="1st-gen alkylamine; one aryl "
                               "halogenated (para-Cl); 3-carbon "
                               "tether (ethanolamine → propylamine)",
@@ -1655,8 +1645,7 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Cetirizine (Zyrtec)",
-                smiles="OC(=O)COCCN1CCN([C@@H](c2ccccc2)"
-                       "c2ccc(Cl)cc2)CC1",
+                smiles="O=C(O)COCCN1CCN(C(c2ccccc2)c2ccc(Cl)cc2)CC1",
                 r_group_label="2nd-gen carboxylic-acid "
                               "metabolite of hydroxyzine; "
                               "zwitterion at physiological pH",
