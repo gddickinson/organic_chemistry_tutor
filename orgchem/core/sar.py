@@ -1349,7 +1349,8 @@ SAR_LIBRARY: List[SARSeries] = [
             ),
             SARVariant(
                 name="Oxycodone (OxyContin)",
-                smiles="CN1CC[C@@]23c4c5ccc(OC)c4O[C@H]2"
+                # PubChem CID 5284603 / ChEBI:7852 (C13 was inverted before).
+                smiles="CN1CC[C@]23c4c5ccc(OC)c4O[C@H]2"
                        "C(=O)CC[C@@]3(O)[C@H]1C5",
                 r_group_label="14-OH + 6-keto + 3-OMe + "
                               "dihydro semi-synthetic from "

@@ -822,7 +822,7 @@
 ]
 },
 {
-"smiles": "COc1ccc2c3c1O[C@@H]1[C@H](O)C=C[C@H]4[C@H](C2)N(C)CC[C@]314",
+"smiles": "COc1ccc2c3c1O[C@H]1[C@@H](O)C=C[C@H]4[C@@H](C2)N(C)CC[C@@]341",
 "atoms": "C3 O0 Ca0 Ca1 Ca1 Ca0 Ca0 Ca0 O0 C1 C1 O1 C1 C1 C1 C1 C2 N0 C3 C2 C2 C0",
 "formula": "C18H21NO3",
 "mw": 299.3700000000001,
@@ -1062,7 +1062,7 @@
 ]
 },
 {
-"smiles": "CC1(C)[C@@H]2CC[C@]1(C)C(=O)C2",
+"smiles": "CC1(C)[C@@H]2CC[C@@]1(C)C(=O)C2",
 "atoms": "C3 C0 C3 C1 C2 C2 C0 C3 C0 O0 C2",
 "formula": "C10H16O",
 "mw": 152.237,
@@ -8162,7 +8162,7 @@
 ]
 },
 {
-"smiles": "COc1ccc2c3c1O[C@H]1C(=O)CC[C@@]4(O)[C@@H](C2)N(C)CC[C@@]314",
+"smiles": "COc1ccc2c3c1O[C@H]1C(=O)CC[C@@]4(O)[C@@H](C2)N(C)CC[C@]314",
 "atoms": "C3 O0 Ca0 Ca1 Ca1 Ca0 Ca0 Ca0 O0 C1 C0 O0 C2 C2 C0 O1 C1 C2 N0 C3 C2 C2 C0",
 "formula": "C18H21NO4",
 "mw": 315.3690000000001,
@@ -10451,7 +10451,7 @@
 ]
 },
 {
-"smiles": "COC1=C2O[C@@H]3[C@H](O)C=C[C@H]4[C@@H]5CC(=C2[C@@]34CCN5C)C=C1",
+"smiles": "COC1=C2O[C@H]3[C@@H](O)C=C[C@H]4[C@H]5CC(=C2[C@]43CCN5C)C=C1",
 "atoms": "C3 O0 Ca0 Ca0 O0 C1 C1 O1 C1 C1 C1 C1 C2 Ca0 Ca0 C0 C2 C2 N0 C3 Ca1 Ca1",
 "formula": "C18H21NO3",
 "mw": 299.36999999999995,
@@ -13894,7 +13894,7 @@
 ]
 },
 {
-"smiles": "COC1=C2O[C@H]3C(=O)CC[C@@]4(O)[C@H]5CC(=C2[C@]34CCN5C)C=C1",
+"smiles": "COC1=C2O[C@H]3C(=O)CC[C@@]4(O)[C@H]5CC(=C2[C@@]34CCN5C)C=C1",
 "atoms": "C3 O0 Ca0 Ca0 O0 C1 C0 O0 C2 C2 C0 O1 C1 C2 Ca0 Ca0 C0 C2 C2 N0 C3 Ca1 Ca1",
 "formula": "C18H21NO4",
 "mw": 315.369,

@@ -39,7 +39,8 @@ _STARTER: List[Tuple[str, str, str]] = [
     ("Methylene Blue","CN(C)c1ccc2nc3ccc(N(C)C)cc3[s+]c2c1",                                "reference-set"),
     ("Thiamine",      "Cc1ncc(C[n+]2csc(CCO)c2C)c(N)n1",                                    "reference-set"),
     ("Cholesterol",   "C[C@H](CCCC(C)C)[C@H]1CC[C@H]2[C@@H]3CC=C4C[C@@H](O)CC[C@]4(C)[C@H]3CC[C@]12C", "reference-set"),
-    ("Codeine",       "COc1ccc2C[C@H]3[C@@H]4C=C[C@@H](O)[C@H]5Oc1c2[C@]45CCN3C",           "reference-set"),
+    # Codeine: PubChem CID 5284371 / ChEBI:16714 (the earlier SMILES had stereo no 3D geometry can satisfy).
+    ("Codeine",       "CN1CC[C@]23c4c5ccc(OC)c4O[C@H]2[C@@H](O)C=C[C@H]3[C@H]1C5",         "reference-set"),
     ("Cocaine",       "COC(=O)[C@H]1[C@@H](OC(=O)c2ccccc2)C[C@@H]2CC[C@H]1N2C",             "reference-set"),
     # ---- +20 content expansion, Phase 6 (2026-04-22) ----
     # Amino acids
@@ -62,7 +63,8 @@ _STARTER: List[Tuple[str, str, str]] = [
     ("Acetonitrile",   "CC#N",                                                            "solvent"),
     # Natural products / aromatics
     ("Menthol",        "CC(C)[C@@H]1CC[C@@H](C)C[C@H]1O",                                 "natural-product"),
-    ("Camphor",        "CC1(C)[C@@H]2CC[C@]1(C)C(=O)C2",                                  "natural-product"),
+    # Camphor = (+)-camphor, (1R,4R): PubChem CID 159055 / ChEBI:15396, the common natural enantiomer.
+    ("Camphor",        "CC1(C)[C@@H]2CC[C@@]1(C)C(=O)C2",                                 "natural-product"),
     ("Salicylic acid", "OC(=O)c1ccccc1O",                                                 "natural-product"),
     ("Vanillin",       "COc1cc(C=O)ccc1O",                                                "natural-product"),
     ("Capsaicin",      "COc1cc(CNC(=O)CCCC/C=C/C(C)C)ccc1O",                              "natural-product"),
@@ -96,6 +98,10 @@ def seed_if_empty(cfg: AppConfig) -> int:
 
     from orgchem.db.seed_glossary import seed_glossary_if_empty
     g_added = seed_glossary_if_empty()
+
+    # Rewrite rows that still hold a structure fixed in a later release (before the 2D backfill redraws them).
+    from orgchem.db.seed_corrections import apply_seed_corrections
+    apply_seed_corrections()
 
     # Phase 6f.2 — persist canonical 2D coords for every molecule so the
     # same layout is reused anywhere it's drawn.

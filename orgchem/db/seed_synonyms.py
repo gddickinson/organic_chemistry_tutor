@@ -64,6 +64,8 @@ _CURATED: Dict[str, List[str]] = {
     "Progesterone": ["Pregn-4-ene-3,20-dione", "P4"],
     "Cortisol": ["Hydrocortisone"],
     "Vitamin D3": ["Cholecalciferol", "Colecalciferol"],
+    # The seed is (+)-camphor, (1R,4R) (PubChem CID 159055), the common natural enantiomer.
+    "Camphor": ["(+)-Camphor", "D-Camphor", "(1R,4R)-Camphor"],
     "Retinol (vitamin A)": ["Retinol", "Vitamin A", "all-trans-Retinol"],
 }
 

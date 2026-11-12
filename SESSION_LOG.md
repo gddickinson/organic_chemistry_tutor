@@ -1,5 +1,21 @@
 # Session Log — OrgChem Studio
 
+## 2026-11-12 — Fix impossible stereochemistry in seed SMILES
+
+- **Fix**: the seed SMILES of Camphor, Codeine and Oxycodone carried stereo descriptors no 3D
+  geometry can satisfy (camphor's bridgeheads written R and S; codeine's ring fusion; oxycodone's
+  C13 inverted), so they had no 3D model and wrong InChIKeys. Replaced with the isomeric SMILES of
+  their PubChem records: Camphor = (+)-camphor (1R,4R), CID 159055 / ChEBI:15396 (the seed name does
+  not say which enantiomer; (+)- is the common natural form, added as synonyms "(+)-Camphor",
+  "D-Camphor", "(1R,4R)-Camphor"); Codeine CID 5284371 / ChEBI:16714 (`seed.py`); Oxycodone CID
+  5284603 / ChEBI:7852 (`core/sar.py` opioid series). InChIKeys now match PubChem.
+- Existing DBs (seeding is additive by name) are corrected on next launch by the new
+  `db/seed_corrections.py` (matched by the old InChIKey; 2D layout redrawn).
+- Regression test `tests/test_seed_stereo.py`: the three molecules match their PubChem InChIKeys
+  and embed with their stereo intact; every seeded molecule with stereo embeds in 3D with its
+  specified stereo preserved (allow-list `EMBED_ALLOW_LIST`, currently empty); old-DB correction.
+  JS fixture regenerated (node test 0 failures).
+
 ## 2026-11-12 — Web interface + static GitHub Pages site
 
 Added `orgchem/web/` (FastAPI app, `run_web.py` on port 8131) and a static export

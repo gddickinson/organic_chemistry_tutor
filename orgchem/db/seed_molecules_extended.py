@@ -291,7 +291,7 @@ _EXTENDED: List[Tuple[str, str, str]] = [
     ("β-Pinene",         "C=C1CC[C@H]2CC1[C@@]2(C)C",                 "terpene"),
     ("Limonene",         "CC(=C)[C@@H]1CC=C(C)CC1",                   "terpene"),
     ("Myrcene",          "CC(=CCCC(=C)C=C)C",                         "terpene"),
-    ("Camphor",          "CC1(C)[C@@H]2CC[C@]1(C)C(=O)C2",            "terpene"),
+    ("Camphor",          "CC1(C)[C@@H]2CC[C@@]1(C)C(=O)C2",           "terpene"),  # (+)-(1R,4R), CID 159055
     ("Menthol",          "CC(C)[C@@H]1CC[C@@H](C)C[C@H]1O",           "terpene"),
     ("Geraniol",         "CC(=CCC/C(C)=C/CO)C",                       "terpene"),
     ("Farnesol",         "CC(=CCC/C(C)=C/CC/C(C)=C/CO)C",             "terpene"),
