@@ -1,0 +1,13 @@
+# Web interface + static-site build (python run_web.py / scripts/build_static.py / tests/test_web.py).
+fastapi==0.162.2
+httpx==0.28.1
+pytest==9.2.0
+uvicorn==0.54.0
+# What the API imports from the app (chemistry, seeding, lessons). PySide6-Essentials: orgchem.messaging.bus
+# imports QtCore (no display needed).
+rdkit==2026.9.2
+SQLAlchemy==2.1.8
+Markdown==3.11.3
+PyYAML==6.0.3
+platformdirs==4.14.5
+PySide6-Essentials==6.10.1

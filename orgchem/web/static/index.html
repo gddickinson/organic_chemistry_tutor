@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OrgChem Studio</title>
+<meta name="description" content="Learn organic chemistry: 215 lessons, 613 molecules in 2D and 3D, named reactions with curly-arrow mechanisms and energy profiles, synthesis routes and quizzes, from the OrgChem Studio desktop app.">
+<link rel="icon" href="static/icon.svg">
+<link rel="stylesheet" href="static/style.css">
+<link rel="stylesheet" href="static/style_app.css">
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<header class="top">
+  <a class="brand" href="#/"><span class="mark"></span>OrgChem Studio</a>
+  <nav class="groups">
+    <a href="#/lessons" data-nav="lessons">Lessons</a>
+    <a href="#/molecules" data-nav="molecules">Molecules</a>
+    <details><summary>Reactions</summary><div class="menu">
+      <a href="#/reactions" data-nav="reactions">Named reactions</a>
+      <a href="#/mechanisms" data-nav="mechanisms">Mechanisms (curly arrows)</a>
+      <a href="#/profiles" data-nav="profiles">Energy profiles</a>
+      <a href="#/pathways" data-nav="pathways">Synthesis pathways</a>
+    </div></details>
+    <a href="#/lab" data-nav="lab">SMILES lab</a>
+    <a href="#/quiz" data-nav="quiz">Quiz</a>
+    <a href="#/glossary" data-nav="glossary">Glossary</a>
+    <a href="#/about" data-nav="about">About</a>
+  </nav>
+  <div class="right"><a class="small mute" href="https://github.com/gddickinson/organic_chemistry_tutor" target="_blank" rel="noopener">GitHub</a></div>
+</header>
+<main id="app" tabindex="-1"></main>
+<footer class="foot">OrgChem Studio · <a href="https://github.com/gddickinson/organic_chemistry_tutor">source on GitHub</a> · <span id="mode"></span></footer>
+<script type="module" src="static/main.js"></script>
+</body>
+</html>

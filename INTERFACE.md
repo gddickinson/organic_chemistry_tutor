@@ -39,7 +39,8 @@ for the project. Update it whenever the module layout changes.
 | `data/`             | Bundled static data (optional seeds, tutorial assets). |
 | `tests/`            | pytest suite. |
 | `refs/`             | Reference papers (e.g. Verma et al. 2024 whose formula calculator we reimplement). |
-| `scripts/`          | Utility scripts: `visual_tour.py` (canonical-state gallery regen), `regen_goldens.py` (Phase 20b golden-baseline writer), `batch_render.py` (Phase 20e CLI), `fetch_3dmol_js.py` (Phase 20a offline bundle), `claude_drive_demo.py` (agent walkthrough). |
+| `run_web.py`        | Starts the web interface (`orgchem/web/app.py`) on http://127.0.0.1:8131. |
+| `scripts/`          | Utility scripts: `build_static.py` (static Pages export), `screenshots.py` (browser smoke test), `make_chem_fixture.py` (RDKit fixture for the JS chemistry engine), `visual_tour.py` (canonical-state gallery regen), `regen_goldens.py` (Phase 20b golden-baseline writer), `batch_render.py` (Phase 20e CLI), `fetch_3dmol_js.py` (Phase 20a offline bundle), `claude_drive_demo.py` (agent walkthrough). |
 | `CLAUDE.md`         | Project-specific Claude Code instructions (references this file). |
 | `PROJECT_STATUS.md` | What works *today*, plus metrics and known issues. |
 | `ROADMAP.md`        | Phased plan through v1.0 and beyond. |
@@ -886,6 +887,16 @@ The tutor panel and the stdio bridge pick it up automatically.
 | File | Key symbols |
 |------|-------------|
 | `rules.py` | `NamingRule` dataclass; `RULES` list of 22 IUPAC rules across 11 categories; `list_rules(category)`, `get_rule(id)`, `rule_categories()`. Drives the agent actions `list_naming_rules` / `get_naming_rule` / `naming_rule_categories`. |
+
+### `web/` — web interface + static GitHub Pages site
+| File | Key symbols |
+|------|-------------|
+| `app.py` | FastAPI app (`run_web.py`, port 8131): `/api/info`, `/api/lessons[/<level>/<stem>]`, `/api/molecules[/<id>]`, `/api/reactions[/<id>]`, `/api/pathways[/<id>]`, `/api/glossary`, `/api/quiz`, POST `/api/depict` (local only). `STATIC_ENDPOINTS` lists every GET exported by `scripts/build_static.py`. |
+| `chemdata.py` | `snapshot()` — runs `db/seed.py` into a private temp SQLite DB (never the user's) and returns molecules / reactions (+ mechanism, energy profile with `activation_energies` / `delta_h`) / pathways / glossary as dicts. |
+| `depict.py` | `depict_smiles`, `depict_molblock`, `coords_3d` (via `Molecule.generate_3d`), `mol_json` — compact atom/bond JSON (RDKit atom order, Kekulé bond orders, wedges) for the browser renderers. |
+| `lessons.py` | `lesson_index()`, `lesson(slug)` — curriculum + Tutorial-panel Markdown pipeline; glossary links become `#/glossary/<term>`. |
+| `quiz.py` | `bank()` — deterministic quiz bank (name / group / formula / reaction / glossary) from seeded content; `scheme(rxn_smiles)`, `short_reaction_name`, `pretty_group`. |
+| `static/` | ES-module front end (no build step): `main.js` router, pages `home.js` `lessons.js` `molecules.js` `reactions.js` `pathways.js` `glossary.js` `lab.js` `quiz.js`; `draw2d.js` (SVG molecules, schemes, mechanism arrows), `viewer3d.js` (WebGL), `energy_chart.js`; chemistry in JS: `chem_engine.js` (SMILES parser, H counts, aromaticity, formula, masses), `chem_masses.js`, `smarts.js` (functional-group SMARTS), `formula_calc.js` (port of `core/formula.py`); `chem_engine.test.mjs` node test against `tests/fixtures/chem_engine_fixture.json` (`scripts/make_chem_fixture.py`); `static_api.js` answers the API from exported JSON on the static site; `core.js` / `style.css` shared web kit. |
 
 ## Inter-module rules
 1. `core/` must not import from `gui/`, `db/`, or `sources/`.

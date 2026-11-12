@@ -1,0 +1,52 @@
+/* OrgChem Studio: teal / pink / gold accents and page styles on top of the shared style.css. */
+:root { --accent:#38f2d8; --accent2:#ff5ea8; --accent3:#7aa8ff; --glow:rgba(56,242,216,.13); --bond:#d8dee9; }
+.mark { border-color:var(--accent); }
+a.tile { color:var(--ink); } a.tile:hover { text-decoration:none; box-shadow:0 0 18px var(--glow); }
+.door b .n { font:600 13px var(--mono); color:var(--accent); font-style:normal; margin-left:6px; }
+svg.mol { display:block; max-width:100%; height:auto; margin:0 auto; }
+svg.mol text.al { font-family:var(--sans); font-weight:600; }
+.molbox { background:rgba(3,5,12,.75); border:1px solid var(--line); border-radius:6px; padding:8px; display:flex; align-items:center; justify-content:center; min-height:120px; }
+.molcard svg.mol { max-height:150px; width:auto; }
+.molcard { display:flex; flex-direction:column; gap:6px; }
+.molcard .molbox { min-height:150px; }
+.view3d { width:100%; height:380px; display:block; border-radius:6px; border:1px solid var(--line); background:#080a12; touch-action:none; }
+.kv { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; margin:12px 0; }
+.kv div { background:rgba(12,16,32,.85); border:1px solid var(--line); border-radius:4px; padding:8px 10px; }
+.kv b { display:block; font:600 15px var(--mono); overflow-wrap:anywhere; }
+.kv span { font-size:12px; color:var(--mute); }
+.scheme { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; padding:10px; background:rgba(3,5,12,.75); border:1px solid var(--line); border-radius:6px; justify-content:center; }
+.scheme .frag svg.mol { max-height:160px; width:auto; }
+.scheme .plus { font:600 22px var(--mono); color:var(--mute); }
+.scheme .rarrow { display:flex; flex-direction:column; align-items:center; min-width:70px; color:var(--accent); }
+.scheme .rarrow b { font-size:34px; line-height:1; }
+.scheme .rarrow em { font:12px var(--mono); color:var(--mute); font-style:normal; max-width:200px; text-align:center; }
+.scheme .agents svg.mol { max-height:60px; width:auto; display:inline-block; }
+.mechbox { background:rgba(3,5,12,.8); border:1px solid var(--line); border-radius:6px; padding:8px; }
+.mechbox svg.mol { max-height:420px; width:auto; }
+.steps { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; }
+.steps button { margin:0; }
+.md h1 { font-size:30px; } .md h2 { font-size:21px; } .md table { margin:10px 0; display:block; overflow-x:auto; } .md pre { max-width:100%; } .md td, .md th { font-size:14px; }
+.md code { color:var(--warn); } .md pre code { color:var(--ink); }
+.md blockquote { border-left:3px solid var(--accent2); margin:12px 0; padding:4px 14px; color:#c6d4ee; background:color-mix(in srgb, var(--accent2) 6%, transparent); }
+.md a[href^="#/glossary/"] { border-bottom:1px dotted var(--accent3); }
+.lvl-beginner { color:var(--accent) !important; } .lvl-intermediate { color:var(--accent3) !important; }
+.lvl-advanced { color:var(--warn) !important; } .lvl-graduate { color:var(--accent2) !important; }
+.pager { display:flex; justify-content:space-between; gap:12px; margin-top:28px; flex-wrap:wrap; }
+.filters { display:grid; grid-template-columns:2fr 1fr 1fr; gap:10px 14px; align-items:end; }
+.filters label { margin-top:0; }
+.quiz .opts { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0; }
+.quiz .opts button { margin:0; text-transform:none; letter-spacing:0; font:500 15px var(--sans); background:rgba(12,16,32,.9); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line); text-align:left; padding:10px 14px; }
+.quiz .opts button.right { box-shadow:inset 0 0 0 2px var(--good); color:var(--good); }
+.quiz .opts button.wrong { box-shadow:inset 0 0 0 2px var(--bad); color:var(--bad); }
+.quiz .def { font-size:17px; }
+.chart svg { width:100%; height:auto; display:block; }
+.chart .ts { fill:var(--accent2); } .chart .mn { fill:var(--accent); }
+.chart text { fill:var(--mute); font:11px var(--mono); }
+.chart .lbl { fill:var(--ink); font:12px var(--sans); }
+.err-pos { color:var(--bad); font:13px var(--mono); }
+.gl-term { scroll-margin-top:90px; }
+.gl-term.on { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent), 0 0 22px var(--glow); }
+@media (max-width:760px) {
+  .filters { grid-template-columns:1fr; } .quiz .opts { grid-template-columns:1fr; }
+  .view3d { height:300px; }
+}

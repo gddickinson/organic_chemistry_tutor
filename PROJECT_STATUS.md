@@ -155,6 +155,8 @@ tutorials, 40 carbs / 40 lipids / 40 nucleic acids, 15 SAR series,
 
 ## What works today
 
+- **Web interface + static site (2026-11-12)** — `python run_web.py` (port 8131) / GitHub Pages: lessons, molecules (2D + WebGL 3D), reactions with mechanism player + energy profiles, pathways, glossary, SMILES lab (JS engine tested against RDKit), quiz. See README "Web interface and static site".
+
 ### Data & chemistry
 - SQLite database auto-created per user (platformdirs-aware path).
 - Seeded with 20 molecules on first run: 5 beginner basics + all 15 Verma

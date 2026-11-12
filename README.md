@@ -386,6 +386,49 @@ pre-commit install   # optional: ruff + mypy on every commit
 pytest tests/
 ```
 
+## Web interface and static site
+
+A browser version of the app's teaching content, in the same dark-neon style as the
+Microscope Atlas. It runs locally with the full API, and the same front end is exported
+as a static GitHub Pages site (published from `main` by `.github/workflows/pages.yml`).
+
+- **Lessons** — all 215 tutorial lessons, rendered with the Tutorial panel's own Markdown
+  pipeline; `{term:X}` glossary links open the glossary.
+- **Molecules** — the 613 seeded molecules: search and filter by group or functional group,
+  2D structure (SVG, drawn in the browser from RDKit coordinates), interactive 3D model
+  (small WebGL viewer, RDKit ETKDG + MMFF conformer from `Molecule.generate_3d`),
+  descriptors (`core/descriptors.py`) and tags (`core/molecule_tags.py`).
+- **Reactions** — the 60 named reactions with schemes, descriptions and atom economy;
+  a step-by-step **mechanism player** (curly / fishhook arrows, lone pairs, bond-midpoint
+  arrows) for the 20 seeded mechanisms, and **energy-profile** diagrams with Ea / overall
+  change for the 20 seeded profiles; the 25 **synthesis pathways** step by step.
+- **SMILES lab** — formula, average and monoisotopic mass and the app's 27 functional-group
+  SMARTS computed in the browser by a small JS engine (`orgchem/web/static/chem_engine.js`,
+  `smarts.js`) that agrees with RDKit on all 1005 seeded SMILES and their Kekulé forms
+  (node test); plus a JS port of the empirical / molecular formula calculator
+  (`core/formula.py`, Verma et al. 2024). On the local app it also draws any SMILES with RDKit.
+- **Quiz** — name the structure, functional groups, molecular formulas, named reactions and
+  glossary terms, generated from the seeded content (`orgchem/web/quiz.py`).
+
+Not on the web: the sibling studios, protein/PDB tools, spectroscopy predictors,
+retrosynthesis, the drawing tool, lab calculators and the AI tutor (use the desktop app).
+
+```
+pip install -r requirements-web.txt
+python run_web.py                     # http://127.0.0.1:8131
+python scripts/build_static.py        # static site in site/
+python -m pytest -q tests/test_web.py # API + static build + node tests
+```
+
+The web app seeds a private temporary database on start-up; it never touches the desktop
+app's own database.
+
+![Home](docs/img/home.png)
+![Molecule page: caffeine in 2D and 3D](docs/img/molecule_7.png)
+![Chymotrypsin mechanism and energy profile](docs/img/reaction_27.png)
+![SMILES lab](docs/img/lab.png)
+![Quiz](docs/img/quiz.png)
+
 ## Headless / LLM-driven operation
 
 Every GUI action is also an agent action via the `@action` registry.

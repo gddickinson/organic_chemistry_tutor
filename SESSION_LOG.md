@@ -1,5 +1,32 @@
 # Session Log — OrgChem Studio
 
+## 2026-11-12 — Web interface + static GitHub Pages site
+
+Added `orgchem/web/` (FastAPI app, `run_web.py` on port 8131) and a static export
+(`scripts/build_static.py`, `.github/workflows/pages.yml`). Pages: lessons (215, Tutorial-panel
+Markdown pipeline), molecules (613; own SVG 2D drawing + WebGL 3D from RDKit coordinates;
+descriptors + tags from `core/`), named reactions with mechanism player (20) and energy-profile
+diagrams (20), synthesis pathways (25), glossary (110), SMILES lab, quiz (150-question bank built
+from seeded content). The web app seeds a private temp DB; the user's DB is never touched.
+
+- JS chemistry engine (`chem_engine.js`, `smarts.js`): SMILES parser, RDKit-style implicit H,
+  aromaticity perception for Kekulé input, formula, MolWt, ExactMolWt (electron-mass correction
+  for ions), the 27 functional-group SMARTS of `core/molecule_tags.py`. Node test agrees with
+  RDKit on 1005 SMILES (every seeded SMILES + Kekulé forms); 2 Kekulé porphyrin forms are a
+  documented aromaticity difference (formula still checked).
+- `formula_calc.js`: port of `core/formula.py`, matches Python on the Verma et al. Table 1 cases
+  (IUPAC and integer masses), fixture `tests/fixtures/chem_engine_fixture.json`, currency checked
+  by `tests/test_web.py::test_chem_fixture_is_current`.
+- **Fix** (separate commit): `Molecule.generate_3d` now retries ETKDG from random coordinates when
+  the default embedding fails, so the long-chain lipids (Tripalmitin, Triolein, POPC,
+  Sphingomyelin) get 3D models. Regression test `tests/test_molecule_3d_fallback.py`.
+- **Needs George's decision**: Camphor, Codeine and Oxycodone seed SMILES carry stereo
+  descriptors that RDKit cannot embed in 3D at all, even from random coordinates (e.g. camphor's
+  two bridgeheads come out R and S, a combination no bicyclo[2.2.1] geometry allows; of all
+  stereoisomers only the R,R and S,S ones embed). Left unchanged; their pages say no 3D conformer
+  could be embedded.
+- Tests: `tests/test_web.py` 932 passed; full suite `pytest tests` 3778 passed, 1 skipped (imagehash not installed), 0 failures.
+
 ## 2026-04-27 — Round 232 (Phase CB-4.0: Cell Biology tutorial expansion — round 2 of -4 chain)
 
 **Wakeup-driven build, round 2 of 7 in the -4 chain.**
