@@ -103,10 +103,10 @@ def test_corrected_molecules_match_pubchem():
 
 def test_corrections_table_matches_seeders():
     """The in-place DB corrections must write exactly what a fresh seed produces."""
-    from orgchem.db.seed_corrections import CORRECTIONS
+    from orgchem.db.seed_corrections import CORRECTIONS, RENAMES
     from orgchem.web.chemdata import snapshot
     rows = snapshot()["molecules"]
-    for name, _old, smiles, _src in CORRECTIONS:
+    for name, _old, smiles, _src in CORRECTIONS + [(r[2], r[1], r[3], r[4]) for r in RENAMES]:
         key = Chem.MolToInchiKey(Chem.MolFromSmiles(smiles))
         assert key in [r["inchikey"] for r in rows if r["name"] == name], name
 

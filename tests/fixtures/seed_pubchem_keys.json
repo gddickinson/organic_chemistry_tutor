@@ -410,6 +410,31 @@
    "inchikey": "JULRHESXGMBTKX-FPMFFAJLSA-N",
    "cid": null,
    "note": "no PubChem record by name; stereo set to the descriptors in the name"
+  },
+  {
+   "name": "Amylose (trisaccharide fragment)",
+   "cid": 439586,
+   "inchikey": "FYGDTMLNYKFZSV-DZOUCCHMSA-N"
+  },
+  {
+   "name": "Cellulose (trisaccharide fragment)",
+   "cid": 5287993,
+   "inchikey": "FYGDTMLNYKFZSV-ZWSAEMDYSA-N"
+  },
+  {
+   "name": "Methyl acetate (representative acetyl ester)",
+   "cid": 6584,
+   "inchikey": "KXKVLQRXCPHEJC-UHFFFAOYSA-N"
+  },
+  {
+   "name": "Theobromine N1-anion (caffeine methylation intermediate)",
+   "cid": 3693432,
+   "inchikey": "YAPQBXQYLJRXSA-UHFFFAOYSA-M"
+  },
+  {
+   "name": "(R)-(+)-Limonene",
+   "cid": 440917,
+   "inchikey": "XMGQYMWWDOXHJM-JTQLQIEISA-N"
   }
  ]
 }

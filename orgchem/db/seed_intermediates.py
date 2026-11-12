@@ -154,7 +154,8 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
         "[O-][Mg]Br",                                                  "intermediate"),
     ("Acetophenone cation (EAS intermediate)",
         "CC(=O)c1ccccc1",                                              "intermediate"),
-    ("Acetyl ester (generic)",   "CC(C)=O",                            "intermediate"),
+    ("Methyl acetate (representative acetyl ester)",
+        "COC(C)=O",                                                    "intermediate"),  # PubChem CID 6584
     # Aldol / condensation related
     ("2-Methyl-2-pentenal",      "CCC=C(C)C=O",                      "intermediate"),
     ("Ethyl 3-oxobutanoate",     "CCOC(=O)CC(C)=O",                    "intermediate"),
@@ -182,8 +183,10 @@ _INTERMEDIATES: List[Tuple[str, str, str]] = [
     ("Isobutylbenzene",          "CC(C)Cc1ccccc1",                     "intermediate"),
     ("1-(4-Isobutylphenyl)ethanol",
         "CC(C)Cc1ccc(C(C)O)cc1",                                       "intermediate"),
-    ("Caffeine (protonated intermediate)",
-        "Cn1cnc2c1c(=O)[nH]c(=O)n2C",                                  "intermediate"),
+    # The base-mediated N1-methylation of theobromine to caffeine (seed_pathways) goes through the
+    # N1-deprotonated anion, which then does SN2 on MeI. PubChem CID 3693432.
+    ("Theobromine N1-anion (caffeine methylation intermediate)",
+        "Cn1cnc2c1c(=O)[n-]c(=O)n2C",                                  "intermediate"),
     ("Methyl iodide",            "CI",                                 "reagent"),
     ("Iodide",                   "[I-]",                               "intermediate"),
     ("Phenacetin (ethoxy intermediate)",

@@ -1,5 +1,22 @@
 # Session Log — OrgChem Studio
 
+## 2026-11-12 — Fix the seed entries left for George + migrate old databases fully
+
+George delegated the open choices:
+- **Amylose / Cellulose**: the broken "fragment (3 glucose)" rows (C11H20O10, a 4-carbon second ring) are now
+  "Amylose (trisaccharide fragment)" = maltotriose (CID 439586) and "Cellulose (trisaccharide fragment)" =
+  cellotriose (CID 5287993), reducing-end anomer unspecified; synonyms Maltotriose / Cellotriose; botany xref updated.
+- **"Caffeine (protonated intermediate)"** was drawn as neutral theobromine (already its own row). It exists for the
+  caffeine-from-theobromine pathway, whose step notes describe N1 deprotonation then SN2 on MeI; no protonated caffeine
+  occurs there. It is now "Theobromine N1-anion (caffeine methylation intermediate)" (CID 3693432).
+- **"Acetyl ester (generic)"** (drawn as acetone) is now "Methyl acetate (representative acetyl ester)" (CID 6584).
+- **Limonene** is now "(R)-(+)-Limonene" (CID 440917, the orange form); lesson 31 says the (R)-form smells of orange
+  and no lesson refers to the (S) form. Synonyms Limonene / D-Limonene / (+)-Limonene; botany xref updated.
+- **Existing databases**: the startup migration now runs first in `seed_if_empty` and also fixes the seeded reactions
+  (7) and the aspartame pathway (`db/seed_corrections_rxn.py`), matched by name + exact old SMILES. Corrected molecules
+  now also get their functional-group tags recomputed (previously only the 2D layout was redrawn).
+- Tests: `tests/test_seed_migration.py` (old-format DB through the real startup seeding; user look-alike rows untouched).
+
 ## 2026-11-12 — Fix seeded structures that disagreed with their names (PubChem scan)
 
 Scanned all 613 seeded molecules against PubChem (name lookup, fetched once into a scratch cache;

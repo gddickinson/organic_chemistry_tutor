@@ -82,6 +82,13 @@ def seed_if_empty(cfg: AppConfig) -> int:
     from orgchem.db.seed_molecules_extended import seed_extended_molecules
     from orgchem.db.seed_intermediates import seed_intermediates
 
+    # Rewrite seeded rows (molecules, reactions, pathways) that still hold a structure fixed in a later release.
+    # First, so a renamed molecule isn't seeded again under its new name; the 2D/tag backfills below redraw them.
+    from orgchem.db.seed_corrections import apply_seed_corrections
+    from orgchem.db.seed_corrections_rxn import apply_reaction_corrections
+    apply_seed_corrections()
+    apply_reaction_corrections()
+
     mol_added = _seed_molecules_additive()
     mol_added += seed_extended_molecules()
     mol_added += seed_intermediates()
@@ -98,10 +105,6 @@ def seed_if_empty(cfg: AppConfig) -> int:
 
     from orgchem.db.seed_glossary import seed_glossary_if_empty
     g_added = seed_glossary_if_empty()
-
-    # Rewrite rows that still hold a structure fixed in a later release (before the 2D backfill redraws them).
-    from orgchem.db.seed_corrections import apply_seed_corrections
-    apply_seed_corrections()
 
     # Phase 6f.2 — persist canonical 2D coords for every molecule so the
     # same layout is reused anywhere it's drawn.

@@ -476,8 +476,7 @@ PLANT_TAXA: Tuple[PlantTaxon, ...] = (
         model_organism=True,
         genome_size_or_mb="~17 Gb (hexaploid)",
         cross_reference_molecule_names=(
-            "Sucrose", "D-Glucose", "Amylose fragment "
-            "(3 glucose, α-1,4)",
+            "Sucrose", "D-Glucose", "Amylose (trisaccharide fragment)",
         ),
         cross_reference_metabolic_pathway_ids=(
             "calvin_cycle", "glycolysis", "tca_cycle",
@@ -952,7 +951,7 @@ PLANT_TAXA: Tuple[PlantTaxon, ...] = (
         model_organism=False,
         genome_size_or_mb="~370 Mb",
         cross_reference_molecule_names=(
-            "Menthol", "Limonene",
+            "Menthol", "(R)-(+)-Limonene",
         ),
         cross_reference_metabolic_pathway_ids=(
             "calvin_cycle", "glycolysis", "tca_cycle",

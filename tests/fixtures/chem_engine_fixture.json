@@ -3316,7 +3316,7 @@
 ]
 },
 {
-"smiles": "C=C(C)[C@@H]1CC=C(C)CC1",
+"smiles": "C=C(C)[C@H]1CC=C(C)CC1",
 "atoms": "C2 C0 C3 C1 C2 C1 C0 C3 C2 C2",
 "formula": "C10H16",
 "mw": 136.23799999999997,
@@ -4689,6 +4689,18 @@
 "groups": [
 "alcohol",
 "aromatic"
+]
+},
+{
+"smiles": "Cn1cnc2c1c(=O)[n-]c(=O)n2C",
+"atoms": "C3 Na0 Ca1 Na0 Ca0 Ca0 Ca0 O0 Na0 Ca0 O0 Na0 C3",
+"formula": "C7H7N4O2-",
+"mw": 179.159,
+"exact": 179.05744904391,
+"charge": -1,
+"heavy": 13,
+"groups": [
+"heterocycle_N"
 ]
 },
 {
@@ -6679,26 +6691,26 @@
 ]
 },
 {
-"smiles": "OC[C@H]1O[C@H](O[C@H]2[C@H](O)[C@@H](O)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@@H]1O",
-"atoms": "O1 C2 C1 O0 C1 O0 C1 C1 O1 C1 O1 O0 C1 C2 O1 C1 O1 C1 O1 C1 O1",
-"formula": "C11H20O10",
-"mw": 312.271,
-"exact": 312.10564683999996,
+"smiles": "OC[C@H]1O[C@H](O[C@H]2[C@H](O)[C@@H](O)[C@@H](O[C@H]3[C@H](O)[C@@H](O)C(O)O[C@@H]3CO)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@@H]1O",
+"atoms": "O1 C2 C1 O0 C1 O0 C1 C1 O1 C1 O1 C1 O0 C1 C1 O1 C1 O1 C1 O1 O0 C1 C2 O1 O0 C1 C2 O1 C1 O1 C1 O1 C1 O1",
+"formula": "C18H32O16",
+"mw": 504.4380000000002,
+"exact": 504.1690349439998,
 "charge": 0,
-"heavy": 21,
+"heavy": 34,
 "groups": [
 "ether",
 "alcohol"
 ]
 },
 {
-"smiles": "OC[C@H]1O[C@@H](O[C@H]2[C@H](O)[C@@H](O)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@@H]1O",
-"atoms": "O1 C2 C1 O0 C1 O0 C1 C1 O1 C1 O1 O0 C1 C2 O1 C1 O1 C1 O1 C1 O1",
-"formula": "C11H20O10",
-"mw": 312.271,
-"exact": 312.10564683999996,
+"smiles": "OC[C@H]1O[C@@H](O[C@H]2[C@H](O)[C@@H](O)[C@H](O[C@H]3[C@H](O)[C@@H](O)C(O)O[C@@H]3CO)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@@H]1O",
+"atoms": "O1 C2 C1 O0 C1 O0 C1 C1 O1 C1 O1 C1 O0 C1 C1 O1 C1 O1 C1 O1 O0 C1 C2 O1 O0 C1 C2 O1 C1 O1 C1 O1 C1 O1",
+"formula": "C18H32O16",
+"mw": 504.4380000000002,
+"exact": 504.1690349439998,
 "charge": 0,
-"heavy": 21,
+"heavy": 34,
 "groups": [
 "ether",
 "alcohol"
@@ -12041,6 +12053,18 @@
 "groups": [
 "alcohol",
 "aromatic"
+]
+},
+{
+"smiles": "CN1C=NC2=C1C(=O)[N-]C(=O)N2C",
+"atoms": "C3 Na0 Ca1 Na0 Ca0 Ca0 Ca0 O0 Na0 Ca0 O0 Na0 C3",
+"formula": "C7H7N4O2-",
+"mw": 179.159,
+"exact": 179.05744904391,
+"charge": -1,
+"heavy": 13,
+"groups": [
+"heterocycle_N"
 ]
 },
 {

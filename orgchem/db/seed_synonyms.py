@@ -66,6 +66,9 @@ _CURATED: Dict[str, List[str]] = {
     "Vitamin D3": ["Cholecalciferol", "Colecalciferol"],
     # The seed is (+)-camphor, (1R,4R) (PubChem CID 159055), the common natural enantiomer.
     "Camphor": ["(+)-Camphor", "D-Camphor", "(1R,4R)-Camphor"],
+    "(R)-(+)-Limonene": ["Limonene", "D-Limonene", "(+)-Limonene"],
+    "Amylose (trisaccharide fragment)": ["Maltotriose"],
+    "Cellulose (trisaccharide fragment)": ["Cellotriose"],
     "Retinol (vitamin A)": ["Retinol", "Vitamin A", "all-trans-Retinol"],
 }
 

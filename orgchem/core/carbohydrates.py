@@ -148,24 +148,28 @@ CARBOHYDRATES: List[Carbohydrate] = [
     ),
     # ---- Polysaccharide fragments ---------------------------------
     Carbohydrate(
-        name="Amylose fragment (3 glucose, α-1,4)",
+        name="Amylose (trisaccharide fragment)",
         family="polysaccharide", form="pyranose chain",
         carbonyl_type="aldose",
         glycosidic="α-1,4",
-        smiles="OC[C@H]1O[C@H](O[C@H]2[C@H](O)[C@@H](O)"
+        # Maltotriose, Glc(α1→4)Glc(α1→4)Glc, reducing-end anomer unspecified: PubChem CID 439586.
+        smiles="OC[C@H]1O[C@H](O[C@H]2[C@H](O)[C@@H](O)[C@@H](O[C@H]3[C@H](O)[C@@H](O)C(O)O[C@@H]3CO)"
                "O[C@@H]2CO)[C@H](O)[C@@H](O)[C@@H]1O",
-        notes="Linear α-1,4 chain — the soluble starch fraction. "
+        notes="Maltotriose, the shortest piece of amylose that shows the repeat. "
+              "Linear α-1,4 chain — the soluble starch fraction. "
               "Forms a helical structure around I₂ (starch-iodine "
               "test).",
     ),
     Carbohydrate(
-        name="Cellulose fragment (3 glucose, β-1,4)",
+        name="Cellulose (trisaccharide fragment)",
         family="polysaccharide", form="pyranose chain",
         carbonyl_type="aldose",
         glycosidic="β-1,4",
-        smiles="OC[C@H]1O[C@@H](O[C@H]2[C@H](O)[C@@H](O)"
+        # Cellotriose, Glc(β1→4)Glc(β1→4)Glc, reducing-end anomer unspecified: PubChem CID 5287993.
+        smiles="OC[C@H]1O[C@@H](O[C@H]2[C@H](O)[C@@H](O)[C@H](O[C@H]3[C@H](O)[C@@H](O)C(O)O[C@@H]3CO)"
                "O[C@@H]2CO)[C@H](O)[C@@H](O)[C@@H]1O",
-        notes="β-1,4 glycosidic bonds force linear ribbons that "
+        notes="Cellotriose, the shortest piece of cellulose that shows the repeat. "
+              "β-1,4 glycosidic bonds force linear ribbons that "
               "hydrogen-bond into insoluble fibres — plant cell walls.",
     ),
 

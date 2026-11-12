@@ -9,7 +9,12 @@ satisfy (no 3D model could be built); a scan of every seeded molecule against Pu
 structure or stereochemistry disagreed with the name (e.g. the L-amino acids were seeded as D, Efavirenz and
 Lycopene had the wrong skeleton). Replacement SMILES come from the PubChem records cited per row (stereo-only fixes
 invert just the wrong centres of the seed SMILES, so a seed's chosen anomer is kept).
-Idempotent: once corrected, the old InChIKeys no longer match anything.
+Later (2026-11-12, George's choices): five rows are also renamed (``RENAMES``): the broken amylose / cellulose
+fragments become maltotriose / cellotriose, "Caffeine (protonated intermediate)" becomes the theobromine N1-anion of
+the caffeine-synthesis step, "Acetyl ester (generic)" becomes methyl acetate and Limonene becomes (R)-(+)-limonene.
+Seeded reactions and pathways that held the same errors are fixed by ``seed_corrections_rxn``.
+Idempotent: once corrected, the old InChIKeys no longer match anything. Runs before the additive seeders, so a
+renamed row is not seeded a second time under its new name.
 """
 from __future__ import annotations
 
@@ -193,6 +198,40 @@ CORRECTIONS: List[Tuple[str, str, str, str]] = [
 ]
 
 
+# (old seeded name, InChIKey of its old SMILES, new name, corrected SMILES, source record)
+RENAMES: List[Tuple[str, str, str, str, str]] = [
+    ("Amylose fragment (3 glucose, α-1,4)", "YNHLBDYXAQJXAN-UCBWFNGWSA-N",
+     "Amylose (trisaccharide fragment)",
+     "OC[C@H]1O[C@H](O[C@H]2[C@H](O)[C@@H](O)[C@@H](O[C@H]3[C@H](O)[C@@H](O)C(O)O[C@@H]3CO)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@@H]1O", "maltotriose, PubChem CID 439586"),
+    ("Cellulose fragment (3 glucose, β-1,4)", "YNHLBDYXAQJXAN-UPZNEHLDSA-N",
+     "Cellulose (trisaccharide fragment)",
+     "OC[C@H]1O[C@@H](O[C@H]2[C@H](O)[C@@H](O)[C@H](O[C@H]3[C@H](O)[C@@H](O)C(O)O[C@@H]3CO)O[C@@H]2CO)[C@H](O)[C@@H](O)[C@@H]1O", "cellotriose, PubChem CID 5287993"),
+    ("Acetyl ester (generic)", "CSCPPACGZOOCGX-UHFFFAOYSA-N",
+     "Methyl acetate (representative acetyl ester)",
+     "COC(C)=O", "methyl acetate, PubChem CID 6584"),
+    ("Caffeine (protonated intermediate)", "YAPQBXQYLJRXSA-UHFFFAOYSA-N",
+     "Theobromine N1-anion (caffeine methylation intermediate)",
+     "Cn1cnc2c1c(=O)[n-]c(=O)n2C", "theobromine conjugate base, PubChem CID 3693432"),
+    ("Limonene", "XMGQYMWWDOXHJM-SNVBAGLBSA-N",
+     "(R)-(+)-Limonene",
+     "C=C(C)[C@H]1CC=C(C)CC1", "(R)-(+)-limonene, PubChem CID 440917"),
+]
+
+
+def _rewrite(row, m) -> None:
+    row.smiles, row.inchi, row.inchikey, row.formula = m.smiles, m.inchi, m.inchikey, m.formula
+    row.properties_json = json.dumps(m.properties)
+    row.molblock_2d = None          # redrawn by seed_coords.backfill_molblock_2d
+    row.molblock_3d = None
+    row.functional_group_tags_json = None   # re-tagged by seed_tags.backfill_tags
+
+
+def _mol(smiles: str) -> ChemMol:
+    m = ChemMol.from_smiles(smiles, generate_3d=False)
+    m.ensure_properties()
+    return m
+
+
 def apply_seed_corrections() -> int:
     """Rewrite rows still holding a known-wrong seed structure. Returns the number of rows corrected."""
     fixed = 0
@@ -201,13 +240,19 @@ def apply_seed_corrections() -> int:
             rows = s.query(DBMol).filter(DBMol.name == name, DBMol.inchikey == old_key).all()
             if not rows:
                 continue
-            m = ChemMol.from_smiles(smiles, generate_3d=False)
-            m.ensure_properties()
+            m = _mol(smiles)
             for row in rows:
-                row.smiles, row.inchi, row.inchikey, row.formula = m.smiles, m.inchi, m.inchikey, m.formula
-                row.properties_json = json.dumps(m.properties)
-                row.molblock_2d = None
-                row.molblock_3d = None
+                _rewrite(row, m)
                 fixed += 1
                 log.info("Corrected seeded structure of %s (%s)", row.name, source)
+        for old_name, old_key, new_name, smiles, source in RENAMES:
+            rows = s.query(DBMol).filter(DBMol.name == old_name, DBMol.inchikey == old_key).all()
+            if not rows or s.query(DBMol).filter(DBMol.name == new_name).first() is not None:
+                continue
+            m = _mol(smiles)
+            for row in rows:
+                _rewrite(row, m)
+                row.name = new_name
+                fixed += 1
+                log.info("Corrected seeded molecule %s -> %s (%s)", old_name, new_name, source)
     return fixed
