@@ -68,7 +68,7 @@ your body routinely tells enantiomers apart:
 | Molecule | (R)-enantiomer smells like | (S)-enantiomer smells like |
 |----------|----------------------------|----------------------------|
 | Carvone  | spearmint                  | caraway seed               |
-| Limonene | oranges                    | lemons                     |
+| Limonene | oranges (citrus)           | piney, turpentine-like     |
 
 Same molecular formula, same bond list, same everything
 except the 3D layout at one stereocentre.  Your olfactory

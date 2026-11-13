@@ -93,8 +93,8 @@ The **gonane** core: 4 fused rings (3 × six + 1 × five),
 
 - **Menthol** — peppermint; cooling sensation via TRPM8 ion
   channel agonism.
-- **Limonene** — (R)-form smells like orange, (S)-form like
-  pine — chirality in nature.
+- **Limonene** — (R)-(+)-limonene smells of oranges (citrus),
+  (S)-(−)-limonene is piney, turpentine-like — chirality in nature.
 - **Camphor** — Bornyl/camphor cation cyclisation.
 - **α-Pinene** — pine resin; major component of turpentine.
 - **Geraniol** — rose; widely used in perfumery.

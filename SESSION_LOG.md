@@ -18,6 +18,9 @@ George delegated the open choices:
 - Tests: `tests/test_seed_migration.py` (old-format DB through the real startup seeding; user look-alike rows untouched).
 - **Fix** (separate commit): beginner lesson 07 had carvone's enantiomers swapped; (R)-(−)-carvone is spearmint,
   (S)-(+)-carvone caraway.
+- **Fix** (separate commit): lessons disagreed on (S)-limonene ("lemons" vs "pine"); both now say (R)-(+) = oranges /
+  citrus, (S)-(−) = piney, turpentine-like. No citation added: these lessons have no references section.
+  Test `tests/test_lesson_odour_facts.py` (no lesson says (S)-limonene smells of lemons; carvone/limonene tables).
 
 ## 2026-11-12 — Fix seeded structures that disagreed with their names (PubChem scan)
 
